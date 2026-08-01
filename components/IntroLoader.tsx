@@ -63,7 +63,7 @@ export default function IntroLoader() {
       }, "+=0.05")
         .addLabel("morphed");
 
-      tl2.to(glowRef.current, { opacity: 1, duration: 0.4, ease: "power1.out" }, "morphed-=0.15")
+      tl2.to(glowRef.current, { opacity: 1, duration: 0.7, ease: "power1.out" }, "morphed-=0.15")
         .to(svgRef.current, { scale: 1.06, duration: 0.2, ease: "power1.out", transformOrigin: "50% 50%" }, "morphed")
         .to(svgRef.current, { scale: 1, duration: 0.3, ease: "power2.out" })
         .to(glowRef.current, { opacity: 0.45, duration: 0.8, ease: "power1.inOut" }, "<");
@@ -72,13 +72,13 @@ export default function IntroLoader() {
 
       tl2.addLabel("zoomOut");
       tl2.to(figureRef.current, {
-        scale: 1.7,
-        duration: 0.9,
-        ease: "power2.in",
+        scale: 3.1,
+        duration: 1.1,
+        ease: "power2.in"
       }, "zoomOut")
         .to(screenRef.current, {
           opacity: 0,
-          duration: 0.9,
+          duration: 1.1,
           ease: "power2.in",
           onComplete: () => {
             if (screenRef.current) screenRef.current.style.display = "none";
@@ -135,14 +135,14 @@ export default function IntroLoader() {
 
       tl1.to(progress, {
         value: 40,
-        duration: 0.9,
+        duration: 1.1,
         ease: "power2.out",
         onUpdate: updateFill,
       }, "+=0.1")
         .to(progress, { duration: 1 })
         .to(progress, {
           value: 100,
-          duration: 1.6,
+          duration: 1.9,
           ease: "power1.inOut",
           onUpdate: updateFill,
         });

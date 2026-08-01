@@ -16,8 +16,8 @@
 
 .figure {
   position: relative;
-  width: clamp(120px, 26vw, 180px);
-  height: clamp(120px, 26vw, 180px);
+  width: clamp(110px, 24vw, 165px);
+  height: clamp(110px, 24vw, 165px);
   display: flex;
   align-items: center;
   justify-content: center;
