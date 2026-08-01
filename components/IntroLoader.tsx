@@ -72,7 +72,7 @@ export default function IntroLoader() {
 
       tl2.addLabel("zoomOut");
       tl2.to(figureRef.current, {
-        scale: 3.1,
+        scale: 4.9,
         duration: 1.1,
         ease: "power2.in"
       }, "zoomOut")
@@ -135,14 +135,14 @@ export default function IntroLoader() {
 
       tl1.to(progress, {
         value: 40,
-        duration: 1.1,
+        duration: 2.1,
         ease: "power2.out",
         onUpdate: updateFill,
       }, "+=0.1")
         .to(progress, { duration: 1 })
         .to(progress, {
           value: 100,
-          duration: 1.9,
+          duration: 0.9,
           ease: "power1.inOut",
           onUpdate: updateFill,
         });
