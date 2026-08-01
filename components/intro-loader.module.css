@@ -47,8 +47,8 @@
 
 .track {
   fill: none;
-  stroke: var(--color-brass-dim);
-  stroke-width: 1;
+  stroke: var(--color-brass);
+  stroke-width: 0.35;
 }
 
 .fillBar {
