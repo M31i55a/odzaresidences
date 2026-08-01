@@ -1,26 +1,51 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* ---- design tokens — the project palette & type ---- */
+  --color-walnut: #1b1815; /* warm dark walnut — page background */
+  --color-walnut-soft: #221e19; /* slightly lifted surface */
+  --color-brass: #c9a567; /* aged brass — the key's line & accent color */
+  --color-brass-dim: rgba(201, 165, 103, 0.28);
+  --color-cream: #ede6da; /* strong text */
+  --color-cream-soft: rgba(237, 230, 218, 0.55); /* muted text */
+
+  --font-display: var(--font-fraunces); /* Fraunces — headings */
+  --font-mono: var(--font-jetbrains); /* JetBrains Mono — body & UI */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
+  margin: 0;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-walnut);
+  color: var(--color-cream);
+  font-family: var(--font-jetbrains);
+}
+
+body.loading {
+  overflow: hidden;
+}
+
+/* ---------- shared content reveal ----------
+   Elements using `.line-mask` + `.line-inner` slide up "into view"
+   right after the intro loader finishes. The loader tweens every
+   `.line-inner` element with GSAP once its timeline completes. */
+.line-mask {
+  overflow: hidden;
+}
+
+.line-inner {
+  display: block;
+  margin: 0;
+  transform: translateY(115%);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+  }
 }

@@ -1,0 +1,70 @@
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: radial-gradient(
+    circle at 50% 42%,
+    var(--color-walnut-soft),
+    var(--color-walnut) 70%
+  );
+  z-index: 9999;
+}
+
+.figure {
+  position: relative;
+  width: clamp(120px, 26vw, 180px);
+  height: clamp(120px, 26vw, 180px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glow {
+  position: absolute;
+  inset: -40%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--color-brass-dim),
+    rgba(201, 165, 103, 0) 70%
+  );
+  filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.svg {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.track {
+  fill: none;
+  stroke: var(--color-brass-dim);
+  stroke-width: 1;
+}
+
+.fillBar {
+  fill: var(--color-brass);
+}
+
+.target {
+  fill: var(--color-brass);
+  display: none;
+}
+
+.percentage {
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: var(--color-cream-soft);
+  min-width: 4ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
