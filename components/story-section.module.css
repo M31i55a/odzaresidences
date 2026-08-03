@@ -1,0 +1,113 @@
+.section {
+  position: relative;
+  background: #fff;
+  padding: clamp(6rem, 16vh, 10rem) clamp(20px, 5vw, 80px);
+}
+
+/* The drop only finishes once an item's bottom edge clears the top of the
+   screen. Sections above get that runway from whatever follows them; the last
+   one has nothing below it, so it carries its own tail. */
+.section:last-of-type {
+  padding-bottom: clamp(14rem, 70vh, 34rem);
+}
+
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.45fr);
+  gap: clamp(24px, 5vw, 72px);
+  align-items: start;
+}
+
+.inner[data-media="right"] {
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1.15fr);
+}
+
+.inner[data-media="right"] .media {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.inner[data-media="right"] .copy {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.media {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 3vh, 2rem);
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--color-ink);
+}
+
+/* No overflow:hidden here — it would flatten the 3D hinge. The corner cut sits
+   on the image itself instead. */
+.frame {
+  width: 100%;
+}
+
+/* Corners cut on the diagonal rather than rounded: --cut px in from each edge,
+   both horizontally and vertically, on all four corners. */
+.shot {
+  --cut: clamp(9px, 1vw, 29px);
+
+  display: block;
+  width: 100%;
+  height: auto;
+  clip-path: polygon(
+    var(--cut) 0,
+    calc(100% - var(--cut)) 0,
+    100% var(--cut),
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    var(--cut) 100%,
+    0 calc(100% - var(--cut)),
+    0 var(--cut)
+  );
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.75rem, 4vh, 3rem);
+}
+
+/* Doubled to outrank TextDrop's own `.text` defaults — both are single classes,
+   so otherwise the winner would depend on stylesheet order. */
+.title.title {
+  /* Capped so the longest line still clears the now-narrower copy column. */
+  font-size: clamp(1.75rem, 3.7vw, 3.1rem);
+  line-height: 1.18;
+}
+
+.body.body {
+  font-family: var(--font-mono);
+  font-size: clamp(15px, 1.5vw, 21px);
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0;
+  color: var(--color-ink-soft);
+}
+
+@media (max-width: 760px) {
+  .inner,
+  .inner[data-media="right"] {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .inner[data-media="right"] .media,
+  .inner[data-media="right"] .copy {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
