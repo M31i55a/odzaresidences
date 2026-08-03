@@ -22,7 +22,8 @@ type CopyLayer = "back" | "front";
 type LineRef = RefObject<HTMLDivElement | null>;
 
 /* The hero copy is rendered twice — once behind the house and once in front of
-   it — because only the subtitle should survive the roofline. Each stack owns
+   it. The subtitle and the button belong to the front stack; the eyebrow and
+   heading stay behind, where the roofline can climb over them. Each stack owns
    its own lines and ghosts the rest, so the two stay in lockstep no matter how
    the clamped type resolves. */
 function HeroLines({
@@ -67,8 +68,8 @@ function HeroLines({
         </p>
       </div>
 
-      <div className={mask("back")} ref={bind("back", ctaRef)}>
-        <div className={`${inner("back")} ${styles.ctaWrap}`} data-line="5">
+      <div className={mask("front")} ref={bind("front", ctaRef)}>
+        <div className={`${inner("front")} ${styles.ctaWrap}`} data-line="5">
           <a className={styles.cta} href="#">
             Find Properties
             <svg className={styles.ctaArrow} viewBox="0 0 16 10" aria-hidden="true">
@@ -152,7 +153,7 @@ export default function WelcomeScene() {
       });
 
       /* ---- 0.00 → 0.18 · approach (slides 1 → 2) ----
-         The chrome leaves first, then the roofline climbs into the button. */
+         The chrome clears out first, then the roofline climbs into the heading. */
       tl.to(navRef.current, { autoAlpha: 0, y: -34, duration: 0.07, ease: "power1.in" }, 0)
         .to(ctaRef.current, { autoAlpha: 0, y: -16, duration: 0.09, ease: "power1.in" }, 0.05)
         .to(houseRef.current, { scale: 1.25, yPercent: -10, duration: 0.18, ease: "none" }, 0)
@@ -174,49 +175,59 @@ export default function WelcomeScene() {
         .to(eyebrowRef.current, { autoAlpha: 0, duration: 0.08, ease: "none" }, 0.18)
         .to(smokeRef.current, { yPercent: 25, opacity: 1, duration: 0.16, ease: "none" }, 0.18)
         .to(clouds, { opacity: 0.9, duration: 0.2, ease: "none" }, 0.14)
-        .to(copy, { autoAlpha: 0, duration: 0.06, ease: "none" }, 0.31);
+        .to(copy, { autoAlpha: 0, duration: 0.06, ease: "none" }, 0.29);
 
-      /* ---- 0.34 → 0.52 · the mark draws itself on (slide 4) ---- */
-      tl.fromTo(markRef.current, { opacity: 0 }, { opacity: 1, duration: 0.04, ease: "none" }, 0.34)
-        .to(drawPathRef.current, { drawSVG: "100%", duration: 0.13, ease: "power1.inOut" }, 0.35)
+      /* ---- 0.26 → 0.45 · the mark draws (slide 4) ----
+         Deliberately overlapping the dissolve above: the key starts drawing
+         while the copy is still leaving, so the draw is something the scene
+         does on its way past rather than a beat it stops and waits for. */
+      tl.fromTo(markRef.current, { opacity: 0 }, { opacity: 1, duration: 0.04, ease: "none" }, 0.26)
+        .to(drawPathRef.current, { drawSVG: "100%", duration: 0.16, ease: "power1.inOut" }, 0.27)
         .fromTo(
           wipeRef.current,
           { attr: { width: 0 } },
-          { attr: { width: 100 }, duration: 0.09, ease: "power1.inOut" },
-          0.43
+          { attr: { width: 100 }, duration: 0.1, ease: "power1.inOut" },
+          0.36
         );
 
-      /* ---- 0.52 → 0.62 · the outline fills (slide 5) ---- */
-      tl.fromTo(fillRef.current, { opacity: 0 }, { opacity: 1, duration: 0.09, ease: "none" }, 0.53)
-        .to(outlineRef.current, { opacity: 0, duration: 0.09, ease: "none" }, 0.54)
-        .to(houseRef.current, { scale: 2.1, yPercent: -26, duration: 0.14, ease: "none" }, 0.52)
-        .to(houseLayerRef.current, { opacity: 0.55, duration: 0.14, ease: "none" }, 0.52);
+      /* ---- the scene never stops moving underneath the mark ----
+         Without these the house, smoke and clouds sat frozen for the whole
+         draw, which is what read as the scroll stalling. */
+      tl.to(houseRef.current, { scale: 2.0, yPercent: -26, duration: 0.16, ease: "none" }, 0.34)
+        .to(smokeRef.current, { yPercent: 8, duration: 0.16, ease: "none" }, 0.34)
+        .to(clouds, { scale: 1.12, duration: 0.2, ease: "none" }, 0.34);
 
-      /* ---- 0.63 → 0.72 · knockout (slide 6) ----
+      /* ---- 0.46 → 0.56 · the outline fills (slide 5) ---- */
+      tl.fromTo(fillRef.current, { opacity: 0 }, { opacity: 1, duration: 0.09, ease: "none" }, 0.46)
+        .to(outlineRef.current, { opacity: 0, duration: 0.09, ease: "none" }, 0.47)
+        .to(houseRef.current, { scale: 2.25, yPercent: -31, duration: 0.14, ease: "none" }, 0.5)
+        .to(houseLayerRef.current, { opacity: 0.55, duration: 0.14, ease: "none" }, 0.48);
+
+      /* ---- 0.56 → 0.65 · knockout (slide 6) ----
          The full-bleed house leaves as the letterform-shaped one arrives, so
          only the building inside the mark survives. */
-      tl.fromTo(knockRef.current, { opacity: 0 }, { opacity: 1, duration: 0.09, ease: "none" }, 0.63)
-        .to(fillRef.current, { opacity: 0, duration: 0.09, ease: "none" }, 0.64)
-        .to(houseLayerRef.current, { opacity: 0, duration: 0.11, ease: "none" }, 0.64)
-        .to(houseRef.current, { scale: 2.4, duration: 0.14, ease: "none" }, 0.66);
+      tl.fromTo(knockRef.current, { opacity: 0 }, { opacity: 1, duration: 0.09, ease: "none" }, 0.56)
+        .to(fillRef.current, { opacity: 0, duration: 0.09, ease: "none" }, 0.57)
+        .to(houseLayerRef.current, { opacity: 0, duration: 0.11, ease: "none" }, 0.57)
+        .to(houseRef.current, { scale: 2.45, duration: 0.14, ease: "none" }, 0.64);
 
       /* The building keeps travelling inside the letterforms — the mark is a
          window onto the same climb, not a frozen crop of it. */
       tl.fromTo(
         knockImgRef.current,
         { y: 16 },
-        { y: -14, duration: 0.45, ease: "none" },
-        0.55
+        { y: -14, duration: 0.42, ease: "none" },
+        0.5
       );
 
-      /* ---- 0.72 → 0.89 · hold ----
-         Nothing moves. The finished mark and its wordmark get the run of the
-         screen before the weather takes it. */
+      /* ---- 0.65 → 0.88 · hold ----
+         The mark and its wordmark get the run of the screen. Only the building
+         inside the letterforms is still moving. */
 
-      /* ---- 0.89 → 1.00 · whiteout (slide 7) ---- */
-      tl.to(clouds, { scale: 1.4, opacity: 1, duration: 0.13, ease: "none" }, 0.87)
-        .to(smokeRef.current, { yPercent: -8, duration: 0.13, ease: "none" }, 0.87)
-        .to(markRef.current, { scale: 1.14, opacity: 0, duration: 0.09, ease: "power1.in" }, 0.91)
+      /* ---- 0.86 → 1.00 · whiteout (slide 7) ---- */
+      tl.to(clouds, { scale: 1.4, opacity: 1, duration: 0.14, ease: "none" }, 0.86)
+        .to(smokeRef.current, { yPercent: -8, duration: 0.14, ease: "none" }, 0.86)
+        .to(markRef.current, { scale: 1.14, opacity: 0, duration: 0.09, ease: "power1.in" }, 0.9)
         .to(whiteoutRef.current, { opacity: 1, duration: 0.11, ease: "power1.in" }, 0.89);
     }, sceneRef);
 

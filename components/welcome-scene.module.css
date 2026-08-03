@@ -50,6 +50,14 @@
   will-change: transform, opacity;
 }
 
+/* Buy the single-line subtitle back some width on small screens. */
+@media (max-width: 480px) {
+  .copy {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
+
 /* The subtitle is the one line that paints in front of the house, so it lives
    in a second stack above it. Both stacks render all four lines and hide the
    ones they don't own — that keeps them in exact register at every viewport. */
@@ -101,10 +109,13 @@
   color: transparent;
 }
 
+/* One unbroken line. JetBrains Mono is a 0.6em monospace and the sentence runs
+   ~47 characters, so the size has to track the viewport to keep it from
+   overflowing on narrow screens. */
 .sub {
-  max-width: 46ch;
+  white-space: nowrap;
   font-family: var(--font-mono);
-  font-size: clamp(14px, 1.35vw, 19px);
+  font-size: clamp(9.5px, 2.75vw, 19px);
   line-height: 1.55;
   color: var(--color-ink);
   padding-block: 0.3em;
@@ -121,6 +132,9 @@
 }
 
 .cta {
+  /* .copyFront is pointer-events:none so it can't shadow the scene; the one
+     interactive thing inside it has to opt back in. */
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   gap: 11px;
