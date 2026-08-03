@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -18,10 +18,74 @@ const MARK_VIEWBOX = "0 0 100 78";
 const KEY_TRANSFORM = "translate(25 2)";
 const WORD_Y = 68;
 
+type CopyLayer = "back" | "front";
+type LineRef = RefObject<HTMLDivElement | null>;
+
+/* The hero copy is rendered twice — once behind the house and once in front of
+   it — because only the subtitle should survive the roofline. Each stack owns
+   its own lines and ghosts the rest, so the two stay in lockstep no matter how
+   the clamped type resolves. */
+function HeroLines({
+  layer,
+  eyebrowRef,
+  headingRef,
+  subRef,
+  ctaRef,
+}: {
+  layer: CopyLayer;
+  eyebrowRef: LineRef;
+  headingRef: LineRef;
+  subRef: LineRef;
+  ctaRef: LineRef;
+}) {
+  const owns = (who: CopyLayer) => who === layer;
+  const mask = (who: CopyLayer) => `line-mask${owns(who) ? "" : ` ${styles.ghost}`}`;
+  const inner = (who: CopyLayer) => (owns(who) ? "line-inner" : styles.ghostInner);
+  const bind = (who: CopyLayer, ref: LineRef) => (owns(who) ? ref : undefined);
+
+  /* `data-line` fixes the reveal order the loader staggers through — the two
+     stacks interleave in the DOM, so document order alone would land the
+     subtitle after the button. */
+  return (
+    <>
+      <div className={mask("back")} ref={bind("back", eyebrowRef)}>
+        <p className={`${inner("back")} ${styles.eyebrow}`} data-line="2">
+          Welcome
+        </p>
+      </div>
+
+      <div className={mask("back")} ref={bind("back", headingRef)}>
+        <h1 className={`${inner("back")} ${styles.heading}`} data-line="3">
+          The door is open.
+        </h1>
+      </div>
+
+      <div className={mask("front")} ref={bind("front", subRef)}>
+        <p className={`${inner("front")} ${styles.sub}`} data-line="4">
+          Your house is <span className={styles.subLead}>here</span> Just come
+          and grab the <span className={styles.subLead}>keys</span> !
+        </p>
+      </div>
+
+      <div className={mask("back")} ref={bind("back", ctaRef)}>
+        <div className={`${inner("back")} ${styles.ctaWrap}`} data-line="5">
+          <a className={styles.cta} href="#">
+            Find Properties
+            <svg className={styles.ctaArrow} viewBox="0 0 16 10" aria-hidden="true">
+              <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function WelcomeScene() {
   const sceneRef = useRef<HTMLElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
+  const copyFrontRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
   const subRef = useRef<HTMLDivElement>(null);
   const eyebrowRef = useRef<HTMLDivElement>(null);
@@ -54,9 +118,19 @@ export default function WelcomeScene() {
     window.addEventListener("load", refresh);
 
     const ctx = gsap.context(() => {
+      // Both copy stacks are driven as one so the subtitle never drifts out of
+      // register with the heading it sits under.
+      const copy = [copyRef.current, copyFrontRef.current];
+      const clouds = [cloudLRef.current, cloudRRef.current];
+
       gsap.set(houseRef.current, { transformOrigin: "50% 14%" });
-      gsap.set(copyRef.current, { transformOrigin: "50% 22%" });
+      gsap.set(copy, { transformOrigin: "50% 22%" });
       gsap.set(drawPathRef.current, { drawSVG: "0%" });
+
+      // Banked just off either edge on the first screen, so the house reads as
+      // sitting among them from the outset.
+      gsap.set(cloudLRef.current, { xPercent: -12 });
+      gsap.set(cloudRRef.current, { xPercent: 12 });
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -72,31 +146,25 @@ export default function WelcomeScene() {
       tl.to(navRef.current, { autoAlpha: 0, y: -34, duration: 0.07, ease: "power1.in" }, 0)
         .to(ctaRef.current, { autoAlpha: 0, y: -16, duration: 0.09, ease: "power1.in" }, 0.05)
         .to(houseRef.current, { scale: 1.35, yPercent: -5, duration: 0.18, ease: "none" }, 0)
-        .to(copyRef.current, { scale: 1.12, yPercent: -4, duration: 0.18, ease: "none" }, 0)
+        .to(copy, { scale: 1.12, yPercent: -4, duration: 0.18, ease: "none" }, 0)
         .fromTo(
           smokeRef.current,
           { yPercent: 100, opacity: 0 },
           { yPercent: 55, opacity: 0.9, duration: 0.18, ease: "none" },
           0
-        );
+        )
+        .to(clouds, { xPercent: 0, duration: 0.34, ease: "none" }, 0);
 
       /* ---- 0.18 → 0.34 · dissolve (slide 3) ----
          The heading thins out to a ghost while the weather closes in. */
       tl.to(houseRef.current, { scale: 1.9, yPercent: -9, duration: 0.16, ease: "none" }, 0.18)
-        .to(copyRef.current, { scale: 1.3, yPercent: -9, duration: 0.16, ease: "none" }, 0.18)
+        .to(copy, { scale: 1.3, yPercent: -9, duration: 0.16, ease: "none" }, 0.18)
         .to(headingRef.current, { opacity: 0.32, duration: 0.12, ease: "none" }, 0.18)
         .to(subRef.current, { autoAlpha: 0, duration: 0.1, ease: "none" }, 0.18)
         .to(eyebrowRef.current, { autoAlpha: 0, duration: 0.08, ease: "none" }, 0.18)
         .to(smokeRef.current, { yPercent: 25, opacity: 1, duration: 0.16, ease: "none" }, 0.18)
-        .fromTo(
-          [cloudLRef.current, cloudRRef.current],
-          { opacity: 0 },
-          { opacity: 0.85, duration: 0.16, ease: "none" },
-          0.18
-        )
-        .fromTo(cloudLRef.current, { xPercent: -24 }, { xPercent: 0, duration: 0.24, ease: "none" }, 0.18)
-        .fromTo(cloudRRef.current, { xPercent: 24 }, { xPercent: 0, duration: 0.24, ease: "none" }, 0.18)
-        .to(copyRef.current, { autoAlpha: 0, duration: 0.06, ease: "none" }, 0.31);
+        .to(clouds, { opacity: 0.9, duration: 0.2, ease: "none" }, 0.14)
+        .to(copy, { autoAlpha: 0, duration: 0.06, ease: "none" }, 0.31);
 
       /* ---- 0.34 → 0.52 · the mark draws itself on (slide 4) ---- */
       tl.fromTo(markRef.current, { opacity: 0 }, { opacity: 1, duration: 0.04, ease: "none" }, 0.34)
@@ -108,25 +176,29 @@ export default function WelcomeScene() {
           0.43
         );
 
-      /* ---- 0.52 → 0.68 · the outline fills (slide 5) ---- */
-      tl.fromTo(fillRef.current, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 0.53)
-        .to(outlineRef.current, { opacity: 0, duration: 0.1, ease: "none" }, 0.54)
-        .to(houseRef.current, { scale: 2.35, duration: 0.16, ease: "none" }, 0.52)
-        .to(houseLayerRef.current, { opacity: 0.55, duration: 0.16, ease: "none" }, 0.52);
+      /* ---- 0.52 → 0.62 · the outline fills (slide 5) ---- */
+      tl.fromTo(fillRef.current, { opacity: 0 }, { opacity: 1, duration: 0.09, ease: "none" }, 0.53)
+        .to(outlineRef.current, { opacity: 0, duration: 0.09, ease: "none" }, 0.54)
+        .to(houseRef.current, { scale: 2.35, duration: 0.14, ease: "none" }, 0.52)
+        .to(houseLayerRef.current, { opacity: 0.55, duration: 0.14, ease: "none" }, 0.52);
 
-      /* ---- 0.68 → 0.85 · knockout (slide 6) ----
+      /* ---- 0.63 → 0.72 · knockout (slide 6) ----
          The full-bleed house leaves as the letterform-shaped one arrives, so
          only the building inside the mark survives. */
-      tl.fromTo(knockRef.current, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none" }, 0.68)
-        .to(fillRef.current, { opacity: 0, duration: 0.1, ease: "none" }, 0.7)
-        .to(houseLayerRef.current, { opacity: 0, duration: 0.12, ease: "none" }, 0.7)
-        .to(houseRef.current, { scale: 2.7, duration: 0.17, ease: "none" }, 0.68);
+      tl.fromTo(knockRef.current, { opacity: 0 }, { opacity: 1, duration: 0.09, ease: "none" }, 0.63)
+        .to(fillRef.current, { opacity: 0, duration: 0.09, ease: "none" }, 0.64)
+        .to(houseLayerRef.current, { opacity: 0, duration: 0.11, ease: "none" }, 0.64)
+        .to(houseRef.current, { scale: 2.7, duration: 0.14, ease: "none" }, 0.66);
 
-      /* ---- 0.85 → 1.00 · whiteout (slide 7) ---- */
-      tl.to([cloudLRef.current, cloudRRef.current], { scale: 1.4, opacity: 1, duration: 0.15, ease: "none" }, 0.85)
-        .to(smokeRef.current, { yPercent: -8, duration: 0.15, ease: "none" }, 0.85)
-        .to(markRef.current, { scale: 1.14, opacity: 0, duration: 0.12, ease: "power1.in" }, 0.87)
-        .to(whiteoutRef.current, { opacity: 1, duration: 0.13, ease: "power1.in" }, 0.87);
+      /* ---- 0.72 → 0.89 · hold ----
+         Nothing moves. The finished mark and its wordmark get the run of the
+         screen before the weather takes it. */
+
+      /* ---- 0.89 → 1.00 · whiteout (slide 7) ---- */
+      tl.to(clouds, { scale: 1.4, opacity: 1, duration: 0.13, ease: "none" }, 0.87)
+        .to(smokeRef.current, { yPercent: -8, duration: 0.13, ease: "none" }, 0.87)
+        .to(markRef.current, { scale: 1.14, opacity: 0, duration: 0.09, ease: "power1.in" }, 0.91)
+        .to(whiteoutRef.current, { opacity: 1, duration: 0.11, ease: "power1.in" }, 0.89);
     }, sceneRef);
 
     return () => {
@@ -155,39 +227,21 @@ export default function WelcomeScene() {
             reveal starts at the top of the page; layering is all z-index. */}
         <div className={styles.navShell} ref={navRef}>
           <div className="line-mask">
-            <div className="line-inner">
+            <div className="line-inner" data-line="1">
               <SiteNav />
             </div>
           </div>
         </div>
 
-        {/* ---- hero copy ---- */}
+        {/* ---- hero copy, behind the house ---- */}
         <div className={styles.copy} ref={copyRef}>
-          <div className="line-mask" ref={eyebrowRef}>
-            <p className={`line-inner ${styles.eyebrow}`}>Welcome</p>
-          </div>
-
-          <div className="line-mask" ref={headingRef}>
-            <h1 className={`line-inner ${styles.heading}`}>The door is open.</h1>
-          </div>
-
-          <div className="line-mask" ref={subRef}>
-            <p className={`line-inner ${styles.sub}`}>
-              Your house is <span className={styles.subLead}>here</span> Just
-              come and grab the <span className={styles.subLead}>keys</span> !
-            </p>
-          </div>
-
-          <div className="line-mask" ref={ctaRef}>
-            <div className={`line-inner ${styles.ctaWrap}`}>
-              <a className={styles.cta} href="#">
-                Find Properties
-                <svg className={styles.ctaArrow} viewBox="0 0 16 10" aria-hidden="true">
-                  <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
-                </svg>
-              </a>
-            </div>
-          </div>
+          <HeroLines
+            layer="back"
+            eyebrowRef={eyebrowRef}
+            headingRef={headingRef}
+            subRef={subRef}
+            ctaRef={ctaRef}
+          />
         </div>
 
         {/* ---- house ---- */}
@@ -205,6 +259,17 @@ export default function WelcomeScene() {
               className={styles.houseImg}
             />
           </div>
+        </div>
+
+        {/* ---- hero copy, in front of the house ---- */}
+        <div className={`${styles.copy} ${styles.copyFront}`} ref={copyFrontRef}>
+          <HeroLines
+            layer="front"
+            eyebrowRef={eyebrowRef}
+            headingRef={headingRef}
+            subRef={subRef}
+            ctaRef={ctaRef}
+          />
         </div>
 
         {/* ---- smoke ---- */}

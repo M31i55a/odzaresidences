@@ -3,7 +3,9 @@
 .scene {
   position: relative;
   width: 100%;
-  height: 700svh;
+  /* 470svh ≈ 700 / 1.5 — the timeline is normalised 0→1 across the runway, so
+     shortening it is what makes the whole sequence 1.5× quicker to scroll. */
+  height: 470svh;
   flex: none; /* body is a column flexbox — don't let the runway be squeezed */
   background: #fff;
 }
@@ -48,6 +50,25 @@
   will-change: transform, opacity;
 }
 
+/* The subtitle is the one line that paints in front of the house, so it lives
+   in a second stack above it. Both stacks render all four lines and hide the
+   ones they don't own — that keeps them in exact register at every viewport. */
+.copyFront {
+  z-index: 3;
+  pointer-events: none;
+}
+
+.ghost {
+  visibility: hidden;
+}
+
+/* Spacers match `.line-inner`'s box exactly but deliberately skip the class —
+   otherwise they'd consume slots in the loader's staggered reveal. */
+.ghostInner {
+  display: block;
+  margin: 0;
+}
+
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -85,12 +106,13 @@
   font-family: var(--font-mono);
   font-size: clamp(14px, 1.35vw, 19px);
   line-height: 1.55;
-  color: var(--color-ink-soft);
-  padding-block: 0.24em;
+  color: var(--color-ink);
+  padding-block: 0.3em;
 }
 
+/* The brass the key is drawn in during the intro, carried into the copy. */
 .subLead {
-  color: var(--color-ink);
+  color: var(--color-brass);
 }
 
 .ctaWrap {
@@ -174,12 +196,14 @@
 }
 
 /* ---------------- layer 4 — clouds ---------------- */
+/* Clouds are already half-present on the first screen, banked either side of
+   the house — they thicken as the scene pushes in rather than arriving late. */
 .cloud {
   position: absolute;
   bottom: -8%;
   width: 78%;
   z-index: 4;
-  opacity: 0;
+  opacity: 0.55;
   pointer-events: none;
   will-change: transform, opacity;
 }

@@ -8,6 +8,14 @@ import { LOGO_PATH_D } from "./logo-path";
 
 gsap.registerPlugin(MorphSVGPlugin);
 
+/* Every `.line-inner` on the page rises into view once the loader finishes.
+   An optional `data-line` sets the order; untagged lines keep document order. */
+function revealTargets() {
+  return gsap.utils
+    .toArray<HTMLElement>(".line-inner")
+    .sort((a, b) => Number(a.dataset.line ?? 0) - Number(b.dataset.line ?? 0));
+}
+
 export default function IntroLoader() {
   const screenRef = useRef<HTMLDivElement>(null);
   const figureRef = useRef<HTMLDivElement>(null);
@@ -82,7 +90,9 @@ export default function IntroLoader() {
           },
         }, "zoomOut");
 
-      tl2.to(".line-inner", {
+      // Ordered by `data-line` rather than document order — the page's lines can
+      // be split across stacking layers, which scrambles their DOM sequence.
+      tl2.to(revealTargets(), {
         y: 0,
         opacity: 1,
         duration: 0.7,
