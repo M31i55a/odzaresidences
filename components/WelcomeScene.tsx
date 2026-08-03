@@ -143,10 +143,6 @@ export default function WelcomeScene() {
           pin: stageRef.current,
           pinSpacing: false,
           anticipatePin: 1,
-          // ScrollSmoother transforms #smooth-content, and `position: fixed`
-          // resolves against a transformed ancestor rather than the viewport —
-          // so hold the stage with a transform instead.
-          pinType: "transform",
         },
       });
 

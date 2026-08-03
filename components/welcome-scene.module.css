@@ -13,8 +13,7 @@
   height: 100svh;
 }
 
-/* Pinned by ScrollTrigger rather than `position: sticky` — ScrollSmoother
-   transforms the content wrapper, and sticky can't survive that. */
+/* Held in place by ScrollTrigger's pin rather than `position: sticky`. */
 .stage {
   position: relative;
   height: 100svh;

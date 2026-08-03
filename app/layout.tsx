@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Fraunces, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+// Sets `html.lenis { height: auto }`, which has to beat globals.css's
+// `html, body { height: 100% }` for Lenis to measure the page correctly.
+import "lenis/dist/lenis.css";
 import IntroLoader from "@/components/IntroLoader";
 import SmoothScroll from "@/components/SmoothScroll";
 
@@ -29,15 +32,12 @@ export default function RootLayout({
       lang="en"
       className={`${fraunces.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      {/* SmoothScroll renders first so its instance exists before any
-          ScrollTrigger inside the content builds. IntroLoader stays outside the
-          wrapper — it's position:fixed, which a transformed ancestor would
-          break. */}
+      {/* SmoothScroll renders first so Lenis exists before any ScrollTrigger
+          inside the page builds. Lenis drives the real scroll position rather
+          than transforming a wrapper, so no wrapper markup is needed. */}
       <body className="min-h-full bg-walnut font-mono text-cream">
         <SmoothScroll />
-        <div id="smooth-wrapper">
-          <div id="smooth-content">{children}</div>
-        </div>
+        {children}
         <IntroLoader />
       </body>
     </html>
