@@ -273,7 +273,7 @@
   overflow: visible;
 }
 
-/* state 1 — hairline outline that draws itself on */
+/* hairline outline that draws itself on, then stays as the mark's edge */
 .markOutline path,
 .markOutline text {
   fill: none;
@@ -283,18 +283,8 @@
   vector-effect: non-scaling-stroke;
 }
 
-/* state 2 — frosted glass fill */
-.markFill {
-  opacity: 0;
-}
-
-.markFill path,
-.markFill text {
-  fill: rgba(255, 255, 255, 0.62);
-  stroke: none;
-}
-
-/* state 3 — the house, knocked out of the letterforms */
+/* both fade up slowly once the key has finished drawing */
+.markWord,
 .markKnock {
   opacity: 0;
 }

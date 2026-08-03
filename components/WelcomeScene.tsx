@@ -98,10 +98,8 @@ export default function WelcomeScene() {
   const cloudLRef = useRef<HTMLDivElement>(null);
   const cloudRRef = useRef<HTMLDivElement>(null);
   const markRef = useRef<HTMLDivElement>(null);
-  const outlineRef = useRef<SVGGElement>(null);
   const drawPathRef = useRef<SVGPathElement>(null);
-  const wipeRef = useRef<SVGRectElement>(null);
-  const fillRef = useRef<SVGGElement>(null);
+  const wordRef = useRef<SVGGElement>(null);
   const knockRef = useRef<SVGGElement>(null);
   const knockImgRef = useRef<SVGImageElement>(null);
   const whiteoutRef = useRef<HTMLDivElement>(null);
@@ -182,12 +180,13 @@ export default function WelcomeScene() {
          while the copy is still leaving, so the draw is something the scene
          does on its way past rather than a beat it stops and waits for. */
       tl.fromTo(markRef.current, { opacity: 0 }, { opacity: 1, duration: 0.04, ease: "none" }, 0.26)
-        .to(drawPathRef.current, { drawSVG: "100%", duration: 0.16, ease: "power1.inOut" }, 0.27)
+        .to(drawPathRef.current, { drawSVG: "100%", duration: 0.18, ease: "power1.inOut" }, 0.27)
+        // a long, unhurried fade — it used to snap in over a short wipe
         .fromTo(
-          wipeRef.current,
-          { attr: { width: 0 } },
-          { attr: { width: 100 }, duration: 0.1, ease: "power1.inOut" },
-          0.36
+          wordRef.current,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.2, ease: "power1.out" },
+          0.3
         );
 
       /* ---- the scene never stops moving underneath the mark ----
@@ -197,18 +196,20 @@ export default function WelcomeScene() {
         .to(smokeRef.current, { yPercent: 8, duration: 0.16, ease: "none" }, 0.34)
         .to(clouds, { scale: 1.12, duration: 0.2, ease: "none" }, 0.34);
 
-      /* ---- 0.46 → 0.56 · the outline fills (slide 5) ---- */
-      tl.fromTo(fillRef.current, { opacity: 0 }, { opacity: 1, duration: 0.09, ease: "none" }, 0.46)
-        .to(outlineRef.current, { opacity: 0, duration: 0.09, ease: "none" }, 0.47)
+      /* ---- 0.45 → 0.68 · the house becomes the fill ----
+         Rises slowly through the letterforms once the outline has closed. There
+         is nothing white underneath any more, so the sky simply gives way to
+         the building. The full-bleed house is already dimmed by this point and
+         clears out as the mark takes over. */
+      tl.to(houseLayerRef.current, { opacity: 0.45, duration: 0.11, ease: "none" }, 0.34)
+        .fromTo(
+          knockRef.current,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.23, ease: "power1.inOut" },
+          0.45
+        )
+        .to(houseLayerRef.current, { opacity: 0, duration: 0.16, ease: "none" }, 0.45)
         .to(houseRef.current, { scale: 2.25, yPercent: -31, duration: 0.14, ease: "none" }, 0.5)
-        .to(houseLayerRef.current, { opacity: 0.55, duration: 0.14, ease: "none" }, 0.48);
-
-      /* ---- 0.56 → 0.65 · knockout (slide 6) ----
-         The full-bleed house leaves as the letterform-shaped one arrives, so
-         only the building inside the mark survives. */
-      tl.fromTo(knockRef.current, { opacity: 0 }, { opacity: 1, duration: 0.09, ease: "none" }, 0.56)
-        .to(fillRef.current, { opacity: 0, duration: 0.09, ease: "none" }, 0.57)
-        .to(houseLayerRef.current, { opacity: 0, duration: 0.11, ease: "none" }, 0.57)
         .to(houseRef.current, { scale: 2.45, duration: 0.14, ease: "none" }, 0.64);
 
       /* The building keeps travelling inside the letterforms — the mark is a
@@ -216,8 +217,8 @@ export default function WelcomeScene() {
       tl.fromTo(
         knockImgRef.current,
         { y: 16 },
-        { y: -14, duration: 0.42, ease: "none" },
-        0.5
+        { y: -14, duration: 0.45, ease: "none" },
+        0.45
       );
 
       /* ---- 0.65 → 0.88 · hold ----
@@ -326,12 +327,6 @@ export default function WelcomeScene() {
         <div className={styles.mark} ref={markRef} aria-hidden="true">
           <svg className={styles.markSvg} viewBox={MARK_VIEWBOX} xmlns="http://www.w3.org/2000/svg">
             <defs>
-              {/* left-to-right reveal for the wordmark — DrawSVG cannot animate
-                  <text>, and a clipped wipe reads the same at this scale. */}
-              <clipPath id="odzaWordWipe">
-                <rect ref={wipeRef} x="0" y="54" width="0" height="24" />
-              </clipPath>
-
               <clipPath id="odzaMarkClip">
                 <path d={LOGO_PATH_D} transform={KEY_TRANSFORM} />
                 <text x="50" y={WORD_Y} textAnchor="middle" className={styles.wordmark}>
@@ -340,27 +335,21 @@ export default function WelcomeScene() {
               </clipPath>
             </defs>
 
-            {/* state 1 — outline */}
-            <g className={styles.markOutline} ref={outlineRef}>
+            {/* the outline — stays put once drawn; the house simply fills it */}
+            <g className={styles.markOutline}>
               <path ref={drawPathRef} d={LOGO_PATH_D} transform={KEY_TRANSFORM} />
-              <g clipPath="url(#odzaWordWipe)">
+              {/* fades up rather than drawing — DrawSVG can't animate <text> */}
+              <g ref={wordRef} className={styles.markWord}>
                 <text x="50" y={WORD_Y} textAnchor="middle" className={styles.wordmark}>
                   Odza Residences
                 </text>
               </g>
             </g>
 
-            {/* state 2 — frosted fill */}
-            <g className={styles.markFill} ref={fillRef}>
-              <path d={LOGO_PATH_D} transform={KEY_TRANSFORM} />
-              <text x="50" y={WORD_Y} textAnchor="middle" className={styles.wordmark}>
-                Odza Residences
-              </text>
-            </g>
-
-            {/* state 3 — the house, knocked out. The clip lives on the group so
-                the image can travel behind a fixed set of letterforms; putting
-                it on the image itself would drag the clip along with it. */}
+            {/* the house, knocked out. Switched on the instant the outline
+                closes — no fade, no wipe. The clip lives on the group so the
+                image can travel behind a fixed set of letterforms; putting it
+                on the image itself would drag the clip along with it. */}
             <g ref={knockRef} className={styles.markKnock} clipPath="url(#odzaMarkClip)">
               <image
                 ref={knockImgRef}
