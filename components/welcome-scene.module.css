@@ -54,7 +54,7 @@
    in a second stack above it. Both stacks render all four lines and hide the
    ones they don't own — that keeps them in exact register at every viewport. */
 .copyFront {
-  z-index: 3;
+  z-index: 5; /* above the smoke and clouds — they must not wash the copy out */
   pointer-events: none;
 }
 
@@ -110,9 +110,9 @@
   padding-block: 0.3em;
 }
 
-/* The brass the key is drawn in during the intro, carried into the copy. */
 .subLead {
-  color: var(--color-brass);
+  color: var(--color-ink);
+  font-weight: 700;
 }
 
 .ctaWrap {
@@ -229,24 +229,24 @@
   transform: scaleX(-1);
 }
 
-/* ---------------- layer 5 — nav ---------------- */
+/* ---------------- layer 6 — nav ---------------- */
 .navShell {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 5;
+  z-index: 6;
   will-change: transform, opacity;
 }
 
-/* ---------------- layer 6 — the mark ---------------- */
+/* ---------------- layer 7 — the mark ---------------- */
 .mark {
   position: absolute;
   left: 50%;
   top: 50%;
   translate: -50% -50%;
   width: min(64vw, 620px);
-  z-index: 6;
+  z-index: 7;
   opacity: 0;
   pointer-events: none;
   will-change: transform, opacity;
@@ -292,11 +292,11 @@
   letter-spacing: 0.02em;
 }
 
-/* ---------------- layer 7 — whiteout ---------------- */
+/* ---------------- layer 8 — whiteout ---------------- */
 .whiteout {
   position: absolute;
   inset: 0;
-  z-index: 7;
+  z-index: 8;
   background: #fff;
   opacity: 0;
   pointer-events: none;
