@@ -6,7 +6,6 @@
   /* 470svh ≈ 700 / 1.5 — the timeline is normalised 0→1 across the runway, so
      shortening it is what makes the whole sequence 1.5× quicker to scroll. */
   height: 470svh;
-  flex: none; /* body is a column flexbox — don't let the runway be squeezed */
   background: #fff;
 }
 
@@ -14,9 +13,10 @@
   height: 100svh;
 }
 
+/* Pinned by ScrollTrigger rather than `position: sticky` — ScrollSmoother
+   transforms the content wrapper, and sticky can't survive that. */
 .stage {
-  position: sticky;
-  top: 0;
+  position: relative;
   height: 100svh;
   width: 100%;
   overflow: hidden;
@@ -165,9 +165,9 @@
 .house {
   position: absolute;
   left: 50%;
-  top: 44%;
+  top: 66%; /* opens holding the bottom third of the screen */
   translate: -50% 0;
-  width: min(64vw, 940px);
+  width: min(78vw, 1150px);
   will-change: transform;
 }
 

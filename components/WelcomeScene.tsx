@@ -83,6 +83,7 @@ function HeroLines({
 
 export default function WelcomeScene() {
   const sceneRef = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const copyFrontRef = useRef<HTMLDivElement>(null);
@@ -100,7 +101,8 @@ export default function WelcomeScene() {
   const drawPathRef = useRef<SVGPathElement>(null);
   const wipeRef = useRef<SVGRectElement>(null);
   const fillRef = useRef<SVGGElement>(null);
-  const knockRef = useRef<SVGImageElement>(null);
+  const knockRef = useRef<SVGGElement>(null);
+  const knockImgRef = useRef<SVGImageElement>(null);
   const whiteoutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -138,6 +140,14 @@ export default function WelcomeScene() {
           start: "top top",
           end: "bottom bottom",
           scrub: 1,
+          // The section already supplies the runway, so the pin needs no spacer.
+          pin: stageRef.current,
+          pinSpacing: false,
+          anticipatePin: 1,
+          // ScrollSmoother transforms #smooth-content, and `position: fixed`
+          // resolves against a transformed ancestor rather than the viewport —
+          // so hold the stage with a transform instead.
+          pinType: "transform",
         },
       });
 
@@ -145,7 +155,7 @@ export default function WelcomeScene() {
          The chrome leaves first, then the roofline climbs into the button. */
       tl.to(navRef.current, { autoAlpha: 0, y: -34, duration: 0.07, ease: "power1.in" }, 0)
         .to(ctaRef.current, { autoAlpha: 0, y: -16, duration: 0.09, ease: "power1.in" }, 0.05)
-        .to(houseRef.current, { scale: 1.35, yPercent: -5, duration: 0.18, ease: "none" }, 0)
+        .to(houseRef.current, { scale: 1.25, yPercent: -10, duration: 0.18, ease: "none" }, 0)
         .to(copy, { scale: 1.12, yPercent: -4, duration: 0.18, ease: "none" }, 0)
         .fromTo(
           smokeRef.current,
@@ -157,7 +167,7 @@ export default function WelcomeScene() {
 
       /* ---- 0.18 → 0.34 · dissolve (slide 3) ----
          The heading thins out to a ghost while the weather closes in. */
-      tl.to(houseRef.current, { scale: 1.9, yPercent: -9, duration: 0.16, ease: "none" }, 0.18)
+      tl.to(houseRef.current, { scale: 1.7, yPercent: -20, duration: 0.16, ease: "none" }, 0.18)
         .to(copy, { scale: 1.3, yPercent: -9, duration: 0.16, ease: "none" }, 0.18)
         .to(headingRef.current, { opacity: 0.32, duration: 0.12, ease: "none" }, 0.18)
         .to(subRef.current, { autoAlpha: 0, duration: 0.1, ease: "none" }, 0.18)
@@ -179,7 +189,7 @@ export default function WelcomeScene() {
       /* ---- 0.52 → 0.62 · the outline fills (slide 5) ---- */
       tl.fromTo(fillRef.current, { opacity: 0 }, { opacity: 1, duration: 0.09, ease: "none" }, 0.53)
         .to(outlineRef.current, { opacity: 0, duration: 0.09, ease: "none" }, 0.54)
-        .to(houseRef.current, { scale: 2.35, duration: 0.14, ease: "none" }, 0.52)
+        .to(houseRef.current, { scale: 2.1, yPercent: -26, duration: 0.14, ease: "none" }, 0.52)
         .to(houseLayerRef.current, { opacity: 0.55, duration: 0.14, ease: "none" }, 0.52);
 
       /* ---- 0.63 → 0.72 · knockout (slide 6) ----
@@ -188,7 +198,16 @@ export default function WelcomeScene() {
       tl.fromTo(knockRef.current, { opacity: 0 }, { opacity: 1, duration: 0.09, ease: "none" }, 0.63)
         .to(fillRef.current, { opacity: 0, duration: 0.09, ease: "none" }, 0.64)
         .to(houseLayerRef.current, { opacity: 0, duration: 0.11, ease: "none" }, 0.64)
-        .to(houseRef.current, { scale: 2.7, duration: 0.14, ease: "none" }, 0.66);
+        .to(houseRef.current, { scale: 2.4, duration: 0.14, ease: "none" }, 0.66);
+
+      /* The building keeps travelling inside the letterforms — the mark is a
+         window onto the same climb, not a frozen crop of it. */
+      tl.fromTo(
+        knockImgRef.current,
+        { y: 16 },
+        { y: -14, duration: 0.45, ease: "none" },
+        0.55
+      );
 
       /* ---- 0.72 → 0.89 · hold ----
          Nothing moves. The finished mark and its wordmark get the run of the
@@ -209,7 +228,7 @@ export default function WelcomeScene() {
 
   return (
     <section className={styles.scene} ref={sceneRef}>
-      <div className={styles.stage}>
+      <div className={styles.stage} ref={stageRef}>
         {/* ---- sky ---- */}
         <div className={styles.back}>
           <Image
@@ -328,18 +347,20 @@ export default function WelcomeScene() {
               </text>
             </g>
 
-            {/* state 3 — the house, knocked out */}
-            <image
-              ref={knockRef}
-              className={styles.markKnock}
-              href="/house.png"
-              x="-15"
-              y="-22"
-              width="130"
-              height="130"
-              preserveAspectRatio="xMidYMid slice"
-              clipPath="url(#odzaMarkClip)"
-            />
+            {/* state 3 — the house, knocked out. The clip lives on the group so
+                the image can travel behind a fixed set of letterforms; putting
+                it on the image itself would drag the clip along with it. */}
+            <g ref={knockRef} className={styles.markKnock} clipPath="url(#odzaMarkClip)">
+              <image
+                ref={knockImgRef}
+                href="/house.png"
+                x="-15"
+                y="-34"
+                width="130"
+                height="150"
+                preserveAspectRatio="xMidYMid slice"
+              />
+            </g>
           </svg>
         </div>
 

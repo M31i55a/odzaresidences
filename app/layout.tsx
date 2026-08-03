@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import IntroLoader from "@/components/IntroLoader";
+import SmoothScroll from "@/components/SmoothScroll";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
@@ -28,8 +29,15 @@ export default function RootLayout({
       lang="en"
       className={`${fraunces.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-walnut font-mono text-cream">
-        {children}
+      {/* SmoothScroll renders first so its instance exists before any
+          ScrollTrigger inside the content builds. IntroLoader stays outside the
+          wrapper — it's position:fixed, which a transformed ancestor would
+          break. */}
+      <body className="min-h-full bg-walnut font-mono text-cream">
+        <SmoothScroll />
+        <div id="smooth-wrapper">
+          <div id="smooth-content">{children}</div>
+        </div>
         <IntroLoader />
       </body>
     </html>
