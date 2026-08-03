@@ -1,0 +1,147 @@
+.page {
+  min-height: 100svh;
+  background: var(--color-walnut);
+  color: var(--color-cream);
+  padding: clamp(5rem, 14vh, 9rem) clamp(20px, 5vw, 80px)
+    clamp(6rem, 16vh, 10rem);
+}
+
+.inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--color-cream-soft);
+  transition: color 0.24s ease;
+}
+
+.back:hover {
+  color: var(--color-brass);
+}
+
+.backArrow {
+  width: 15px;
+  height: 10px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: scaleX(-1);
+}
+
+.eyebrow {
+  margin: clamp(2rem, 6vh, 3.5rem) 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--color-brass);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--color-cream);
+}
+
+.grid {
+  margin-top: clamp(3rem, 8vh, 5rem);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.card {
+  scroll-margin-top: 6rem; /* so the #slug jump doesn't tuck under the top */
+}
+
+.shot {
+  --cut: clamp(9px, 1vw, 29px);
+
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--color-walnut-soft);
+  clip-path: polygon(
+    var(--cut) 0,
+    calc(100% - var(--cut)) 0,
+    100% var(--cut),
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    var(--cut) 100%,
+    0 calc(100% - var(--cut)),
+    0 var(--cut)
+  );
+}
+
+.img {
+  object-fit: cover;
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card:hover .img,
+.card:focus-within .img {
+  transform: scale(1.06);
+}
+
+.name {
+  margin: 1.25rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 1.6vw, 1.6rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--color-cream);
+}
+
+.kind {
+  margin: 0.4rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-brass);
+}
+
+.facts {
+  margin: 1rem 0 0;
+  display: grid;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.fact {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(237, 230, 218, 0.14);
+}
+
+.fact dt {
+  color: var(--color-cream-soft);
+}
+
+.fact dd {
+  margin: 0;
+  color: var(--color-cream);
+}
+
+.price {
+  color: var(--color-brass);
+}

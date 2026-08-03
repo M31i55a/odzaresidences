@@ -1,0 +1,274 @@
+.section {
+  position: relative;
+  background: var(--color-walnut);
+  color: var(--color-cream);
+}
+
+.pin {
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(1.5rem, 4vh, 3rem);
+  overflow: hidden;
+}
+
+.head {
+  padding: 0 clamp(20px, 5vw, 80px);
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--color-brass);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--color-cream);
+}
+
+/* The same hinge the rest of the site reveals with. Perspective is set per
+   element by GSAP (transformPerspective) instead of on .track: the track runs
+   thousands of pixels wide, so one shared vanishing point would skew every card
+   away from the middle. */
+.hinge,
+.panel {
+  transform-origin: 50% 0;
+  transform: rotateX(-120deg);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.viewport {
+  overflow: hidden;
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  gap: clamp(24px, 3vw, 56px);
+  padding: 0 clamp(20px, 5vw, 80px);
+  width: max-content;
+  will-change: transform;
+}
+
+/* ---------------- card ---------------- */
+.card {
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 2vw, 36px);
+  width: max-content;
+}
+
+/* clip-path clips descendants too, so the zoomed image is cut to the same
+   chamfer as the story images rather than spilling past it. */
+.shot {
+  --cut: clamp(9px, 1vw, 29px);
+
+  position: relative;
+  flex: none;
+  width: clamp(240px, 32vw, 440px);
+  height: clamp(320px, 54vh, 560px);
+  overflow: hidden;
+  background: var(--color-walnut-soft);
+  clip-path: polygon(
+    var(--cut) 0,
+    calc(100% - var(--cut)) 0,
+    100% var(--cut),
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    var(--cut) 100%,
+    0 calc(100% - var(--cut)),
+    0 var(--cut)
+  );
+}
+
+/* The image scales, never the box — the frame has to stay put. */
+.img {
+  object-fit: cover;
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card:hover .img,
+.card:focus-within .img {
+  transform: scale(1.08);
+}
+
+/* ---------------- description ----------------
+   Its width is always reserved, so revealing it can't shove the track sideways
+   mid-hover. */
+.desc {
+  flex: none;
+  width: clamp(190px, 20vw, 280px);
+  opacity: 0;
+  transform: translateX(-14px);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card:hover .desc,
+.card:focus-within .desc {
+  opacity: 1;
+  transform: none;
+}
+
+.name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.7vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--color-cream);
+}
+
+.kind {
+  margin: 0.4rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-brass);
+}
+
+.facts {
+  margin: clamp(1rem, 2vh, 1.5rem) 0 0;
+  display: grid;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.fact {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(237, 230, 218, 0.14);
+}
+
+.fact dt {
+  color: var(--color-cream-soft);
+}
+
+.fact dd {
+  margin: 0;
+  color: var(--color-cream);
+}
+
+.price {
+  color: var(--color-brass);
+}
+
+.detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: clamp(1rem, 2.4vh, 1.6rem);
+  padding: 11px 20px;
+  border: 1px solid var(--color-brass);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  color: var(--color-brass);
+  transition: background 0.28s ease, color 0.28s ease;
+  white-space: nowrap;
+}
+
+.detail:hover {
+  background: var(--color-brass);
+  color: var(--color-walnut);
+}
+
+/* ---------------- visit more ---------------- */
+.more {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.25rem;
+  padding-right: clamp(20px, 5vw, 80px);
+  width: clamp(240px, 26vw, 340px);
+}
+
+.moreText {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.2vw, 2.1rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--color-cream);
+}
+
+.moreLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  align-self: flex-start;
+  padding: 15px 28px;
+  border-radius: 999px;
+  background: var(--color-brass);
+  color: var(--color-walnut);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition: transform 0.26s ease, background 0.26s ease;
+}
+
+.moreLink:hover {
+  background: var(--color-cream);
+  transform: translateY(-2px);
+}
+
+.arrow {
+  width: 15px;
+  height: 10px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Hover can't be the only way to reach the details on a touch screen. */
+@media (hover: none) {
+  .desc {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Reduced motion (and the no-JS fallback): no pin, no scrubbing — the strip
+   becomes an ordinary horizontally scrollable row. */
+.section[data-static="true"] .pin {
+  height: auto;
+  padding: clamp(4rem, 12vh, 7rem) 0;
+}
+
+.section[data-static="true"] .viewport {
+  overflow-x: auto;
+}
+
+.section[data-static="true"] .desc {
+  opacity: 1;
+  transform: none;
+}
+
+.section[data-static="true"] .hinge,
+.section[data-static="true"] .panel {
+  transform: none;
+}

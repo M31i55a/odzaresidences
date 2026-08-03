@@ -1,5 +1,6 @@
 import WelcomeScene from "@/components/WelcomeScene";
 import StorySection from "@/components/StorySection";
+import ApartmentsSection from "@/components/ApartmentsSection";
 
 /* Placeholder copy — written to sit in the right shape, not to be final. */
 export default function Home() {
@@ -48,6 +49,8 @@ export default function Home() {
         }}
         mediaSide="right"
       />
+
+      <ApartmentsSection />
     </>
   );
 }
