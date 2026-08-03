@@ -11,17 +11,30 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   justify-self: start;
   text-decoration: none;
   color: inherit;
 }
 
+/* The key sits in brass on black — the pairing it was drawn for in the intro,
+   rather than fighting the pale sky directly. */
+.brandBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--color-ink);
+}
+
 .brandMark {
-  width: 17px;
-  height: 17px;
+  width: 19px;
+  height: 19px;
   display: block;
-  fill: var(--color-ink);
+  fill: var(--color-brass);
 }
 
 .brandName {

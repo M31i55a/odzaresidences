@@ -16,14 +16,16 @@ export default function SiteNav() {
   return (
     <nav className={styles.nav} aria-label="Primary">
       <a className={styles.brand} href="#">
-        <svg
-          className={styles.brandMark}
-          viewBox={LOGO_VIEWBOX}
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-        >
-          <path d={LOGO_PATH_D} />
-        </svg>
+        <span className={styles.brandBadge}>
+          <svg
+            className={styles.brandMark}
+            viewBox={LOGO_VIEWBOX}
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path d={LOGO_PATH_D} />
+          </svg>
+        </span>
         <span className={styles.brandName}>Odza</span>
       </a>
 
