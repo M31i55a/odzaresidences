@@ -13,11 +13,12 @@ export default function ApartmentsPage() {
   return (
     <main className={styles.page}>
       <div className={styles.inner}>
-        <Link className={styles.back} href="/">
+        {/* Lands back on the strip they came from, not the top of the page. */}
+        <Link className={styles.back} href="/#apartments">
           <svg className={styles.backArrow} viewBox="0 0 16 10" aria-hidden="true">
             <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
           </svg>
-          Back
+          Back to apartments
         </Link>
 
         <p className={styles.eyebrow}>Apartments</p>

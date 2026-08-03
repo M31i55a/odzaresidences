@@ -6,11 +6,15 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { APARTMENTS, FEATURED_COUNT } from "./apartments-data";
+import { getLenis } from "./lenis-instance";
 import styles from "./apartments-section.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const FEATURED = APARTMENTS.slice(0, FEATURED_COUNT);
+
+/** Anchor the /apartments page links back to. */
+export const SECTION_ID = "apartments";
 
 export default function ApartmentsSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -102,11 +106,30 @@ export default function ApartmentsSection() {
       });
     }, sectionRef);
 
-    return () => ctx.revert();
+    /* Arriving from /apartments via #apartments. Next scrolls to the anchor
+       before ScrollTrigger has laid out the pin spacer, so the native jump
+       lands short — re-measure, then move through Lenis, which owns the
+       scroll position. */
+    let raf = 0;
+    if (window.location.hash === `#${SECTION_ID}`) {
+      raf = requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+        const el = sectionRef.current;
+        if (!el) return;
+        const lenis = getLenis();
+        if (lenis) lenis.scrollTo(el, { immediate: true });
+        else el.scrollIntoView();
+      });
+    }
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ctx.revert();
+    };
   }, []);
 
   return (
-    <section className={styles.section} ref={sectionRef}>
+    <section className={styles.section} id={SECTION_ID} ref={sectionRef}>
       <div className={styles.pin} ref={pinRef}>
         <header className={styles.head} ref={headRef}>
           <p className={`${styles.eyebrow} ${styles.hinge}`}>Apartments</p>

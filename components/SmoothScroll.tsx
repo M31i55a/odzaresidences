@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
+import { setLenis } from "./lenis-instance";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,6 +21,8 @@ export default function SmoothScroll() {
       syncTouch: false,
       autoRaf: false, // GSAP's ticker drives it instead — see below
     });
+
+    setLenis(lenis);
 
     /* Lenis and ScrollTrigger have to share one clock, or the pinned scene
        lags a frame behind the scroll position it's supposed to be scrubbing. */
@@ -52,6 +55,7 @@ export default function SmoothScroll() {
       lenis.off("scroll", ScrollTrigger.update);
       gsap.ticker.remove(raf);
       gsap.ticker.lagSmoothing(500, 33); // GSAP's default
+      setLenis(null);
       lenis.destroy();
     };
   }, []);

@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import SiteNav from "./SiteNav";
 import { LOGO_PATH_D } from "./logo-path";
+import { introHasPlayed } from "./intro-state";
 import styles from "./welcome-scene.module.css";
 
 gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin);
@@ -105,6 +106,16 @@ export default function WelcomeScene() {
   const whiteoutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    /* Coming back here by client-side navigation remounts this copy but not the
+       loader — it lives in the root layout and has already played. Nothing
+       would ever reveal these lines, so bring them in outright. */
+    if (introHasPlayed() && sceneRef.current) {
+      gsap.set(sceneRef.current.querySelectorAll(".line-inner"), {
+        y: 0,
+        opacity: 1,
+      });
+    }
+
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;

@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 import styles from "./intro-loader.module.css";
 import { LOGO_PATH_D } from "./logo-path";
+import { markIntroPlayed } from "./intro-state";
 
 gsap.registerPlugin(MorphSVGPlugin);
 
@@ -51,6 +52,7 @@ export default function IntroLoader() {
 
     function finish() {
       body.classList.remove("loading");
+      markIntroPlayed();
     }
 
     function startMorphPhase() {
