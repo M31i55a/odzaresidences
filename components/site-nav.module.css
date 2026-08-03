@@ -1,0 +1,103 @@
+.nav {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  padding: 20px clamp(20px, 3.4vw, 44px);
+  color: var(--color-ink);
+}
+
+/* ---------- brand ---------- */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  justify-self: start;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brandMark {
+  width: 17px;
+  height: 17px;
+  display: block;
+  fill: var(--color-ink);
+}
+
+.brandName {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+/* ---------- centre links ---------- */
+.links {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2vw, 30px);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--color-ink);
+  text-decoration: none;
+  opacity: 0.82;
+  transition: opacity 0.22s ease;
+  white-space: nowrap;
+}
+
+.link:hover {
+  opacity: 1;
+}
+
+.caret {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.65;
+}
+
+/* ---------- sign in ---------- */
+.signIn {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: transform 0.22s ease, background 0.22s ease;
+}
+
+.signIn:hover {
+  background: #2c3037;
+  transform: translateY(-1px);
+}
+
+/* The reference is a desktop capture and no mobile menu was specified — below
+   md the bar collapses to brand + sign in so the hero stays uncluttered. */
+@media (max-width: 900px) {
+  .links {
+    display: none;
+  }
+
+  .nav {
+    grid-template-columns: 1fr auto;
+  }
+}

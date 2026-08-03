@@ -1,0 +1,279 @@
+/* The scroll runway. Everything visible lives in the sticky .stage; scrolling
+   this section's height is what scrubs the timeline from slide 1 to slide 7. */
+.scene {
+  position: relative;
+  width: 100%;
+  height: 700svh;
+  flex: none; /* body is a column flexbox — don't let the runway be squeezed */
+  background: #fff;
+}
+
+.scene[data-static="true"] {
+  height: 100svh;
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  width: 100%;
+  overflow: hidden;
+  background: #fff;
+  isolation: isolate;
+}
+
+/* ---------------- layer 0 — sky ---------------- */
+.back {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.backImg {
+  object-fit: cover;
+  object-position: 50% 30%;
+}
+
+/* ---------------- layer 1 — hero copy ---------------- */
+.copy {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: clamp(16vh, 20vh, 22vh) 24px 0;
+  text-align: center;
+  will-change: transform, opacity;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.34em;
+  color: var(--color-ink-soft);
+  padding-block: 0.2em;
+}
+
+/* The heading's soft left and right edges are a gradient text fill, matching
+   the way the reference wordmark dissolves into the sky at both ends. */
+.heading {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.5rem, 7.6vw, 6.4rem);
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  /* .line-mask clips to this box — leave room for descenders so the reveal
+     doesn't shave the tail off "open." */
+  padding-block: 0.16em;
+  background: linear-gradient(
+    90deg,
+    rgba(22, 24, 28, 0.3) 0%,
+    var(--color-ink) 17%,
+    var(--color-ink) 83%,
+    rgba(22, 24, 28, 0.3) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.sub {
+  max-width: 46ch;
+  font-family: var(--font-mono);
+  font-size: clamp(14px, 1.35vw, 19px);
+  line-height: 1.55;
+  color: var(--color-ink-soft);
+  padding-block: 0.24em;
+}
+
+.subLead {
+  color: var(--color-ink);
+}
+
+.ctaWrap {
+  margin-top: clamp(14px, 2.4vh, 26px);
+  padding-block: 0.3em;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  padding: 15px 30px;
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: transform 0.24s ease, background 0.24s ease;
+}
+
+.cta:hover {
+  background: #2c3037;
+  transform: translateY(-2px);
+}
+
+.ctaArrow {
+  width: 15px;
+  height: 10px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------------- layer 2 — house ----------------
+   Sits above the copy on purpose: the roofline is what swallows the button
+   and then the heading as the scene pushes in. */
+.houseLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* `translate` is a separate CSS property from `transform`, so the centering
+   here survives GSAP owning the transform for scale and drift. */
+.house {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  translate: -50% 0;
+  width: min(64vw, 940px);
+  will-change: transform;
+}
+
+.houseImg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ---------------- layer 3 — smoke ---------------- */
+.smoke {
+  position: absolute;
+  left: -20%;
+  bottom: -6%;
+  width: 140%;
+  z-index: 3;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.smokeImg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ---------------- layer 4 — clouds ---------------- */
+.cloud {
+  position: absolute;
+  bottom: -8%;
+  width: 78%;
+  z-index: 4;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.cloudL {
+  left: -14%;
+}
+
+.cloudR {
+  right: -14%;
+  bottom: -2%;
+}
+
+.cloudImg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Mirror the inner image, not the wrapper — GSAP drives the wrapper's
+   transform, and a flip there would invert the drift direction. */
+.cloudR .cloudImg {
+  transform: scaleX(-1);
+}
+
+/* ---------------- layer 5 — nav ---------------- */
+.navShell {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  will-change: transform, opacity;
+}
+
+/* ---------------- layer 6 — the mark ---------------- */
+.mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: min(64vw, 620px);
+  z-index: 6;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.markSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+/* state 1 — hairline outline that draws itself on */
+.markOutline path,
+.markOutline text {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1px;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* state 2 — frosted glass fill */
+.markFill {
+  opacity: 0;
+}
+
+.markFill path,
+.markFill text {
+  fill: rgba(255, 255, 255, 0.62);
+  stroke: none;
+}
+
+/* state 3 — the house, knocked out of the letterforms */
+.markKnock {
+  opacity: 0;
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ---------------- layer 7 — whiteout ---------------- */
+.whiteout {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}

@@ -9,6 +9,11 @@
   --color-cream: #ede6da; /* strong text */
   --color-cream-soft: rgba(237, 230, 218, 0.55); /* muted text */
 
+  /* ---- light scene — the welcome hero sits on sky, not walnut ---- */
+  --color-ink: #16181c; /* headings & nav on the sky */
+  --color-ink-soft: rgba(22, 24, 28, 0.42); /* the trailing, quieter sentence */
+  --color-ink-line: rgba(22, 24, 28, 0.14); /* hairlines */
+
   --font-display: var(--font-fraunces); /* Fraunces — headings */
   --font-mono: var(--font-jetbrains); /* JetBrains Mono — body & UI */
 }
