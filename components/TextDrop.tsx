@@ -1,11 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useRef } from "react";
 import styles from "./text-drop.module.css";
-
-gsap.registerPlugin(ScrollTrigger);
+import { dropItemClass, dropRootClass, useDropReveal } from "./use-drop-reveal";
 
 type TextDropProps = {
   /** One entry per line. Line breaks are deliberate — each one hinges alone. */
@@ -17,8 +14,7 @@ type TextDropProps = {
 };
 
 /**
- * The site's reveal for headings and display copy: each line lies face-down and
- * swings up on its top edge, scrubbed by scroll position.
+ * The site's reveal for headings and display copy.
  *
  * <TextDrop as="h2" lines={["Your life's changing.", "Find what's next."]} />
  */
@@ -29,46 +25,13 @@ export default function TextDrop({
 }: TextDropProps) {
   const rootRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
-
-    const lineEls = gsap.utils.toArray<HTMLElement>(`.${styles.line}`, root);
-
-    // Land them flat rather than leaving the copy edge-on and unreadable.
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      gsap.set(lineEls, { rotateX: 0 });
-      return;
-    }
-
-    const ctx = gsap.context(() => {
-      lineEls.forEach((line) => {
-        gsap.fromTo(
-          line,
-          { rotateX: -120 },
-          {
-            rotateX: 0,
-            duration: 1.2,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: line,
-              start: "bottom bottom",
-              end: "bottom top",
-              scrub: true,
-            },
-          }
-        );
-      });
-    }, root);
-
-    return () => ctx.revert();
-  }, [lines]);
+  useDropReveal(rootRef, lines.join("\n"));
 
   return (
-    <div className={styles.drop} ref={rootRef}>
+    <div className={dropRootClass} ref={rootRef}>
       <Tag className={`${styles.text}${className ? ` ${className}` : ""}`}>
         {lines.map((line, i) => (
-          <span key={`${i}-${line}`} className={styles.line}>
+          <span key={`${i}-${line}`} className={dropItemClass}>
             {line}
           </span>
         ))}
