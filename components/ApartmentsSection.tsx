@@ -173,7 +173,7 @@ export default function ApartmentsSection() {
 
                   <Link
                     className={styles.detail}
-                    href={`/apartments#${flat.slug}`}
+                    href={`/apartments/${flat.slug}`}
                   >
                     See in details
                     <svg className={styles.arrow} viewBox="0 0 16 10" aria-hidden="true">

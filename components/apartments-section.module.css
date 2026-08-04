@@ -72,7 +72,7 @@
 /* clip-path clips descendants too, so the zoomed image is cut to the same
    chamfer as the story images rather than spilling past it. */
 .shot {
-  --cut: clamp(9px, 1vw, 29px);
+  --cut: clamp(9px, 0.75vw, 29px);
 
   position: relative;
   flex: none;

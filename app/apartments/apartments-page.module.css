@@ -68,6 +68,12 @@
   scroll-margin-top: 6rem; /* so the #slug jump doesn't tuck under the top */
 }
 
+.shotLink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
 .shot {
   --cut: clamp(9px, 1vw, 29px);
 

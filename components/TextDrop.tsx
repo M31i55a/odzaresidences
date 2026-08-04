@@ -11,6 +11,8 @@ type TextDropProps = {
   as?: "h1" | "h2" | "h3" | "h4" | "p" | "div";
   /** Applied to the text element, so callers can override the type scale. */
   className?: string;
+  /** "mount" for copy that's already on screen when the page loads. */
+  trigger?: "scroll" | "mount";
 };
 
 /**
@@ -22,10 +24,11 @@ export default function TextDrop({
   lines,
   as: Tag = "div",
   className,
+  trigger = "scroll",
 }: TextDropProps) {
   const rootRef = useRef<HTMLDivElement>(null);
 
-  useDropReveal(rootRef, lines.join("\n"));
+  useDropReveal(rootRef, lines.join("\n"), { trigger });
 
   return (
     <div className={dropRootClass} ref={rootRef}>
