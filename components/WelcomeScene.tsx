@@ -246,7 +246,7 @@ export default function WelcomeScene() {
   }, []);
 
   return (
-    <section className={styles.scene} ref={sceneRef}>
+    <section className={styles.scene} id="welcome" ref={sceneRef}>
       <div className={styles.stage} ref={stageRef}>
         {/* ---- sky ---- */}
         <div className={styles.back}>

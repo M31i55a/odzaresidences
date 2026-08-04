@@ -11,6 +11,8 @@ type StorySectionProps = {
   image: { src: string; alt: string; width: number; height: number };
   /** Which column the image takes. Sections alternate down the page. */
   mediaSide?: "left" | "right";
+  /** Anchor for the nav to scroll to. */
+  id?: string;
 };
 
 export default function StorySection({
@@ -19,9 +21,10 @@ export default function StorySection({
   body,
   image,
   mediaSide = "left",
+  id,
 }: StorySectionProps) {
   return (
-    <section className={styles.section}>
+    <section className={styles.section} id={id}>
       <div className={styles.inner} data-media={mediaSide}>
         <div className={styles.media}>
           <p className={styles.eyebrow}>{eyebrow}</p>

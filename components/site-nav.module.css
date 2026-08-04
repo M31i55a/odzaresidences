@@ -70,6 +70,17 @@
   opacity: 1;
 }
 
+/* Sections that don't exist yet — dimmed and inert, so the bar doesn't offer
+   a destination it can't reach. */
+.link[data-pending="true"] {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.link[data-pending="true"]:hover {
+  opacity: 0.38;
+}
+
 /* ---------- sign in ---------- */
 .signIn {
   justify-self: end;

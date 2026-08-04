@@ -9,6 +9,7 @@ export default function Home() {
       <WelcomeScene />
 
       <StorySection
+        id="about"
         eyebrow="Why Odza"
         title={[
           "Your life's changing.",
