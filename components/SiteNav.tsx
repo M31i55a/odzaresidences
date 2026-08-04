@@ -3,7 +3,7 @@
 import type { MouseEvent } from "react";
 import styles from "./site-nav.module.css";
 import { LOGO_PATH_D, LOGO_VIEWBOX } from "./logo-path";
-import { getLenis } from "./lenis-instance";
+import { scrollToSection } from "./scroll-to-section";
 
 /* `target: null` means the section doesn't exist yet — the link renders inert
    and dimmed rather than pretending to go somewhere. Give it an id and it
@@ -16,17 +16,8 @@ const LINKS: { label: string; target: string | null }[] = [
   { label: "Contact", target: null },
 ];
 
-/* Lenis owns the scroll position, so the browser's own anchor jump would be
-   fought and undone. Hand it the element instead. */
 function goTo(event: MouseEvent<HTMLAnchorElement>, target: string) {
-  const el = document.querySelector<HTMLElement>(target);
-  if (!el) return;
-
-  event.preventDefault();
-
-  const lenis = getLenis();
-  if (lenis) lenis.scrollTo(el, { duration: 1.5 });
-  else el.scrollIntoView({ behavior: "smooth" });
+  if (scrollToSection(target)) event.preventDefault();
 }
 
 export default function SiteNav() {

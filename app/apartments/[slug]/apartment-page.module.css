@@ -11,40 +11,13 @@
   margin: 0 auto;
 }
 
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  text-decoration: none;
-  color: var(--color-cream-soft);
-  transition: color 0.24s ease;
-}
-
-.back:hover {
-  color: var(--color-brass);
-}
-
-.backArrow {
-  width: 15px;
-  height: 10px;
-  flex: none;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transform: scaleX(-1);
-}
-
 .head {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: clamp(1.5rem, 4vw, 3rem);
-  margin: clamp(2rem, 6vh, 3.5rem) 0 clamp(2.5rem, 6vh, 4rem);
+  margin: 0 0 clamp(2.5rem, 6vh, 4rem);
 }
 
 .kind {

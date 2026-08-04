@@ -1,0 +1,35 @@
+.close {
+  position: fixed;
+  top: clamp(16px, 3vh, 34px);
+  right: clamp(20px, 5vw, 80px);
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--color-brass);
+  border-radius: 50%;
+  background: rgba(27, 24, 21, 0.55);
+  backdrop-filter: blur(6px);
+  color: var(--color-brass);
+  cursor: pointer;
+  transition: background 0.28s ease, color 0.28s ease, transform 0.35s ease;
+}
+
+.close:hover,
+.close:focus-visible {
+  background: var(--color-brass);
+  color: var(--color-walnut);
+  transform: rotate(90deg);
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}

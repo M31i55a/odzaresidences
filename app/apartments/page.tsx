@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { APARTMENTS } from "@/components/apartments-data";
+import CloseButton from "@/components/CloseButton";
 import styles from "./apartments-page.module.css";
 
 export const metadata: Metadata = {
@@ -13,13 +14,7 @@ export default function ApartmentsPage() {
   return (
     <main className={styles.page}>
       <div className={styles.inner}>
-        {/* Lands back on the strip they came from, not the top of the page. */}
-        <Link className={styles.back} href="/#apartments">
-          <svg className={styles.backArrow} viewBox="0 0 16 10" aria-hidden="true">
-            <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
-          </svg>
-          Back to apartments
-        </Link>
+        <CloseButton />
 
         <p className={styles.eyebrow}>Apartments</p>
         <h1 className={styles.title}>Everything available.</h1>

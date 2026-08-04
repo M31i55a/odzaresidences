@@ -6,7 +6,9 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { APARTMENTS, FEATURED_COUNT } from "./apartments-data";
+import { scrollToSection } from "./scroll-to-section";
 import { getLenis } from "./lenis-instance";
+import { rememberScroll, takeSavedScroll } from "./return-scroll";
 import styles from "./apartments-section.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -106,19 +108,26 @@ export default function ApartmentsSection() {
       });
     }, sectionRef);
 
-    /* Arriving from /apartments via #apartments. Next scrolls to the anchor
-       before ScrollTrigger has laid out the pin spacer, so the native jump
-       lands short — re-measure, then move through Lenis, which owns the
-       scroll position. */
+    /* Put the visitor back exactly where they were before they opened a
+       listing. This has to happen after the pin above has been built and
+       measured — the browser's own restore already ran against a page that was
+       thousands of pixels too short, and got clamped into the hero. */
+    const returnTo = takeSavedScroll();
     let raf = 0;
-    if (window.location.hash === `#${SECTION_ID}`) {
+
+    if (returnTo !== null) {
       raf = requestAnimationFrame(() => {
         ScrollTrigger.refresh();
-        const el = sectionRef.current;
-        if (!el) return;
-        const lenis = getLenis();
-        if (lenis) lenis.scrollTo(el, { immediate: true });
-        else el.scrollIntoView();
+        raf = requestAnimationFrame(() => {
+          const lenis = getLenis();
+          if (lenis) lenis.scrollTo(returnTo, { immediate: true });
+          else window.scrollTo(0, returnTo);
+        });
+      });
+    } else if (window.location.hash === `#${SECTION_ID}`) {
+      raf = requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+        raf = requestAnimationFrame(() => scrollToSection(`#${SECTION_ID}`));
       });
     }
 
@@ -174,6 +183,7 @@ export default function ApartmentsSection() {
                   <Link
                     className={styles.detail}
                     href={`/apartments/${flat.slug}`}
+                    onClick={rememberScroll}
                   >
                     See in details
                     <svg className={styles.arrow} viewBox="0 0 16 10" aria-hidden="true">
@@ -188,7 +198,11 @@ export default function ApartmentsSection() {
               <p className={styles.moreText}>
                 {APARTMENTS.length - FEATURED_COUNT} more waiting.
               </p>
-              <Link className={styles.moreLink} href="/apartments">
+              <Link
+                className={styles.moreLink}
+                href="/apartments"
+                onClick={rememberScroll}
+              >
                 Visit more
                 <svg className={styles.arrow} viewBox="0 0 16 10" aria-hidden="true">
                   <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />

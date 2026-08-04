@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import CloseButton from "@/components/CloseButton";
 import { APARTMENTS } from "@/components/apartments-data";
 import { DEFAULT_PART_ID, roomsFor } from "@/components/apartment-rooms";
 import RoomGallery from "@/components/RoomGallery";
@@ -39,12 +39,7 @@ export default async function ApartmentPage({ params }: PageProps) {
   return (
     <main className={styles.page}>
       <div className={styles.inner}>
-        <Link className={styles.back} href="/apartments">
-          <svg className={styles.backArrow} viewBox="0 0 16 10" aria-hidden="true">
-            <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
-          </svg>
-          All apartments
-        </Link>
+        <CloseButton />
 
         <header className={styles.head}>
           <div>
