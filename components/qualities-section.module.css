@@ -1,0 +1,156 @@
+/* Opens on warm paper — white, but pulled towards the brass the rest of the
+   site runs on — and lands on the same black the apartments strip uses. GSAP
+   scrubs between the two as the copy reaches "Lights 24/7". */
+.section {
+  position: relative;
+  background: #f8f1e7;
+  padding: clamp(5rem, 14vh, 9rem) clamp(20px, 5vw, 80px)
+    clamp(6rem, 16vh, 10rem);
+}
+
+.inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(28px, 5vw, 88px);
+  align-items: start;
+}
+
+/* One colour drives every piece of text here — the hierarchy is opacity, not
+   separate colours — so a single tween can carry the whole column from ink to
+   cream as the lights go out. */
+.copy {
+  color: #16181c;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: inherit;
+  opacity: 0.5;
+}
+
+.title {
+  margin: 0 0 clamp(2rem, 6vh, 4rem);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.6vw, 3.6rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: inherit;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: clamp(300px, 52vh, 520px);
+  border-top: 1px solid currentColor;
+  padding-top: clamp(1.25rem, 3vh, 2rem);
+}
+
+/* Perspective is per item (GSAP's transformPerspective), not on the list: the
+   column runs several viewports tall, so a shared vanishing point would skew
+   everything away from its middle. */
+.hinge {
+  transform-origin: 50% 0;
+  transform: rotateX(-120deg);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.index {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: inherit;
+  opacity: 0.4;
+}
+
+.name {
+  margin: clamp(0.75rem, 2vh, 1.25rem) 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.8vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: inherit;
+}
+
+.note {
+  margin: clamp(0.6rem, 1.6vh, 1rem) 0 0;
+  max-width: 42ch;
+  font-family: var(--font-mono);
+  font-size: clamp(14px, 1.05vw, 16px);
+  line-height: 1.6;
+  color: inherit;
+  opacity: 0.6;
+}
+
+/* ---------------- the house ---------------- */
+.media {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: flex;
+  align-items: center;
+}
+
+.frame {
+  --cut: clamp(9px, 0.75vw, 29px);
+
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--color-walnut);
+  clip-path: polygon(
+    var(--cut) 0,
+    calc(100% - var(--cut)) 0,
+    100% var(--cut),
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    var(--cut) 100%,
+    0 calc(100% - var(--cut)),
+    0 var(--cut)
+  );
+}
+
+/* Night sits underneath permanently; day is the layer that fades away. */
+.layer {
+  position: absolute;
+  inset: 0;
+}
+
+.shot {
+  object-fit: cover;
+}
+
+@media (max-width: 860px) {
+  .inner {
+    grid-template-columns: 1fr;
+  }
+
+  .media {
+    /* Above the copy on a phone, where a side-by-side sticky column has
+       nowhere to sit. */
+    order: -1;
+    height: auto;
+    top: 0;
+    padding-bottom: clamp(1.5rem, 4vh, 2.5rem);
+  }
+
+  .item {
+    min-height: clamp(240px, 40vh, 380px);
+  }
+}

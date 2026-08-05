@@ -13,7 +13,7 @@ const LINKS: { label: string; target: string | null }[] = [
   { label: "Welcome", target: "#welcome" },
   { label: "About", target: "#about" },
   { label: "Apartments", target: "#apartments" },
-  { label: "Qualities", target: null },
+  { label: "Qualities", target: "#qualities" },
   { label: "Contact", target: null },
 ];
 
