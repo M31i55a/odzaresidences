@@ -26,9 +26,9 @@
    be black or paper, so it brings its own surface and flips to cream — ink on
    ink would be invisible over the apartments and contact sections. */
 .header[data-state="shown"] {
-  background: rgba(27, 24, 21, 0.82);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 1px 0 rgba(237, 230, 218, 0.1);
+  background: rgba(27, 24, 21, 0.7);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 1px 0 rgba(237, 230, 218, 0.08);
 
   --nav-ink: var(--color-cream);
   --nav-badge-bg: var(--color-cream);
