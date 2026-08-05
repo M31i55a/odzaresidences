@@ -1,29 +1,30 @@
-import type { Metadata } from "next";
+"use client";
+
 import Image from "next/image";
-import Link from "next/link";
-import { APARTMENTS } from "@/components/apartments-data";
-import CloseButton from "@/components/CloseButton";
-import styles from "./apartments-page.module.css";
+import { APARTMENTS } from "./apartments-data";
+import styles from "./apartments-list.module.css";
 
-export const metadata: Metadata = {
-  title: "Apartments — Odza",
-  description: "Every Odza residence currently available.",
-};
-
-export default function ApartmentsPage() {
+/** Every listing. Picking one swaps the overlay over to that apartment. */
+export default function ApartmentsList({
+  onSelect,
+}: {
+  onSelect: (slug: string) => void;
+}) {
   return (
-    <main className={styles.page}>
+    <div className={styles.page}>
       <div className={styles.inner}>
-        <CloseButton />
-
         <p className={styles.eyebrow}>Apartments</p>
-        <h1 className={styles.title}>Everything available.</h1>
+        <h2 className={styles.title}>Everything available.</h2>
 
         <div className={styles.grid}>
           {APARTMENTS.map((flat) => (
-            <article className={styles.card} key={flat.slug} id={flat.slug}>
-              <Link className={styles.shotLink} href={`/apartments/${flat.slug}`}>
-                <div className={styles.shot}>
+            <article className={styles.card} key={flat.slug}>
+              <button
+                type="button"
+                className={styles.cardButton}
+                onClick={() => onSelect(flat.slug)}
+              >
+                <span className={styles.shot}>
                   <Image
                     src={flat.src}
                     alt={flat.alt}
@@ -31,11 +32,11 @@ export default function ApartmentsPage() {
                     sizes="(max-width: 700px) 100vw, (max-width: 1200px) 45vw, 320px"
                     className={styles.img}
                   />
-                </div>
+                </span>
 
-                <h2 className={styles.name}>{flat.name}</h2>
-              </Link>
-              <p className={styles.kind}>{flat.kind}</p>
+                <span className={styles.name}>{flat.name}</span>
+                <span className={styles.kind}>{flat.kind}</span>
+              </button>
 
               <dl className={styles.facts}>
                 <div className={styles.fact}>
@@ -55,6 +56,6 @@ export default function ApartmentsPage() {
           ))}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

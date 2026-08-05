@@ -1,21 +1,18 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { APARTMENTS, FEATURED_COUNT } from "./apartments-data";
-import { scrollToSection } from "./scroll-to-section";
-import { getLenis } from "./lenis-instance";
-import { rememberScroll, takeSavedScroll } from "./return-scroll";
+import ApartmentsOverlay, { type OverlayView } from "./ApartmentsOverlay";
 import styles from "./apartments-section.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const FEATURED = APARTMENTS.slice(0, FEATURED_COUNT);
 
-/** Anchor the /apartments page links back to. */
+/** Anchor the nav links scroll to. */
 export const SECTION_ID = "apartments";
 
 export default function ApartmentsSection() {
@@ -23,6 +20,7 @@ export default function ApartmentsSection() {
   const pinRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const [view, setView] = useState<OverlayView>(null);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -108,33 +106,7 @@ export default function ApartmentsSection() {
       });
     }, sectionRef);
 
-    /* Put the visitor back exactly where they were before they opened a
-       listing. This has to happen after the pin above has been built and
-       measured — the browser's own restore already ran against a page that was
-       thousands of pixels too short, and got clamped into the hero. */
-    const returnTo = takeSavedScroll();
-    let raf = 0;
-
-    if (returnTo !== null) {
-      raf = requestAnimationFrame(() => {
-        ScrollTrigger.refresh();
-        raf = requestAnimationFrame(() => {
-          const lenis = getLenis();
-          if (lenis) lenis.scrollTo(returnTo, { immediate: true });
-          else window.scrollTo(0, returnTo);
-        });
-      });
-    } else if (window.location.hash === `#${SECTION_ID}`) {
-      raf = requestAnimationFrame(() => {
-        ScrollTrigger.refresh();
-        raf = requestAnimationFrame(() => scrollToSection(`#${SECTION_ID}`));
-      });
-    }
-
-    return () => {
-      cancelAnimationFrame(raf);
-      ctx.revert();
-    };
+    return () => ctx.revert();
   }, []);
 
   return (
@@ -180,16 +152,16 @@ export default function ApartmentsSection() {
                     </div>
                   </dl>
 
-                  <Link
+                  <button
+                    type="button"
                     className={styles.detail}
-                    href={`/apartments/${flat.slug}`}
-                    onClick={rememberScroll}
+                    onClick={() => setView({ type: "detail", slug: flat.slug })}
                   >
                     See in details
                     <svg className={styles.arrow} viewBox="0 0 16 10" aria-hidden="true">
                       <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
                     </svg>
-                  </Link>
+                  </button>
                 </div>
               </article>
             ))}
@@ -198,20 +170,26 @@ export default function ApartmentsSection() {
               <p className={styles.moreText}>
                 {APARTMENTS.length - FEATURED_COUNT} more waiting.
               </p>
-              <Link
+              <button
+                type="button"
                 className={styles.moreLink}
-                href="/apartments"
-                onClick={rememberScroll}
+                onClick={() => setView({ type: "list" })}
               >
                 Visit more
                 <svg className={styles.arrow} viewBox="0 0 16 10" aria-hidden="true">
                   <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
                 </svg>
-              </Link>
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      <ApartmentsOverlay
+        view={view}
+        onClose={() => setView(null)}
+        onSelect={(slug) => setView({ type: "detail", slug })}
+      />
     </section>
   );
 }

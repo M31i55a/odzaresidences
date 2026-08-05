@@ -168,7 +168,10 @@
   color: var(--color-brass);
 }
 
+/* A button now, not a link — it opens an overlay rather than navigating. */
 .detail {
+  cursor: pointer;
+  background: transparent;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -212,6 +215,8 @@
 }
 
 .moreLink {
+  cursor: pointer;
+  border: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;

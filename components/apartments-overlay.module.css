@@ -1,0 +1,45 @@
+/* A layer over the page rather than a route: nothing navigates, nothing
+   scrolls, so there's no position to lose and none to restore. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--color-walnut);
+  color: var(--color-cream);
+  animation: fade 0.35s ease;
+}
+
+/* Kept off .overlay itself — a transform there would become the containing
+   block for the fixed close button and drag it around mid-animation. */
+.body {
+  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .body {
+    animation: none;
+  }
+}

@@ -1,7 +1,4 @@
 .page {
-  min-height: 100svh;
-  background: var(--color-walnut);
-  color: var(--color-cream);
   padding: clamp(5rem, 14vh, 9rem) clamp(20px, 5vw, 80px)
     clamp(6rem, 16vh, 10rem);
 }
@@ -37,17 +34,20 @@
   gap: clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem);
 }
 
-.card {
-  scroll-margin-top: 6rem; /* so the #slug jump doesn't tuck under the top */
-}
-
-.shotLink {
+/* The whole photo + name block is the control that opens a listing. */
+.cardButton {
   display: block;
-  text-decoration: none;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
   color: inherit;
+  cursor: pointer;
 }
 
 .shot {
+  display: block;
   --cut: clamp(9px, 1vw, 29px);
 
   position: relative;
@@ -72,12 +72,13 @@
   transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.card:hover .img,
-.card:focus-within .img {
+.cardButton:hover .img,
+.cardButton:focus-visible .img {
   transform: scale(1.06);
 }
 
 .name {
+  display: block;
   margin: 1.25rem 0 0;
   font-family: var(--font-display);
   font-size: clamp(1.2rem, 1.6vw, 1.6rem);
@@ -88,6 +89,7 @@
 }
 
 .kind {
+  display: block;
   margin: 0.4rem 0 0;
   font-family: var(--font-mono);
   font-size: 11px;

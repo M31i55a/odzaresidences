@@ -30,7 +30,8 @@ body {
   font-family: var(--font-jetbrains);
 }
 
-body.loading {
+body.loading,
+body.overlay-open {
   overflow: hidden;
 }
 
