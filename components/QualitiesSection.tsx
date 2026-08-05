@@ -19,12 +19,12 @@ const QUALITIES = [
     note: "Fibre to every room and mesh coverage throughout — a line that doesn't blink when the building fills up.",
   },
   {
-    name: "Lights 24/7",
-    note: "Backup power picks up the moment the grid drops. You won't notice it happen.",
-  },
-  {
     name: "Climate intelligence",
     note: "Zoned heating and cooling that learns the hours you keep, room by room.",
+  },
+  {
+    name: "Lights 24/7",
+    note: "Backup power picks up the moment the grid drops. You won't notice it happen.",
   },
   {
     name: "Parking",
@@ -43,12 +43,13 @@ const DAY_BG = "#f8f1e7";
 const NIGHT_BG = "#1b1815";
 const DAY_INK = "#16181c";
 const NIGHT_INK = "#ede6da";
+const NIGHT_ACCENT = "#c9a567";
 
 export default function QualitiesSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const dayRef = useRef<HTMLDivElement>(null);
-  const nightfallRef = useRef<HTMLLIElement>(null);
+  const nightfallRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia(
@@ -91,19 +92,29 @@ export default function QualitiesSection() {
 
       /* Nightfall. The day layer sits on top of the night one and simply loses
          its opacity, so the house never blinks or reloads — and the page's
-         colours travel with it on the same scrub. */
+         colours travel with it on the same scrub.
+
+         Triggered on the heading itself rather than its list item: the item is
+         half a screen tall with its content centred, so "top 75%" on the box
+         would fire long before the words are anywhere near the reader. */
+      const accents = gsap.utils.toArray<HTMLElement>(
+        `.${styles.index}, .${styles.name}`,
+        copyRef.current
+      );
+
       gsap
         .timeline({
           scrollTrigger: {
             trigger: nightfallRef.current,
-            start: "top 75%",
-            end: "top 30%",
+            start: "top 50%", // the heading reaching mid-screen
+            end: "top 12%",
             scrub: true,
           },
         })
         .to(dayRef.current, { opacity: 0, ease: "none" }, 0)
         .to(sectionRef.current, { backgroundColor: NIGHT_BG, ease: "none" }, 0)
-        .to(copyRef.current, { color: NIGHT_INK, ease: "none" }, 0);
+        .to(copyRef.current, { color: NIGHT_INK, ease: "none" }, 0)
+        .to(accents, { color: NIGHT_ACCENT, opacity: 1, ease: "none" }, 0);
     }, sectionRef);
 
     return () => ctx.revert();
@@ -125,15 +136,16 @@ export default function QualitiesSection() {
 
           <ol className={styles.list}>
             {QUALITIES.map((quality, i) => (
-              <li
-                className={`${styles.item} ${styles.hinge}`}
-                key={quality.name}
-                ref={i === NIGHTFALL_INDEX ? nightfallRef : undefined}
-              >
+              <li className={`${styles.item} ${styles.hinge}`} key={quality.name}>
                 <span className={styles.index}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <h3 className={styles.name}>{quality.name}</h3>
+                <h3
+                  className={styles.name}
+                  ref={i === NIGHTFALL_INDEX ? nightfallRef : undefined}
+                >
+                  {quality.name}
+                </h3>
                 <p className={styles.note}>{quality.note}</p>
               </li>
             ))}
