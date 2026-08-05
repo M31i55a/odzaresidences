@@ -1,0 +1,120 @@
+.footer {
+  background: var(--color-walnut);
+  color: var(--color-cream);
+  padding: 0 clamp(20px, 5vw, 80px) clamp(2rem, 5vh, 3rem);
+}
+
+.inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  border-top: 1px solid rgba(237, 230, 218, 0.14);
+  padding-top: clamp(2.5rem, 6vh, 4rem);
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: clamp(2rem, 5vw, 4rem);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brandBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--color-cream);
+}
+
+.brandMark {
+  width: 19px;
+  height: 19px;
+  display: block;
+  fill: var(--color-brass);
+}
+
+.brandName {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.tagline {
+  margin: 1rem 0 0;
+  max-width: 30ch;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-cream-soft);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(14px, 2vw, 30px);
+}
+
+.link {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--color-cream);
+  opacity: 0.72;
+  transition: opacity 0.22s ease, color 0.22s ease;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.link:hover {
+  opacity: 1;
+  color: var(--color-brass);
+}
+
+.base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: clamp(2.5rem, 6vh, 4rem);
+  padding-top: clamp(1.25rem, 3vh, 2rem);
+  border-top: 1px solid rgba(237, 230, 218, 0.14);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-cream-soft);
+}
+
+.copyright {
+  margin: 0;
+}
+
+.legal {
+  display: flex;
+  gap: clamp(14px, 2vw, 26px);
+}
+
+.legalLink {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.22s ease;
+}
+
+.legalLink:hover {
+  color: var(--color-brass);
+}

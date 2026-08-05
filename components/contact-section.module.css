@@ -1,0 +1,122 @@
+/* Picks up the black the qualities section lands on, so the page runs dark from
+   nightfall through to the footer without another seam. */
+.section {
+  position: relative;
+  background: var(--color-walnut);
+  color: var(--color-cream);
+  padding: clamp(6rem, 18vh, 11rem) clamp(20px, 5vw, 80px)
+    clamp(5rem, 14vh, 8rem);
+}
+
+.inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: clamp(32px, 6vw, 96px);
+  align-items: start;
+}
+
+.hinge {
+  transform-origin: 50% 0;
+  transform: rotateX(-120deg);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--color-brass);
+}
+
+.title {
+  margin: 0 0 clamp(1.75rem, 5vh, 3rem);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  color: var(--color-cream);
+}
+
+/* The address is the point of the section, so it gets display type. */
+.mail {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 3vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--color-brass);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(201, 165, 103, 0.35);
+  padding-bottom: 0.15em;
+  transition: color 0.28s ease, border-color 0.28s ease;
+  word-break: break-word;
+}
+
+.mail:hover {
+  color: var(--color-cream);
+  border-bottom-color: var(--color-cream);
+}
+
+/* ---------------- details ---------------- */
+.details {
+  margin: 0;
+  display: grid;
+  gap: clamp(1.25rem, 3vh, 2rem);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(80px, 0.5fr) minmax(0, 1fr);
+  gap: clamp(12px, 2vw, 28px);
+  padding-bottom: clamp(1.25rem, 3vh, 2rem);
+  border-bottom: 1px solid rgba(237, 230, 218, 0.14);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.row dt {
+  color: var(--color-cream-soft);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 11px;
+  padding-top: 0.2em;
+}
+
+.row dd {
+  margin: 0;
+  color: var(--color-cream);
+}
+
+.line {
+  display: block;
+}
+
+.rowLink {
+  color: var(--color-cream);
+  text-decoration: none;
+  transition: color 0.24s ease;
+}
+
+.rowLink:hover {
+  color: var(--color-brass);
+}
+
+.socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(12px, 1.6vw, 22px);
+}
+
+@media (max-width: 860px) {
+  .inner {
+    grid-template-columns: 1fr;
+  }
+}
