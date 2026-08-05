@@ -1,3 +1,4 @@
+import SiteHeader from "@/components/SiteHeader";
 import WelcomeScene from "@/components/WelcomeScene";
 import StorySection from "@/components/StorySection";
 import ApartmentsSection from "@/components/ApartmentsSection";
@@ -9,6 +10,8 @@ import SiteFooter from "@/components/SiteFooter";
 export default function Home() {
   return (
     <>
+      <SiteHeader />
+
       <WelcomeScene />
 
       <StorySection

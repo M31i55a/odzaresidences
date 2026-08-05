@@ -242,16 +242,6 @@
   transform: scaleX(-1);
 }
 
-/* ---------------- layer 6 — nav ---------------- */
-.navShell {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 6;
-  will-change: transform, opacity;
-}
-
 /* ---------------- layer 7 — the mark ---------------- */
 .mark {
   position: absolute;

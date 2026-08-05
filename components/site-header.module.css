@@ -1,0 +1,44 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+
+  /* The nav reads these; it has no colours of its own any more. Defaults are
+     the ink-on-sky look it wears over the hero. */
+  --nav-ink: var(--color-ink);
+  --nav-badge-bg: var(--color-ink);
+  --nav-pill-bg: var(--color-ink);
+  --nav-pill-ink: #fff;
+  --nav-pill-hover: #2c3037;
+
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Scrolling down and past the top: out of the way. */
+.header[data-state="hidden"] {
+  transform: translateY(-100%);
+}
+
+/* Reversed back up somewhere down the page. It floats over sections that may
+   be black or paper, so it brings its own surface and flips to cream — ink on
+   ink would be invisible over the apartments and contact sections. */
+.header[data-state="shown"] {
+  background: rgba(27, 24, 21, 0.82);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 1px 0 rgba(237, 230, 218, 0.1);
+
+  --nav-ink: var(--color-cream);
+  --nav-badge-bg: var(--color-cream);
+  --nav-pill-bg: var(--color-brass);
+  --nav-pill-ink: var(--color-walnut);
+  --nav-pill-hover: var(--color-cream);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header {
+    transition: none;
+  }
+}

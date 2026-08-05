@@ -5,7 +5,6 @@ import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
-import SiteNav from "./SiteNav";
 import { LOGO_PATH_D } from "./logo-path";
 import { introHasPlayed } from "./intro-state";
 import styles from "./welcome-scene.module.css";
@@ -86,7 +85,6 @@ function HeroLines({
 export default function WelcomeScene() {
   const sceneRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const navRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const copyFrontRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
@@ -159,8 +157,7 @@ export default function WelcomeScene() {
 
       /* ---- 0.00 → 0.18 · approach (slides 1 → 2) ----
          The chrome clears out first, then the roofline climbs into the heading. */
-      tl.to(navRef.current, { autoAlpha: 0, y: -34, duration: 0.07, ease: "power1.in" }, 0)
-        .to(ctaRef.current, { autoAlpha: 0, y: -16, duration: 0.09, ease: "power1.in" }, 0.05)
+      tl.to(ctaRef.current, { autoAlpha: 0, y: -16, duration: 0.09, ease: "power1.in" }, 0.05)
         .to(houseRef.current, { scale: 1.25, yPercent: -10, duration: 0.18, ease: "none" }, 0)
         .to(copy, { scale: 1.12, yPercent: -4, duration: 0.18, ease: "none" }, 0)
         .fromTo(
@@ -260,17 +257,6 @@ export default function WelcomeScene() {
             sizes="100vw"
             className={styles.backImg}
           />
-        </div>
-
-        {/* ---- nav ----
-            Sits first in the DOM only so the loader's staggered `.line-inner`
-            reveal starts at the top of the page; layering is all z-index. */}
-        <div className={styles.navShell} ref={navRef}>
-          <div className="line-mask">
-            <div className="line-inner" data-line="1">
-              <SiteNav />
-            </div>
-          </div>
         </div>
 
         {/* ---- hero copy, behind the house ---- */}
