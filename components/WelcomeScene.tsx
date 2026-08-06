@@ -180,7 +180,9 @@ export default function WelcomeScene() {
         // The heading lingers — it thins to a ghost across a long stretch
         // rather than dropping away with the rest of the copy.
         .to(headingRef.current, { opacity: 0.32, duration: 0.2, ease: "none" }, 0.18)
-        .to(subRef.current, { autoAlpha: 0, duration: 0.1, ease: "none" }, 0.18)
+        // Matches the heading's window exactly, so the two leave together
+        // instead of the subtitle vanishing first.
+        .to(subRef.current, { autoAlpha: 0, duration: 0.2, ease: "none" }, 0.18)
         .to(eyebrowRef.current, { autoAlpha: 0, duration: 0.08, ease: "none" }, 0.18)
         .to(smokeRef.current, { yPercent: 25, opacity: 1, duration: 0.16, ease: "none" }, 0.18)
         .to(clouds, { opacity: 0.9, duration: 0.2, ease: "none" }, 0.14)
