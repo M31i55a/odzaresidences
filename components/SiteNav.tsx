@@ -6,6 +6,8 @@ import { LOGO_PATH_D, LOGO_VIEWBOX } from "./logo-path";
 import { scrollToSection } from "./scroll-to-section";
 import { useActiveSection } from "./use-active-section";
 import { SECTION_IDS, SECTION_LINKS } from "./site-sections";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useT } from "./i18n/locale";
 
 function goTo(event: MouseEvent<HTMLAnchorElement>, target: string) {
   if (scrollToSection(target)) event.preventDefault();
@@ -13,9 +15,10 @@ function goTo(event: MouseEvent<HTMLAnchorElement>, target: string) {
 
 export default function SiteNav() {
   const active = useActiveSection(SECTION_IDS);
+  const t = useT();
 
   return (
-    <nav className={styles.nav} aria-label="Primary">
+    <nav className={styles.nav} aria-label={t.nav.primary}>
       <a
         className={styles.brand}
         href="#welcome"
@@ -35,29 +38,32 @@ export default function SiteNav() {
       </a>
 
       <div className={styles.links}>
-        {SECTION_LINKS.map(({ label, target }) =>
+        {SECTION_LINKS.map(({ key, target }) =>
           target ? (
             <a
-              key={label}
+              key={key}
               className={styles.link}
               href={target}
               data-active={active === target.slice(1)}
               aria-current={active === target.slice(1) ? "true" : undefined}
               onClick={(event) => goTo(event, target)}
             >
-              {label}
+              {t.nav[key]}
             </a>
           ) : (
-            <span key={label} className={styles.link} data-pending="true">
-              {label}
+            <span key={key} className={styles.link} data-pending="true">
+              {t.nav[key]}
             </span>
           )
         )}
       </div>
 
-      <a className={styles.signIn} href="#">
-        Sign In
-      </a>
+      <div className={styles.right}>
+        <LanguageSwitcher />
+        <a className={styles.signIn} href="#">
+          {t.nav.signIn}
+        </a>
+      </div>
     </nav>
   );
 }

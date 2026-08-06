@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { APARTMENTS, FEATURED_COUNT } from "./apartments-data";
+import { APARTMENTS, FEATURED_COUNT, describe } from "./apartments-data";
+import { useT } from "./i18n/locale";
 import ApartmentsOverlay, { type OverlayView } from "./ApartmentsOverlay";
 import styles from "./apartments-section.module.css";
 
@@ -21,6 +22,7 @@ export default function ApartmentsSection() {
   const headRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [view, setView] = useState<OverlayView>(null);
+  const t = useT();
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -113,20 +115,22 @@ export default function ApartmentsSection() {
     <section className={styles.section} id={SECTION_ID} ref={sectionRef}>
       <div className={styles.pin} ref={pinRef}>
         <header className={styles.head} ref={headRef}>
-          <p className={`${styles.eyebrow} ${styles.hinge}`}>Apartments</p>
+          <p className={`${styles.eyebrow} ${styles.hinge}`}>{t.apartments.eyebrow}</p>
           <h2 className={`${styles.title} ${styles.hinge}`}>
-            Spaces to move into.
+            {t.apartments.title}
           </h2>
         </header>
 
         <div className={styles.viewport}>
           <div className={styles.track} ref={trackRef}>
-            {FEATURED.map((flat) => (
+            {FEATURED.map((flat) => {
+              const info = describe(flat, t);
+              return (
               <article className={`${styles.card} ${styles.panel}`} key={flat.slug}>
                 <div className={styles.shot}>
                   <Image
                     src={flat.src}
-                    alt={flat.alt}
+                    alt={info.alt}
                     fill
                     sizes="(max-width: 760px) 80vw, 32vw"
                     className={styles.img}
@@ -134,21 +138,21 @@ export default function ApartmentsSection() {
                 </div>
 
                 <div className={styles.desc}>
-                  <h3 className={styles.name}>{flat.name}</h3>
-                  <p className={styles.kind}>{flat.kind}</p>
+                  <h3 className={styles.name}>{info.name}</h3>
+                  <p className={styles.kind}>{info.kind}</p>
 
                   <dl className={styles.facts}>
                     <div className={styles.fact}>
-                      <dt>Price</dt>
-                      <dd className={styles.price}>{flat.price}</dd>
+                      <dt>{t.apartments.price}</dt>
+                      <dd className={styles.price}>{info.price}</dd>
                     </div>
                     <div className={styles.fact}>
-                      <dt>Rooms</dt>
-                      <dd>{flat.rooms}</dd>
+                      <dt>{t.apartments.rooms}</dt>
+                      <dd>{info.rooms}</dd>
                     </div>
                     <div className={styles.fact}>
-                      <dt>Area</dt>
-                      <dd>{flat.area}</dd>
+                      <dt>{t.apartments.area}</dt>
+                      <dd>{info.area}</dd>
                     </div>
                   </dl>
 
@@ -157,25 +161,26 @@ export default function ApartmentsSection() {
                     className={styles.detail}
                     onClick={() => setView({ type: "detail", slug: flat.slug })}
                   >
-                    See in details
+                    {t.apartments.seeDetails}
                     <svg className={styles.arrow} viewBox="0 0 16 10" aria-hidden="true">
                       <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
                     </svg>
                   </button>
                 </div>
               </article>
-            ))}
+              );
+            })}
 
             <div className={`${styles.more} ${styles.panel}`}>
               <p className={styles.moreText}>
-                {APARTMENTS.length - FEATURED_COUNT} more waiting.
+                {t.apartments.moreWaiting(APARTMENTS.length - FEATURED_COUNT)}
               </p>
               <button
                 type="button"
                 className={styles.moreLink}
                 onClick={() => setView({ type: "list" })}
               >
-                Visit more
+                {t.apartments.visitMore}
                 <svg className={styles.arrow} viewBox="0 0 16 10" aria-hidden="true">
                   <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
                 </svg>

@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import { LOGO_PATH_D } from "./logo-path";
 import { introHasPlayed } from "./intro-state";
+import { useT } from "./i18n/locale";
 import styles from "./welcome-scene.module.css";
 
 gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin);
@@ -39,6 +40,7 @@ function HeroLines({
   subRef: LineRef;
   ctaRef: LineRef;
 }) {
+  const t = useT();
   const owns = (who: CopyLayer) => who === layer;
   const mask = (who: CopyLayer) => `line-mask${owns(who) ? "" : ` ${styles.ghost}`}`;
   const inner = (who: CopyLayer) => (owns(who) ? "line-inner" : styles.ghostInner);
@@ -51,27 +53,30 @@ function HeroLines({
     <>
       <div className={mask("back")} ref={bind("back", eyebrowRef)}>
         <p className={`${inner("back")} ${styles.eyebrow}`} data-line="2">
-          Welcome
+          {t.hero.eyebrow}
         </p>
       </div>
 
       <div className={mask("back")} ref={bind("back", headingRef)}>
         <h1 className={`${inner("back")} ${styles.heading}`} data-line="3">
-          The door is open.
+          {t.hero.heading}
         </h1>
       </div>
 
       <div className={mask("front")} ref={bind("front", subRef)}>
         <p className={`${inner("front")} ${styles.sub}`} data-line="4">
-          Your house is <span className={styles.subLead}>here</span> Just come
-          and grab the <span className={styles.subLead}>keys</span> !
+          {t.hero.subStart}
+          <span className={styles.subLead}>{t.hero.subHere}</span>
+          {t.hero.subMiddle}
+          <span className={styles.subLead}>{t.hero.subKeys}</span>
+          {t.hero.subEnd}
         </p>
       </div>
 
       <div className={mask("front")} ref={bind("front", ctaRef)}>
         <div className={`${inner("front")} ${styles.ctaWrap}`} data-line="5">
           <a className={styles.cta} href="#">
-            Find Properties
+            {t.hero.cta}
             <svg className={styles.ctaArrow} viewBox="0 0 16 10" aria-hidden="true">
               <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
             </svg>

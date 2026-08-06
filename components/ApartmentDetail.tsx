@@ -1,30 +1,34 @@
 "use client";
 
-import { APARTMENTS } from "./apartments-data";
+import { APARTMENTS, describe } from "./apartments-data";
 import { DEFAULT_PART_ID, roomsFor } from "./apartment-rooms";
 import RoomGallery from "./RoomGallery";
 import TextDrop from "./TextDrop";
+import { useT } from "./i18n/locale";
 import styles from "./apartment-detail.module.css";
 
 /** One listing, room by room. */
 export default function ApartmentDetail({ slug }: { slug: string }) {
+  const t = useT();
+
   const index = APARTMENTS.findIndex((item) => item.slug === slug);
   if (index === -1) return null;
 
-  const flat = APARTMENTS[index];
-  const parts = roomsFor(index, flat.name);
+  const info = describe(APARTMENTS[index], t);
+  const parts = roomsFor(index, info.name, t);
 
   return (
     <div className={styles.page}>
       <div className={styles.inner}>
         <header className={styles.head}>
           <div>
-            <p className={styles.kind}>{flat.kind}</p>
+            <p className={styles.kind}>{info.kind}</p>
             {/* "mount" — this opens already on screen, so there's no scroll
                 to scrub the hinge against. */}
             <TextDrop
+              key={info.name}
               as="h2"
-              lines={[flat.name]}
+              lines={[info.name]}
               className={styles.title}
               trigger="mount"
             />
@@ -32,29 +36,23 @@ export default function ApartmentDetail({ slug }: { slug: string }) {
 
           <dl className={styles.facts}>
             <div className={styles.fact}>
-              <dt>Price</dt>
-              <dd className={styles.price}>{flat.price}</dd>
+              <dt>{t.apartments.price}</dt>
+              <dd className={styles.price}>{info.price}</dd>
             </div>
             <div className={styles.fact}>
-              <dt>Rooms</dt>
-              <dd>{flat.rooms}</dd>
+              <dt>{t.apartments.rooms}</dt>
+              <dd>{info.rooms}</dd>
             </div>
             <div className={styles.fact}>
-              <dt>Area</dt>
-              <dd>{flat.area}</dd>
+              <dt>{t.apartments.area}</dt>
+              <dd>{info.area}</dd>
             </div>
           </dl>
         </header>
 
-        <RoomGallery
-          key={slug}
-          parts={parts}
-          initialId={DEFAULT_PART_ID}
-        />
+        <RoomGallery key={slug} parts={parts} initialId={DEFAULT_PART_ID} />
 
-        <p className={styles.hint}>
-          Hover the large view for room details — pick a part on the right.
-        </p>
+        <p className={styles.hint}>{t.apartments.detailHint}</p>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import SiteNav from "./SiteNav";
+import { useLocale } from "./i18n/locale";
 import styles from "./site-header.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -15,6 +16,15 @@ type HeaderState = "top" | "shown" | "hidden";
 
 export default function SiteHeader() {
   const headerRef = useRef<HTMLElement>(null);
+  const locale = useLocale();
+
+  /* Swapping language changes how tall every block of copy is, which leaves
+     every scroll trigger measuring the old layout. Re-measure once React has
+     painted the new text. */
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    ScrollTrigger.refresh();
+  }, [locale]);
 
   useEffect(() => {
     const header = headerRef.current;

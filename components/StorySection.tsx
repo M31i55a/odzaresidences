@@ -1,14 +1,15 @@
+"use client";
+
 import Image from "next/image";
 import DropReveal from "./DropReveal";
 import TextDrop from "./TextDrop";
+import { useT } from "./i18n/locale";
 import styles from "./story-section.module.css";
 
 type StorySectionProps = {
-  eyebrow: string;
-  /** One entry per line — each hinges in on its own. */
-  title: string[];
-  body: string[];
-  image: { src: string; alt: string; width: number; height: number };
+  /** Which block of copy in `dict.story` this section renders. */
+  copyKey: "why" | "residences";
+  image: { src: string; width: number; height: number };
   /** Which column the image takes. Sections alternate down the page. */
   mediaSide?: "left" | "right";
   /** Anchor for the nav to scroll to. */
@@ -16,23 +17,23 @@ type StorySectionProps = {
 };
 
 export default function StorySection({
-  eyebrow,
-  title,
-  body,
+  copyKey,
   image,
   mediaSide = "left",
   id,
 }: StorySectionProps) {
+  const copy = useT().story[copyKey];
+
   return (
     <section className={styles.section} id={id}>
       <div className={styles.inner} data-media={mediaSide}>
         <div className={styles.media}>
-          <p className={styles.eyebrow}>{eyebrow}</p>
+          <p className={styles.eyebrow}>{copy.eyebrow}</p>
 
           <DropReveal className={styles.frame}>
             <Image
               src={image.src}
-              alt={image.alt}
+              alt={copy.alt}
               width={image.width}
               height={image.height}
               // The container caps at 1280px, so past that the column stops
@@ -44,8 +45,20 @@ export default function StorySection({
         </div>
 
         <div className={styles.copy}>
-          <TextDrop as="h2" lines={title} className={styles.title} />
-          <TextDrop as="p" lines={body} className={styles.body} />
+          {/* Keyed on the language so the hinge rebuilds when the lines change
+              length — otherwise the triggers keep the old measurements. */}
+          <TextDrop
+            key={`${copy.eyebrow}-title`}
+            as="h2"
+            lines={copy.title}
+            className={styles.title}
+          />
+          <TextDrop
+            key={`${copy.eyebrow}-body`}
+            as="p"
+            lines={copy.body}
+            className={styles.body}
+          />
         </div>
       </div>
     </section>

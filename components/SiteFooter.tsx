@@ -4,10 +4,8 @@ import type { MouseEvent } from "react";
 import { LOGO_PATH_D, LOGO_VIEWBOX } from "./logo-path";
 import { scrollToSection } from "./scroll-to-section";
 import { SECTION_LINKS } from "./site-sections";
+import { useT } from "./i18n/locale";
 import styles from "./site-footer.module.css";
-
-/* Placeholder legal links — no pages behind them yet. */
-const LEGAL = ["Privacy", "Terms", "Cookies"];
 
 const YEAR = 2026;
 
@@ -16,6 +14,8 @@ function goTo(event: MouseEvent<HTMLAnchorElement>, target: string) {
 }
 
 export default function SiteFooter() {
+  const t = useT();
+
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
@@ -40,20 +40,20 @@ export default function SiteFooter() {
             </a>
 
             <p className={styles.tagline}>
-              Residences built around the way a day actually moves.
+              {t.footer.tagline}
             </p>
           </div>
 
-          <nav className={styles.links} aria-label="Footer">
-            {SECTION_LINKS.map(({ label, target }) =>
+          <nav className={styles.links} aria-label={t.nav.footer}>
+            {SECTION_LINKS.map(({ key, target }) =>
               target ? (
                 <a
-                  key={label}
+                  key={key}
                   className={styles.link}
                   href={target}
                   onClick={(event) => goTo(event, target)}
                 >
-                  {label}
+                  {t.nav[key]}
                 </a>
               ) : null
             )}
@@ -62,11 +62,11 @@ export default function SiteFooter() {
 
         <div className={styles.base}>
           <p className={styles.copyright}>
-            © {YEAR} Odza Residences. All rights reserved.
+            © {YEAR} Odza Residences. {t.footer.rights}
           </p>
 
           <div className={styles.legal}>
-            {LEGAL.map((item) => (
+            {t.footer.legal.map((item) => (
               <a className={styles.legalLink} href="#" key={item}>
                 {item}
               </a>

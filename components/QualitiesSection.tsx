@@ -4,40 +4,17 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useT } from "./i18n/locale";
 import styles from "./qualities-section.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* Placeholder copy, same as the listings. */
-const QUALITIES = [
-  {
-    name: "Security",
-    note: "Monitored entry, cameras on every approach, and a concierge who knows every face on the stair.",
-  },
-  {
-    name: "High-speed WiFi",
-    note: "Fibre to every room and mesh coverage throughout — a line that doesn't blink when the building fills up.",
-  },
-  {
-    name: "Climate intelligence",
-    note: "Zoned heating and cooling that learns the hours you keep, room by room.",
-  },
-  {
-    name: "Lights 24/7",
-    note: "Backup power picks up the moment the grid drops. You won't notice it happen.",
-  },
-  {
-    name: "Parking",
-    note: "Covered, assigned and lit, with room for a second car and a charger at every bay.",
-  },
-  {
-    name: "Luxury design",
-    note: "Materials chosen to age well — stone, oak, brass, and as much daylight as the plot allows.",
-  },
-];
+/* Order down the page; copy for each lives in the dictionary. */
+const QUALITY_IDS = ["security", "wifi", "climate", "lights", "parking", "design"] as const;
 
-/** "Lights 24/7" is where the house turns to night. */
-const NIGHTFALL_INDEX = QUALITIES.findIndex((q) => q.name === "Lights 24/7");
+/** Where the house turns to night. Keyed by id, not by label — the label
+    changes with the language and would break a name lookup. */
+const NIGHTFALL_INDEX = QUALITY_IDS.indexOf("lights");
 
 const DAY_BG = "#f8f1e7";
 const NIGHT_BG = "#1b1815";
@@ -50,6 +27,7 @@ export default function QualitiesSection() {
   const copyRef = useRef<HTMLDivElement>(null);
   const dayRef = useRef<HTMLDivElement>(null);
   const nightfallRef = useRef<HTMLHeadingElement>(null);
+  const t = useT();
 
   useEffect(() => {
     const reduceMotion = window.matchMedia(
@@ -129,14 +107,16 @@ export default function QualitiesSection() {
     >
       <div className={styles.inner}>
         <div className={styles.copy} ref={copyRef} style={{ color: DAY_INK }}>
-          <p className={`${styles.eyebrow} ${styles.hinge}`}>Qualities</p>
+          <p className={`${styles.eyebrow} ${styles.hinge}`}>{t.qualities.eyebrow}</p>
           <h2 className={`${styles.title} ${styles.hinge}`}>
-            Everything already running.
+            {t.qualities.title}
           </h2>
 
           <ol className={styles.list}>
-            {QUALITIES.map((quality, i) => (
-              <li className={`${styles.item} ${styles.hinge}`} key={quality.name}>
+            {QUALITY_IDS.map((id, i) => {
+              const quality = t.qualities.items[id];
+              return (
+              <li className={`${styles.item} ${styles.hinge}`} key={id}>
                 <span className={styles.index}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
@@ -148,7 +128,8 @@ export default function QualitiesSection() {
                 </h3>
                 <p className={styles.note}>{quality.note}</p>
               </li>
-            ))}
+              );
+            })}
           </ol>
         </div>
 
@@ -157,7 +138,7 @@ export default function QualitiesSection() {
             <div className={styles.layer}>
               <Image
                 src="/house_night.jpg"
-                alt="The residence after dark"
+                alt={t.qualitiesHouse.night}
                 fill
                 sizes="(max-width: 860px) 100vw, 46vw"
                 className={styles.shot}
@@ -167,7 +148,7 @@ export default function QualitiesSection() {
             <div className={styles.layer} ref={dayRef}>
               <Image
                 src="/house_day.png"
-                alt="The residence in daylight"
+                alt={t.qualitiesHouse.day}
                 fill
                 sizes="(max-width: 860px) 100vw, 46vw"
                 className={styles.shot}

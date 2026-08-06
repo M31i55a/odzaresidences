@@ -5,8 +5,6 @@ export const CONTACT = {
   email: "hello@odza.cm",
   phone: "+237 6 99 00 00 00",
   phoneHref: "+237699000000",
-  address: ["Nouvelle Route Odza", "Yaoundé, Cameroon"],
-  hours: ["Monday – Friday, 08:00 – 18:00", "Saturday, 09:00 – 13:00"],
 };
 
 export const SOCIALS = [

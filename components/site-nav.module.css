@@ -92,7 +92,6 @@
 
 /* ---------- sign in ---------- */
 .signIn {
-  justify-self: end;
   display: inline-flex;
   align-items: center;
   padding: 7px 17px;
@@ -120,5 +119,61 @@
 
   .nav {
     grid-template-columns: 1fr auto;
+  }
+}
+
+/* ---------- right cluster: language + sign in ---------- */
+.right {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(10px, 1.4vw, 18px);
+}
+
+.langs {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+.langItem {
+  display: inline-flex;
+  align-items: center;
+}
+
+.langSep {
+  opacity: 0.3;
+  padding: 0 5px;
+  color: var(--nav-ink, var(--color-ink));
+}
+
+.lang {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--nav-ink, var(--color-ink));
+  opacity: 0.4;
+  transition: opacity 0.22s ease;
+}
+
+.lang:hover {
+  opacity: 0.75;
+}
+
+/* Marked by weight and opacity rather than a colour, so it reads the same over
+   the pale hero and over the dark floating bar. */
+.lang[data-active="true"] {
+  opacity: 1;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .langs {
+    font-size: 10px;
   }
 }

@@ -4,12 +4,14 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { CONTACT, SOCIALS } from "./contact-data";
+import { useT } from "./i18n/locale";
 import styles from "./contact-section.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function ContactSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const t = useT();
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -53,9 +55,9 @@ export default function ContactSection() {
     <section className={styles.section} id="contact" ref={sectionRef}>
       <div className={styles.inner}>
         <div>
-          <p className={`${styles.eyebrow} ${styles.hinge}`}>Contact</p>
+          <p className={`${styles.eyebrow} ${styles.hinge}`}>{t.contact.eyebrow}</p>
           <h2 className={`${styles.title} ${styles.hinge}`}>
-            Come and grab the keys.
+            {t.contact.title}
           </h2>
 
           <a className={`${styles.mail} ${styles.hinge}`} href={`mailto:${CONTACT.email}`}>
@@ -65,9 +67,9 @@ export default function ContactSection() {
 
         <dl className={styles.details}>
           <div className={`${styles.row} ${styles.hinge}`}>
-            <dt>Office</dt>
+            <dt>{t.contact.office}</dt>
             <dd>
-              {CONTACT.address.map((line) => (
+              {t.contact.address.map((line) => (
                 <span className={styles.line} key={line}>
                   {line}
                 </span>
@@ -76,7 +78,7 @@ export default function ContactSection() {
           </div>
 
           <div className={`${styles.row} ${styles.hinge}`}>
-            <dt>Phone</dt>
+            <dt>{t.contact.phone}</dt>
             <dd>
               <a className={styles.rowLink} href={`tel:${CONTACT.phoneHref}`}>
                 {CONTACT.phone}
@@ -85,9 +87,9 @@ export default function ContactSection() {
           </div>
 
           <div className={`${styles.row} ${styles.hinge}`}>
-            <dt>Hours</dt>
+            <dt>{t.contact.hours}</dt>
             <dd>
-              {CONTACT.hours.map((line) => (
+              {t.contact.openingHours.map((line) => (
                 <span className={styles.line} key={line}>
                   {line}
                 </span>
@@ -96,7 +98,7 @@ export default function ContactSection() {
           </div>
 
           <div className={`${styles.row} ${styles.hinge}`}>
-            <dt>Social</dt>
+            <dt>{t.contact.social}</dt>
             <dd className={styles.socials}>
               {SOCIALS.map((social) => (
                 <a className={styles.rowLink} href={social.href} key={social.label}>
