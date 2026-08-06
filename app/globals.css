@@ -22,7 +22,21 @@ html,
 body {
   height: 100%;
   margin: 0;
-  /* overflow-x: hidden; */
+}
+
+/* Keep the scrollbar gutter reserved at all times.
+
+   Without this, the page's usable width changes the moment anything sets
+   `overflow: hidden` on the body — the intro lock below, or an open overlay.
+   ScrollTrigger builds its pin spacers during the intro, measures a page that
+   has no scrollbar yet, and writes that width onto them as an inline px value.
+   When the lock lifts and the scrollbar returns, those spacers are left exactly
+   one scrollbar too wide, which is the horizontal scrollbar.
+
+   Reserving the gutter also stops the whole page shifting sideways when the
+   intro ends or an overlay opens. */
+html {
+  scrollbar-gutter: stable;
 }
 
 body {
