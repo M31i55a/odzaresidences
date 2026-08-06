@@ -37,6 +37,14 @@
   --nav-pill-hover: var(--color-cream);
 }
 
+/* The bar is wrapped in the loader's .line-mask, which clips to the bar's own
+   height so the nav can wipe into view. The collapsing menu hangs below that
+   box, so the mask would swallow it whole. Fading and sliding the nav in works
+   just as well here without the clip. */
+.header :global(.line-mask) {
+  overflow: visible;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .header {
     transition: none;
