@@ -283,6 +283,26 @@
   transform: scaleX(-1);
 }
 
+/* ---------------- phones ----------------
+   A phone shows a narrow slice of this scene, so the house and the weather
+   have to be scaled up to still read as a landscape rather than a thumbnail.
+   Both overflow the screen on purpose — .stage clips them. */
+@media (max-width: 760px) {
+  .house {
+    /* ~2.4× the 78vw it takes elsewhere. It overflows the screen on both
+       sides by design — .stage clips it, which is what makes the house read
+       as close-up rather than shrunk to fit. */
+    width: 190vw;
+  }
+
+  /* No clouds on a phone. At this scale they crowd the house instead of
+     framing it, and the smoke and the whiteout still carry the end of the
+     scene without them. */
+  .cloud {
+    display: none;
+  }
+}
+
 /* ---------------- layer 7 — the mark ---------------- */
 .mark {
   position: absolute;

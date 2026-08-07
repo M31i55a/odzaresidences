@@ -25,12 +25,24 @@ export default function ApartmentsSection() {
   const t = useT();
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      sectionRef.current?.setAttribute("data-static", "true");
-      return;
-    }
+    const section = sectionRef.current;
+    if (!section) return;
 
-    const ctx = gsap.context(() => {
+    /* gsap.matchMedia rather than a one-off check: it tears the whole setup
+       down and rebuilds it when the query stops matching, so rotating a phone
+       or dragging a window across the breakpoint lands in the right mode. */
+    const mm = gsap.matchMedia();
+
+    /* Phones (and anyone asking for reduced motion): no pin, no scrubbing. The
+       page scrolls vertically as usual and the strip is swiped by hand. */
+    mm.add("(max-width: 760px), (prefers-reduced-motion: reduce)", () => {
+      section.setAttribute("data-static", "true");
+      return () => section.removeAttribute("data-static");
+    });
+
+    mm.add(
+      "(min-width: 761px) and (prefers-reduced-motion: no-preference)",
+      () => {
       const track = trackRef.current;
       if (!track) return;
 
@@ -106,9 +118,10 @@ export default function ApartmentsSection() {
           }
         );
       });
-    }, sectionRef);
+      }
+    );
 
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   return (
@@ -132,7 +145,7 @@ export default function ApartmentsSection() {
                     src={flat.src}
                     alt={info.alt}
                     fill
-                    sizes="(max-width: 760px) 80vw, 32vw"
+                    sizes="(max-width: 760px) 88vw, 32vw"
                     className={styles.img}
                   />
                 </div>

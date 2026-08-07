@@ -102,7 +102,9 @@
   .inner,
   .inner[data-media="right"] {
     grid-template-columns: 1fr;
-    gap: 2.5rem;
+    /* Stacked, so the desktop column gutter is far too much — but 1.25rem was
+       too tight in turn. 3× that sits between the two. */
+    gap: 3.75rem;
   }
 
   .inner[data-media="right"] .media,

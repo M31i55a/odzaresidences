@@ -270,6 +270,14 @@ export default function WelcomeScene() {
             alt=""
             fill
             preload
+            /* Served as-is. The optimizer hangs indefinitely on this exact
+               file at w=1920 — the width the browser picks for a 100vw image
+               on a desktop screen, which is why the sky vanished there and
+               nowhere else. Every other width returns instantly, and w=2048
+               yields a byte-identical result, so it is specific to this one
+               request. The source is 21KB and the optimizer's own best output
+               is ~15KB, so there is nothing meaningful to gain here anyway. */
+            unoptimized
             sizes="100vw"
             className={styles.backImg}
           />

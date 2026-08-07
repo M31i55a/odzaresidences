@@ -277,3 +277,69 @@
 .section[data-static="true"] .panel {
   transform: none;
 }
+
+/* ---------------- phones ----------------
+   The section becomes an ordinary vertical block (data-static, set by the
+   matchMedia branch in the component) and the strip is swiped by hand. Cards
+   stack: a wide, short image with its description underneath. */
+@media (max-width: 760px) {
+  .pin {
+    gap: clamp(1.25rem, 3vh, 2rem);
+  }
+
+  .track {
+    gap: 14px;
+    padding: 0 16px;
+    /* Descriptions vary in length; top-align so the images form a clean row
+       instead of floating at different heights. */
+    align-items: flex-start;
+  }
+
+  .card {
+    flex-direction: column;
+    align-items: stretch;
+    /* Just under full width, so the next card peeks in and the strip reads as
+       swipeable rather than as a single static image. */
+    width: 84vw;
+    gap: 14px;
+  }
+
+  .shot {
+    width: 100%;
+    /* Short enough that the whole description clears the fold with it. */
+    height: clamp(190px, 30vh, 300px);
+  }
+
+  .desc {
+    width: 100%;
+    opacity: 1;
+    transform: none;
+  }
+
+  .facts {
+    margin-top: 0.85rem;
+  }
+
+  .detail {
+    margin-top: 1rem;
+  }
+
+  .more {
+    width: 84vw;
+    padding-right: 0;
+    justify-content: flex-start;
+    gap: 1rem;
+  }
+
+  /* Swiping settles on a card instead of drifting between two. */
+  .section[data-static="true"] .viewport {
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .card,
+  .more {
+    scroll-snap-align: start;
+  }
+}

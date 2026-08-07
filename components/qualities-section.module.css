@@ -99,9 +99,15 @@
 
 /* ---------------- the house ---------------- */
 .media {
+  /* The header is fixed and reappears whenever you scroll up, so a sticky
+     element pinned to top: 0 ends up underneath it. Park it below the bar
+     instead — ~52px plus a margin — and take that off the height so the image
+     stays centred in what's left rather than hanging off the bottom. */
+  --clear: clamp(68px, 9vh, 96px);
+
   position: sticky;
-  top: 0;
-  height: 100svh;
+  top: var(--clear);
+  height: calc(100svh - var(--clear));
   display: flex;
   align-items: center;
 }
@@ -146,7 +152,8 @@
        nowhere to sit. */
     order: -1;
     height: auto;
-    top: 0;
+    /* `top` deliberately left to inherit --clear from above: this is exactly
+       where the bar was covering the image. */
     padding-bottom: clamp(1.5rem, 4vh, 2.5rem);
   }
 
