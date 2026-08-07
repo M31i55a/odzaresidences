@@ -122,6 +122,16 @@
   }
 }
 
+/* Laptop-class displays — roughly anything under 16". CSS can't read physical
+   inches, so this stands in for it by width: 16" laptops report about
+   1600–1728 CSS px, desktop monitors 1920+. Everything above is 0.8× here,
+   which brings the cap back from 7.7rem to 6.16rem. */
+@media (min-width: 1200px) and (max-width: 1599px) {
+  .heading {
+    font-size: clamp(3rem, 7.28vw, 6.16rem);
+  }
+}
+
 /* One unbroken line. JetBrains Mono is a 0.6em monospace and the sentence runs
    ~47 characters, so the size has to track the viewport to keep it from
    overflowing on narrow screens. */

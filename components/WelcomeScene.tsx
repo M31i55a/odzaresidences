@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useRef, type MouseEvent, type RefObject } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import { LOGO_PATH_D } from "./logo-path";
 import { introHasPlayed } from "./intro-state";
+import { scrollToSection } from "./scroll-to-section";
 import { useT } from "./i18n/locale";
 import styles from "./welcome-scene.module.css";
 
@@ -75,7 +76,15 @@ function HeroLines({
 
       <div className={mask("front")} ref={bind("front", ctaRef)}>
         <div className={`${inner("front")} ${styles.ctaWrap}`} data-line="5">
-          <a className={styles.cta} href="#">
+          {/* Same glide the nav links use — Lenis owns the scroll position,
+              so the browser's own anchor jump would be fought and undone. */}
+          <a
+            className={styles.cta}
+            href="#apartments"
+            onClick={(event: MouseEvent<HTMLAnchorElement>) => {
+              if (scrollToSection("#apartments")) event.preventDefault();
+            }}
+          >
             {t.hero.cta}
             <svg className={styles.ctaArrow} viewBox="0 0 16 10" aria-hidden="true">
               <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
