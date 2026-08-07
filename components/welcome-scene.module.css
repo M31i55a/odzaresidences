@@ -225,6 +225,16 @@
   }
 }
 
+/* Large displays. Above 1100px the width is pinned by the 1320px cap, so on a
+   big monitor the house was shrinking relative to the screen around it — this
+   is 1.5× both terms, which past ~1570px is a flat 1980px. Same breakpoint the
+   heading uses for its own large tier. */
+@media (min-width: 1600px) {
+  .house {
+    width: min(126vw, 1980px);
+  }
+}
+
 .houseImg {
   width: 100%;
   height: auto;
