@@ -11,7 +11,7 @@
   --nav-badge-bg: var(--color-ink);
   --nav-pill-bg: var(--color-ink);
   --nav-pill-ink: #fff;
-  --nav-pill-hover: #2c3037;
+  --nav-pill-hover: var(--color-brass);
 
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     background 0.4s ease, box-shadow 0.4s ease;

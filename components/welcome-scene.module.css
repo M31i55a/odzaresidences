@@ -169,11 +169,20 @@
   font-size: 14px;
   letter-spacing: 0.01em;
   text-decoration: none;
-  transition: transform 0.24s ease, background 0.24s ease;
+  /* Colour eases nearly twice as long as the lift, and on the site's standard
+     curve rather than `ease` — the swap to brass reads as a wash rather than a
+     flick. The lift stays quick so the button still feels responsive. */
+  transition: background 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.cta:hover {
-  background: #2c3037;
+/* Brass on hover, with the label flipping dark — white on brass is only about
+   2:1 and would read as washed out. */
+.cta:hover,
+.cta:focus-visible {
+  background: var(--color-brass);
+  color: var(--color-walnut);
   transform: translateY(-2px);
 }
 

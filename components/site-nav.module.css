@@ -103,11 +103,17 @@
   font-size: 12px;
   letter-spacing: 0.01em;
   text-decoration: none;
-  transition: transform 0.22s ease, background 0.22s ease;
+  transition: background 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.signIn:hover {
-  background: var(--nav-pill-hover, #2c3037);
+/* Walnut suits both hover surfaces — brass on the black bar, cream once the
+   pill is already brass in the floating state. */
+.signIn:hover,
+.signIn:focus-visible {
+  background: var(--nav-pill-hover, var(--color-brass));
+  color: var(--color-walnut);
   transform: translateY(-1px);
 }
 
