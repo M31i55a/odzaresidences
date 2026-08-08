@@ -288,7 +288,7 @@
   }
 
   .track {
-    gap: 14px;
+    gap: 40px;
     padding: 0 16px;
     /* Descriptions vary in length; top-align so the images form a clean row
        instead of floating at different heights. */
