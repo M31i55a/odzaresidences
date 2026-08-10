@@ -190,6 +190,17 @@ const en = {
     close: "Close",
   },
 
+  notFound: {
+    code: "Error 404",
+    /* Deliberately answers the hero's "The door is open." */
+    title: "This door doesn't open.",
+    body: [
+      "The page you were looking for has moved,",
+      "or was never here at all.",
+    ],
+    back: "Back to Odza",
+  },
+
   qualitiesHouse: {
     day: "The residence in daylight",
     night: "The residence after dark",
@@ -379,6 +390,16 @@ const fr: Dict = {
 
   common: {
     close: "Fermer",
+  },
+
+  notFound: {
+    code: "Erreur 404",
+    title: "Cette porte ne s'ouvre pas.",
+    body: [
+      "La page que vous cherchiez a été déplacée,",
+      "ou n'a jamais existé.",
+    ],
+    back: "Retour à Odza",
   },
 
   qualitiesHouse: {

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import gsap from "gsap";
 import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
 import styles from "./intro-loader.module.css";
 import { LOGO_PATH_D } from "./logo-path";
-import { markIntroPlayed } from "./intro-state";
+import { introHasPlayed, markIntroPlayed } from "./intro-state";
 
 gsap.registerPlugin(MorphSVGPlugin);
 
@@ -18,6 +19,14 @@ function revealTargets() {
 }
 
 export default function IntroLoader() {
+  const pathname = usePathname();
+
+  /* The intro belongs to the home page. On any other route — the 404, say — it
+     would just sit over the content for nine seconds. Decided once at mount:
+     this component lives in the root layout and never unmounts, so the choice
+     has to be stable for the session rather than flipping on navigation. */
+  const [skip] = useState(() => pathname !== "/" || introHasPlayed());
+
   const screenRef = useRef<HTMLDivElement>(null);
   const figureRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -27,6 +36,13 @@ export default function IntroLoader() {
   const glowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    /* Nothing is going to run the reveal, so mark it played — that's what tells
+       the home page's copy to show itself outright if it mounts later. */
+    if (skip) {
+      markIntroPlayed();
+      return;
+    }
+
     const body = document.body;
     body.classList.add("loading");
 
@@ -171,7 +187,9 @@ export default function IntroLoader() {
       tl2?.kill();
       strayTweens.forEach((tween) => tween.kill());
     };
-  }, []);
+  }, [skip]);
+
+  if (skip) return null;
 
   return (
     <div className={styles.screen} ref={screenRef} aria-hidden="true">
