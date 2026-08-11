@@ -62,3 +62,19 @@
   letter-spacing: 0.02em;
   color: var(--color-cream-soft);
 }
+
+/* The gallery is a hover reveal on a pointer device and a button on touch, so
+   the line explaining it has to switch with the same query the gallery uses. */
+.hintTouch {
+  display: none;
+}
+
+@media (hover: none) {
+  .hintPointer {
+    display: none;
+  }
+
+  .hintTouch {
+    display: block;
+  }
+}

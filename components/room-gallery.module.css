@@ -72,9 +72,14 @@
   transition: opacity 0.45s ease;
 }
 
-.stage:hover .overlay,
-.stage:focus-within .overlay {
-  opacity: 1;
+/* Fenced to pointer devices. On touch there is no hover to reveal with and
+   :focus-within would fire the moment the button below is tapped, which would
+   leave it stuck open — down there the caption is driven by data-info alone. */
+@media (hover: hover) {
+  .stage:hover .overlay,
+  .stage:focus-within .overlay {
+    opacity: 1;
+  }
 }
 
 .overlayName {
@@ -98,9 +103,87 @@
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.stage:hover .specs,
-.stage:focus-within .specs {
-  transform: none;
+@media (hover: hover) {
+  .stage:hover .specs,
+  .stage:focus-within .specs {
+    transform: none;
+  }
+}
+
+/* ---------------- the touch handle ----------------
+   Bottom left of the photo, over a clear image. The pill is dark and blurred
+   rather than flat brass so it holds its contrast whatever the room behind it
+   happens to be. */
+.infoToggle {
+  /* Pointer devices reveal on hover; there is nothing for this to do there. */
+  display: none;
+  position: absolute;
+  left: clamp(20px, 3vw, 44px);
+  bottom: clamp(20px, 3vw, 44px);
+  z-index: 2;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 18px;
+  border: 1px solid var(--color-brass);
+  border-radius: 999px;
+  cursor: pointer;
+  background: rgba(9, 8, 7, 0.55);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-brass);
+  transition: background 0.32s ease, color 0.32s ease;
+}
+
+/* Filled once it's open — it's the way back out, not an invitation. */
+.stage[data-info="open"] .infoToggle {
+  background: var(--color-brass);
+  color: var(--color-walnut);
+}
+
+.infoChevron {
+  width: 13px;
+  height: 9px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Points up to bring the panel in, then flips to point it back down. */
+.stage[data-info="open"] .infoChevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .infoChevron {
+    transition: none;
+  }
+}
+
+@media (hover: none) {
+  .infoToggle {
+    display: inline-flex;
+  }
+
+  .stage[data-info="open"] .overlay {
+    opacity: 1;
+  }
+
+  .stage[data-info="open"] .specs {
+    transform: none;
+  }
+
+  /* Keeps the last spec row clear of the button rather than behind it. */
+  .overlay {
+    padding-bottom: calc(clamp(20px, 3vw, 44px) + 48px);
+  }
 }
 
 .spec {
@@ -198,14 +281,5 @@
   .rail {
     flex-direction: row;
     height: clamp(90px, 16vh, 130px);
-  }
-
-  /* No hover on touch, so the specs would otherwise be unreachable. */
-  .overlay {
-    opacity: 1;
-  }
-
-  .specs {
-    transform: none;
   }
 }

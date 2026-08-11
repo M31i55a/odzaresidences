@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import Image from "next/image";
 import type { RoomPart } from "./apartment-rooms";
 import { useDropReveal } from "./use-drop-reveal";
+import { useT } from "./i18n/locale";
 import styles from "./room-gallery.module.css";
 
 type RoomGalleryProps = {
@@ -15,6 +16,12 @@ type RoomGalleryProps = {
 export default function RoomGallery({ parts, initialId }: RoomGalleryProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [activeId, setActiveId] = useState(initialId);
+  /* Touch only — a pointer device reveals the caption on hover and never
+     renders the button. Left open across a room swap on purpose: someone who
+     asked for the specs is comparing rooms by them. */
+  const [infoOpen, setInfoOpen] = useState(false);
+  const captionId = useId();
+  const t = useT();
 
   const active = parts.find((part) => part.id === activeId) ?? parts[0];
 
@@ -27,7 +34,10 @@ export default function RoomGallery({ parts, initialId }: RoomGalleryProps) {
 
   return (
     <div className={styles.gallery} ref={rootRef}>
-      <figure className={`${styles.stage} ${styles.hinge}`}>
+      <figure
+        className={`${styles.stage} ${styles.hinge}`}
+        data-info={infoOpen ? "open" : "shut"}
+      >
         <Image
           key={active.id}
           src={active.image}
@@ -37,7 +47,7 @@ export default function RoomGallery({ parts, initialId }: RoomGalleryProps) {
           className={styles.stageImg}
         />
 
-        <figcaption className={styles.overlay}>
+        <figcaption className={styles.overlay} id={captionId}>
           <h2 className={styles.overlayName}>{active.name}</h2>
 
           <dl className={styles.specs}>
@@ -49,6 +59,22 @@ export default function RoomGallery({ parts, initialId }: RoomGalleryProps) {
             ))}
           </dl>
         </figcaption>
+
+        {/* There's no hover to reveal the caption with on a touch screen, so
+            it gets an explicit handle and the photo is left clear until it's
+            asked for. The stylesheet drops this on pointer devices. */}
+        <button
+          type="button"
+          className={styles.infoToggle}
+          aria-expanded={infoOpen}
+          aria-controls={captionId}
+          onClick={() => setInfoOpen((open) => !open)}
+        >
+          {infoOpen ? t.apartments.hideRoomInfo : t.apartments.seeRoomInfo}
+          <svg className={styles.infoChevron} viewBox="0 0 16 10" aria-hidden="true">
+            <path d="M2 7 L8 2.5 L14 7" />
+          </svg>
+        </button>
       </figure>
 
       <div className={styles.rail}>

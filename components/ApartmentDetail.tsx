@@ -52,7 +52,15 @@ export default function ApartmentDetail({ slug }: { slug: string }) {
 
         <RoomGallery key={slug} parts={parts} initialId={DEFAULT_PART_ID} />
 
-        <p className={styles.hint}>{t.apartments.detailHint}</p>
+        {/* Both lines render and the stylesheet picks one. Which is right
+            depends on the input device, which the server can't know — reading
+            it in JS instead would flash the wrong instruction on first paint. */}
+        <p className={`${styles.hint} ${styles.hintPointer}`}>
+          {t.apartments.detailHint}
+        </p>
+        <p className={`${styles.hint} ${styles.hintTouch}`}>
+          {t.apartments.detailHintTouch}
+        </p>
       </div>
     </div>
   );

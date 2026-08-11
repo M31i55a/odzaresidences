@@ -77,6 +77,12 @@ const en = {
     listTitle: "Everything available.",
     detailHint:
       "Hover the large view for room details — pick a part on the right.",
+    /* Touch has no hover, so the same view is driven by a button instead —
+       and the rail isn't on the right down there either. */
+    detailHintTouch:
+      "Tap “See room info” for the details — pick another part to switch rooms.",
+    seeRoomInfo: "See room info",
+    hideRoomInfo: "Hide room info",
     price: "Price",
     rooms: "Rooms",
     area: "Area",
@@ -280,6 +286,10 @@ const fr: Dict = {
     listTitle: "Tout ce qui est disponible.",
     detailHint:
       "Survolez la grande vue pour les détails — choisissez une pièce à droite.",
+    detailHintTouch:
+      "Touchez « Voir les infos » pour les détails — choisissez une autre pièce pour changer.",
+    seeRoomInfo: "Voir les infos",
+    hideRoomInfo: "Masquer les infos",
     price: "Prix",
     rooms: "Pièces",
     area: "Surface",
