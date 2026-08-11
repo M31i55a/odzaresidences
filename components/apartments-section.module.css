@@ -249,6 +249,22 @@
   stroke-linejoin: round;
 }
 
+/* ---------------- "this scrolls" ----------------
+   Desktop scrubs the strip from the page scroll, so there is nothing to hint
+   at there. Both cues are phones-only and switch on in the media query at the
+   bottom of this file; here they just hold their place in the layout. */
+.swipeHint,
+.edgeFade {
+  display: none;
+}
+
+/* Anchors the fade to the right edge of the strip. It can't live inside
+   .viewport — that's the scroll container, so it would slide away with the
+   cards it's meant to be pointing past. */
+.strip {
+  position: relative;
+}
+
 /* Hover can't be the only way to reach the details on a touch screen. */
 @media (hover: none) {
   .desc {
@@ -341,5 +357,81 @@
   .card,
   .more {
     scroll-snap-align: start;
+  }
+
+  /* ---- telling the user the strip moves ----
+     84vw cards already let the next one peek in, but a peek on its own reads
+     as a cropped photo rather than as more content. These two say it outright:
+     a label that names the gesture, and a fade proving the row runs past the
+     edge of the screen. */
+  .swipeHint {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0.85rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--color-brass);
+    pointer-events: none;
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Retired for good once it's been acted on — a hint that sits there after
+     the user has already swiped is just decoration. It keeps its box so the
+     heading doesn't jump when it goes. */
+  .swipeHint[data-taken] {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+
+  .swipeArrow {
+    animation: swipeNudge 1.9s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+
+  .edgeFade {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 56px;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      rgba(27, 24, 21, 0) 0%,
+      var(--color-walnut) 78%
+    );
+    transition: opacity 0.35s ease;
+  }
+
+  /* Nothing left past the edge to point at. */
+  .edgeFade[data-spent] {
+    opacity: 0;
+  }
+}
+
+/* Travels out and settles back, on the site's standard curve — a repeating
+   suggestion of the gesture rather than a loop demanding attention. */
+@keyframes swipeNudge {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.45;
+  }
+
+  45% {
+    transform: translateX(7px);
+    opacity: 1;
+  }
+}
+
+/* The label still carries the message without the arrow moving. */
+@media (prefers-reduced-motion: reduce) {
+  .swipeArrow {
+    animation: none;
   }
 }

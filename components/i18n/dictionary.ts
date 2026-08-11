@@ -70,6 +70,7 @@ const en = {
   apartments: {
     eyebrow: "Apartments",
     title: "Spaces to move into.",
+    swipeHint: "Swipe to explore",
     seeDetails: "See in details",
     visitMore: "Visit more",
     moreWaiting: (count: number) => `${count} more waiting.`,
@@ -272,6 +273,7 @@ const fr: Dict = {
   apartments: {
     eyebrow: "Appartements",
     title: "Des espaces où s'installer.",
+    swipeHint: "Glissez pour explorer",
     seeDetails: "Voir en détail",
     visitMore: "Voir plus",
     moreWaiting: (count: number) => `${count} autres vous attendent.`,

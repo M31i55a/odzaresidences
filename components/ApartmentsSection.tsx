@@ -21,8 +21,40 @@ export default function ApartmentsSection() {
   const pinRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
   const [view, setView] = useState<OverlayView>(null);
+  const [atEnd, setAtEnd] = useState(false);
+  const [hintTaken, setHintTaken] = useState(false);
   const t = useT();
+
+  /* On a phone the strip is an ordinary swipeable row, and a row of images
+     with no visible scrollbar reads as a static picture. Two cues say
+     otherwise: a fade on the right edge, and a nudging hint under the heading.
+     Both retire themselves — the fade once there's nothing left to reveal, the
+     hint the moment the user takes it. Off phones the CSS never shows either,
+     so this just idles: the viewport doesn't scroll there. */
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const read = () => {
+      const overflow = viewport.scrollWidth - viewport.clientWidth;
+      // Two pixels of slack: sub-pixel layout leaves scrollLeft just short of
+      // its maximum on plenty of devices, so an exact test never fires.
+      const spent = overflow <= 2 || viewport.scrollLeft >= overflow - 2;
+      setAtEnd(spent);
+      // Far enough along to be a deliberate swipe rather than a stray touch.
+      if (spent || viewport.scrollLeft > 24) setHintTaken(true);
+    };
+
+    read();
+    viewport.addEventListener("scroll", read, { passive: true });
+    window.addEventListener("resize", read);
+    return () => {
+      viewport.removeEventListener("scroll", read);
+      window.removeEventListener("resize", read);
+    };
+  }, []);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -132,74 +164,98 @@ export default function ApartmentsSection() {
           <h2 className={`${styles.title} ${styles.hinge}`}>
             {t.apartments.title}
           </h2>
+
+          {/* Deliberately not a .hinge — it belongs to the strip below, not to
+              the heading's reveal. Hidden from assistive tech: the scroll
+              region is already reachable without being told to swipe. */}
+          <p
+            className={styles.swipeHint}
+            data-taken={hintTaken || undefined}
+            aria-hidden="true"
+          >
+            {t.apartments.swipeHint}
+            <svg className={`${styles.arrow} ${styles.swipeArrow}`} viewBox="0 0 16 10">
+              <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
+            </svg>
+          </p>
         </header>
 
-        <div className={styles.viewport}>
-          <div className={styles.track} ref={trackRef}>
-            {FEATURED.map((flat) => {
-              const info = describe(flat, t);
-              return (
-              <article className={`${styles.card} ${styles.panel}`} key={flat.slug}>
-                <div className={styles.shot}>
-                  <Image
-                    src={flat.src}
-                    alt={info.alt}
-                    fill
-                    sizes="(max-width: 760px) 88vw, 32vw"
-                    className={styles.img}
-                  />
-                </div>
+        {/* Wrapper exists so the fade can sit still at the right edge — inside
+            .viewport it would be part of the scrolled content and slide away. */}
+        <div className={styles.strip}>
+          <div className={styles.viewport} ref={viewportRef}>
+            <div className={styles.track} ref={trackRef}>
+              {FEATURED.map((flat) => {
+                const info = describe(flat, t);
+                return (
+                <article className={`${styles.card} ${styles.panel}`} key={flat.slug}>
+                  <div className={styles.shot}>
+                    <Image
+                      src={flat.src}
+                      alt={info.alt}
+                      fill
+                      sizes="(max-width: 760px) 88vw, 32vw"
+                      className={styles.img}
+                    />
+                  </div>
 
-                <div className={styles.desc}>
-                  <h3 className={styles.name}>{info.name}</h3>
-                  <p className={styles.kind}>{info.kind}</p>
+                  <div className={styles.desc}>
+                    <h3 className={styles.name}>{info.name}</h3>
+                    <p className={styles.kind}>{info.kind}</p>
 
-                  <dl className={styles.facts}>
-                    <div className={styles.fact}>
-                      <dt>{t.apartments.price}</dt>
-                      <dd className={styles.price}>{info.price}</dd>
-                    </div>
-                    <div className={styles.fact}>
-                      <dt>{t.apartments.rooms}</dt>
-                      <dd>{info.rooms}</dd>
-                    </div>
-                    <div className={styles.fact}>
-                      <dt>{t.apartments.area}</dt>
-                      <dd>{info.area}</dd>
-                    </div>
-                  </dl>
+                    <dl className={styles.facts}>
+                      <div className={styles.fact}>
+                        <dt>{t.apartments.price}</dt>
+                        <dd className={styles.price}>{info.price}</dd>
+                      </div>
+                      <div className={styles.fact}>
+                        <dt>{t.apartments.rooms}</dt>
+                        <dd>{info.rooms}</dd>
+                      </div>
+                      <div className={styles.fact}>
+                        <dt>{t.apartments.area}</dt>
+                        <dd>{info.area}</dd>
+                      </div>
+                    </dl>
 
-                  <button
-                    type="button"
-                    className={styles.detail}
-                    onClick={() => setView({ type: "detail", slug: flat.slug })}
-                  >
-                    {t.apartments.seeDetails}
-                    <svg className={styles.arrow} viewBox="0 0 16 10" aria-hidden="true">
-                      <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
-                    </svg>
-                  </button>
-                </div>
-              </article>
-              );
-            })}
+                    <button
+                      type="button"
+                      className={styles.detail}
+                      onClick={() => setView({ type: "detail", slug: flat.slug })}
+                    >
+                      {t.apartments.seeDetails}
+                      <svg className={styles.arrow} viewBox="0 0 16 10" aria-hidden="true">
+                        <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
+                      </svg>
+                    </button>
+                  </div>
+                </article>
+                );
+              })}
 
-            <div className={`${styles.more} ${styles.panel}`}>
-              <p className={styles.moreText}>
-                {t.apartments.moreWaiting(APARTMENTS.length - FEATURED_COUNT)}
-              </p>
-              <button
-                type="button"
-                className={styles.moreLink}
-                onClick={() => setView({ type: "list" })}
-              >
-                {t.apartments.visitMore}
-                <svg className={styles.arrow} viewBox="0 0 16 10" aria-hidden="true">
-                  <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
-                </svg>
-              </button>
+              <div className={`${styles.more} ${styles.panel}`}>
+                <p className={styles.moreText}>
+                  {t.apartments.moreWaiting(APARTMENTS.length - FEATURED_COUNT)}
+                </p>
+                <button
+                  type="button"
+                  className={styles.moreLink}
+                  onClick={() => setView({ type: "list" })}
+                >
+                  {t.apartments.visitMore}
+                  <svg className={styles.arrow} viewBox="0 0 16 10" aria-hidden="true">
+                    <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
+
+          <div
+            className={styles.edgeFade}
+            data-spent={atEnd || undefined}
+            aria-hidden="true"
+          />
         </div>
       </div>
 
