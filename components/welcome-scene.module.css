@@ -298,6 +298,14 @@
    have to be scaled up to still read as a landscape rather than a thumbnail.
    Both overflow the screen on purpose — .stage clips them. */
 @media (max-width: 760px) {
+  /* 362svh ≈ 470 / 1.3 — a phone screen is a lot of scrolling per screenful,
+     so the same sequence gets a shorter runway here and scrubs 1.3× quicker.
+     Nothing else changes: the timeline is normalised across whatever this is,
+     so every beat keeps its relative position. */
+  .scene {
+    height: 362svh;
+  }
+
   .house {
     /* ~2.4× the 78vw it takes elsewhere. It overflows the screen on both
        sides by design — .stage clips it, which is what makes the house read
