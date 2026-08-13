@@ -263,6 +263,7 @@ export default function ApartmentsSection() {
         view={view}
         onClose={() => setView(null)}
         onSelect={(slug) => setView({ type: "detail", slug })}
+        onReserve={(slug) => setView({ type: "reserve", slug })}
       />
     </section>
   );

@@ -93,6 +93,44 @@ const en = {
     seats: (count: number) => `Seats ${count}`,
   },
 
+  reserve: {
+    cta: "Book a viewing",
+    title: "Book a viewing",
+    intro:
+      "Tell us when suits you and we'll confirm by phone or email. Nothing is committed until we do.",
+    back: "Back to the residence",
+    name: "Your name",
+    phone: "Phone",
+    email: "Email",
+    optional: "optional",
+    date: "Preferred day",
+    slot: "Preferred time",
+    morning: "Morning",
+    afternoon: "Afternoon",
+    note: "Anything we should know?",
+    submit: "Request viewing",
+    sending: "Sending…",
+    sentTitle: "Request received.",
+    sentBody:
+      "We'll be in touch shortly to confirm the day and time. Nothing is booked until we do.",
+    failed:
+      "Something went wrong on our side and the request wasn't sent. Please try again, or call us.",
+    throttled:
+      "That's several requests in a row. Please wait a few minutes, or call us and we'll sort it out straight away.",
+    errors: {
+      required: "This one is needed.",
+      tooShort: "That looks a little short.",
+      tooLong: "That's longer than we can take.",
+      badEmail: "That email doesn't look right.",
+      badPhone: "That phone number doesn't look right.",
+      badDate: "That date doesn't look right.",
+      pastDate: "Pick a day from today onwards.",
+      tooFar: "That's too far ahead — within six months, please.",
+      badSlot: "Pick a time of day.",
+      unknownListing: "We can't find that residence.",
+    },
+  },
+
   listings: {
     "the-penthouse": { name: "The Penthouse", kind: "Penthouse" },
     "garden-villa": { name: "Garden Villa", kind: "Villa" },
@@ -298,6 +336,44 @@ const fr: Dict = {
     interiorAlt: (name: string) => `Intérieur de ${name}`,
     roomCount: (count: number) => `${count} pièce${count === 1 ? "" : "s"}`,
     seats: (count: number) => `${count} places`,
+  },
+
+  reserve: {
+    cta: "Réserver une visite",
+    title: "Réserver une visite",
+    intro:
+      "Dites-nous quand cela vous arrange, nous confirmons par téléphone ou par email. Rien n'est engagé avant.",
+    back: "Retour à la résidence",
+    name: "Votre nom",
+    phone: "Téléphone",
+    email: "Email",
+    optional: "facultatif",
+    date: "Jour souhaité",
+    slot: "Créneau souhaité",
+    morning: "Matin",
+    afternoon: "Après-midi",
+    note: "Quelque chose à nous signaler ?",
+    submit: "Demander la visite",
+    sending: "Envoi…",
+    sentTitle: "Demande bien reçue.",
+    sentBody:
+      "Nous revenons vers vous très vite pour confirmer le jour et l'heure. Rien n'est réservé avant.",
+    failed:
+      "Un problème de notre côté : la demande n'est pas partie. Réessayez, ou appelez-nous.",
+    throttled:
+      "Cela fait plusieurs demandes d'affilée. Patientez quelques minutes, ou appelez-nous et nous réglons cela tout de suite.",
+    errors: {
+      required: "Ce champ est nécessaire.",
+      tooShort: "C'est un peu court.",
+      tooLong: "C'est plus long que ce que nous pouvons accepter.",
+      badEmail: "Cet email semble incorrect.",
+      badPhone: "Ce numéro semble incorrect.",
+      badDate: "Cette date semble incorrecte.",
+      pastDate: "Choisissez un jour à partir d'aujourd'hui.",
+      tooFar: "C'est trop loin — dans les six mois, s'il vous plaît.",
+      badSlot: "Choisissez un créneau.",
+      unknownListing: "Nous ne trouvons pas cette résidence.",
+    },
   },
 
   listings: {

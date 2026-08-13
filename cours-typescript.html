@@ -1,0 +1,3406 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TypeScript, React et le serveur — le cours Odza</title>
+
+<style>
+  /* Même identité que le guide d'implémentation : c'est un volume compagnon.
+     Palette du site lui-même — noyer, laiton, crème. */
+  :root {
+    --ground: #1b1815;
+    --surface: #221e19;
+    --surface-2: #2a251f;
+    --ink: #ede6da;
+    --ink-soft: rgba(237, 230, 218, 0.58);
+    --ink-faint: rgba(237, 230, 218, 0.34);
+    --accent: #c9a567;
+    --accent-soft: rgba(201, 165, 103, 0.14);
+    --line: rgba(237, 230, 218, 0.14);
+    --new: #8fbf86;
+    --new-soft: rgba(143, 191, 134, 0.14);
+    --warn: #e0a091;
+    --warn-soft: rgba(224, 160, 145, 0.12);
+    --code-bg: #16130f;
+    --code-ink: #ddd5c6;
+    --code-comment: #8a8073;
+    --code-accent: #c9a567;
+    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+      "Times New Roman", serif;
+    --font-body: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial,
+      sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "Cascadia Mono", Consolas,
+      "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --ground: #f3f1ec;
+      --surface: #ffffff;
+      --surface-2: #e9e5dc;
+      --ink: #1b1815;
+      --ink-soft: rgba(27, 24, 21, 0.62);
+      --ink-faint: rgba(27, 24, 21, 0.4);
+      --accent: #7d5f24;
+      --accent-soft: rgba(125, 95, 36, 0.1);
+      --line: rgba(27, 24, 21, 0.14);
+      --new: #3f7a36;
+      --new-soft: rgba(63, 122, 54, 0.1);
+      --warn: #9c4a35;
+      --warn-soft: rgba(156, 74, 53, 0.09);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16.5px;
+    line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .shell {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 0 clamp(20px, 4vw, 48px) clamp(5rem, 12vh, 8rem);
+  }
+
+  .masthead {
+    padding: clamp(3.5rem, 10vh, 7rem) 0 clamp(2.5rem, 6vh, 4rem);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .kicker {
+    margin: 0 0 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2.3rem, 5.6vw, 4.2rem);
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    margin: clamp(1.25rem, 3vh, 2rem) 0 0;
+    max-width: 64ch;
+    font-size: clamp(1.02rem, 1.5vw, 1.18rem);
+    line-height: 1.62;
+    color: var(--ink-soft);
+  }
+
+  .howto {
+    margin: clamp(2rem, 5vh, 3rem) 0 0;
+    padding: 16px 20px;
+    max-width: 64ch;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    font-size: 15px;
+  }
+
+  .howto p { margin: 0; max-width: none; }
+  .howto p + p { margin-top: 0.6rem; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 4vw, 3.5rem);
+    padding-top: clamp(2.5rem, 6vh, 4rem);
+  }
+
+  @media (min-width: 1040px) {
+    .layout { grid-template-columns: 234px minmax(0, 1fr); }
+  }
+
+  /* ---------------- sommaire ---------------- */
+  .toc { align-self: start; }
+
+  @media (min-width: 1040px) {
+    .toc {
+      position: sticky;
+      top: 1.5rem;
+      max-height: calc(100vh - 3rem);
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+  }
+
+  .toc h2 {
+    margin: 0 0 0.9rem;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .toc .toc-part {
+    margin: 1.15rem 0 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .toc ul { margin: 0; padding: 0; list-style: none; }
+
+  .toc a {
+    display: block;
+    padding: 4px 0;
+    font-size: 13.2px;
+    line-height: 1.4;
+    text-decoration: none;
+    color: var(--ink-soft);
+    transition: color 0.2s ease;
+  }
+
+  .toc a:hover { color: var(--ink); }
+  .toc a[aria-current="true"] { color: var(--accent); }
+
+  /* ---------------- corps ---------------- */
+  main { min-width: 0; }
+
+  .part-head {
+    margin: clamp(4rem, 10vh, 7rem) 0 clamp(2rem, 5vh, 3rem);
+    padding-top: 1.75rem;
+    border-top: 2px solid var(--accent);
+  }
+
+  .part-head:first-child { margin-top: 0; }
+
+  .part-head .part-no {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+  }
+
+  .part-head h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 4vw, 2.9rem);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+
+  .part-head p {
+    margin: 0.9rem 0 0;
+    max-width: 66ch;
+    color: var(--ink-soft);
+  }
+
+  section { margin-bottom: clamp(2.75rem, 7vh, 4.5rem); scroll-margin-top: 1.5rem; }
+
+  h3 {
+    margin: 0 0 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 2.5vw, 1.85rem);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  h3 .num {
+    font-family: var(--font-mono);
+    font-size: 0.62em;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-right: 0.6rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  h4 {
+    margin: 2rem 0 0.75rem;
+    font-family: var(--font-body);
+    font-size: 1.03rem;
+    font-weight: 650;
+  }
+
+  p { margin: 0 0 1.1rem; max-width: 68ch; }
+
+  main ul, main ol { max-width: 68ch; padding-left: 1.2rem; }
+  main li { margin-bottom: 0.5rem; }
+
+  a { color: var(--accent); text-underline-offset: 3px; }
+
+  code:not(pre code) {
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--accent-soft);
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--accent);
+    word-break: break-word;
+  }
+
+  strong { font-weight: 650; }
+
+  /* ---------------- code ---------------- */
+  figure.code {
+    margin: 1.4rem 0 1.6rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--code-bg);
+  }
+
+  figure.code figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(237, 230, 218, 0.1);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: #a49a8b;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .tag {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .tag.real { background: var(--new-soft); color: var(--new); }
+
+  pre {
+    margin: 0;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 12.9px;
+    line-height: 1.75;
+    color: var(--code-ink);
+    tab-size: 2;
+  }
+
+  pre .c { color: var(--code-comment); font-style: italic; }
+  pre .k { color: var(--code-accent); }
+  pre .ok { color: var(--new); }
+  pre .bad { color: var(--warn); }
+
+  /* ---------------- encadrés ---------------- */
+  .note {
+    margin: 1.4rem 0;
+    padding: 15px 18px;
+    max-width: 68ch;
+    border-left: 2px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0 4px 4px 0;
+    font-size: 15px;
+  }
+
+  .note p { margin: 0; max-width: none; }
+  .note p + p { margin-top: 0.7rem; }
+  .note ul { margin: 0.6rem 0 0; }
+
+  .note.caution { border-left-color: var(--warn); background: var(--warn-soft); }
+  .note.key { border-left-color: var(--new); background: var(--new-soft); }
+
+  .note .note-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .note.caution .note-label { color: var(--warn); }
+  .note.key .note-label { color: var(--new); }
+
+  /* ---------------- tableaux ---------------- */
+  .table-wrap { margin: 1.4rem 0; overflow-x: auto; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  th {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    white-space: nowrap;
+  }
+
+  td code { white-space: nowrap; }
+
+  /* ---------------- divers ---------------- */
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  details {
+    margin: 1.4rem 0;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+  }
+
+  summary {
+    padding: 12px 16px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  summary:hover { color: var(--ink); }
+  details[open] summary { border-bottom: 1px solid var(--line); }
+  details figure.code { margin: 0; border: 0; border-radius: 0; }
+
+  .end {
+    margin-top: clamp(3rem, 8vh, 5rem);
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  }
+
+  html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <header class="masthead">
+    <p class="kicker">Odza · Cours</p>
+    <h1>TypeScript, React et le serveur, expliqués par ce projet</h1>
+    <p class="standfirst">
+      Chaque exemple de ce cours est du code réellement présent dans le dépôt.
+      Aucun exemple inventé, aucun <code>foo</code> ni <code>bar</code> : on part
+      de fichiers que vous pouvez ouvrir immédiatement pour vérifier. L'objectif
+      est qu'à la fin, vous puissiez lire n'importe quelle ligne du projet et
+      savoir non seulement ce qu'elle fait, mais pourquoi elle est écrite ainsi.
+    </p>
+
+    <div class="howto">
+      <p>
+        <strong>Comment lire ce cours.</strong> Gardez votre éditeur ouvert à
+        côté. Chaque bloc de code indique le fichier dont il provient : ouvrez-le,
+        et survolez les variables avec la souris — l'éditeur vous affiche le type
+        que TypeScript a déduit. C'est le meilleur exercice qui soit.
+      </p>
+      <p>
+        La <strong>partie 3</strong> (le serveur) est la plus développée, comme
+        demandé. Mais les parties 1 et 2 lui servent de fondation : les unions
+        discriminées et les génériques y sont partout.
+      </p>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Sommaire">
+      <h2>Sommaire</h2>
+
+      <p class="toc-part">Préambule</p>
+      <ul>
+        <li><a href="#s0">Ce que fait TypeScript</a></li>
+      </ul>
+
+      <p class="toc-part">1 · Fondations</p>
+      <ul>
+        <li><a href="#s1">Types de base et inférence</a></li>
+        <li><a href="#s2">Annoter une fonction</a></li>
+        <li><a href="#s3">Décrire un objet : <code>type</code></a></li>
+        <li><a href="#s4">Le point d'interrogation</a></li>
+        <li><a href="#s5">Unions et types littéraux</a></li>
+        <li><a href="#s6"><code>as const</code></a></li>
+        <li><a href="#s7"><code>null</code>, <code>undefined</code>, mode strict</a></li>
+        <li><a href="#s8"><code>?.</code> et <code>??</code></a></li>
+      </ul>
+
+      <p class="toc-part">2 · Le typage du projet</p>
+      <ul>
+        <li><a href="#s9">Les génériques</a></li>
+        <li><a href="#s10"><code>Record</code> et <code>Partial</code></a></li>
+        <li><a href="#s11">Déduire un type d'une valeur</a></li>
+        <li><a href="#s12">Accès indexé</a></li>
+        <li><a href="#s13">Les unions discriminées</a></li>
+        <li><a href="#s14">Rétrécissement et gardes</a></li>
+        <li><a href="#s15">Le point d'exclamation</a></li>
+        <li><a href="#s16">Modules et <code>import type</code></a></li>
+      </ul>
+
+      <p class="toc-part">3 · Le serveur</p>
+      <ul>
+        <li><a href="#s17">Deux machines, deux mondes</a></li>
+        <li><a href="#s18"><code>"use client"</code> / <code>"use server"</code></a></li>
+        <li><a href="#s19">Promise, async, await</a></li>
+        <li><a href="#s20">Lire un formulaire : <code>FormData</code></a></li>
+        <li><a href="#s21">L'action, ligne par ligne</a></li>
+        <li><a href="#s22">État en mémoire et fermetures</a></li>
+        <li><a href="#s23">Les variables d'environnement</a></li>
+        <li><a href="#s24"><code>fetch</code> et le monde extérieur</a></li>
+        <li><a href="#s25">La frontière de confiance</a></li>
+      </ul>
+
+      <p class="toc-part">4 · React et TSX</p>
+      <ul>
+        <li><a href="#s26">Un composant est une fonction</a></li>
+        <li><a href="#s27">La syntaxe TSX</a></li>
+        <li><a href="#s28">Typer les props</a></li>
+        <li><a href="#s29">L'état : <code>useState</code></a></li>
+        <li><a href="#s30">Les effets : <code>useEffect</code></a></li>
+        <li><a href="#s31">Les références : <code>useRef</code></a></li>
+        <li><a href="#s32">Les autres hooks du projet</a></li>
+        <li><a href="#s33">Listes, <code>key</code>, rendu conditionnel</a></li>
+      </ul>
+
+      <p class="toc-part">5 · Synthèse</p>
+      <ul>
+        <li><a href="#s34">Un fichier de bout en bout</a></li>
+        <li><a href="#s35">Glossaire des symboles</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <!-- ================= PRÉAMBULE ================= -->
+      <div class="part-head">
+        <span class="part-no">Préambule</span>
+        <h2>Ce que TypeScript fait, et ce qu'il ne fait pas</h2>
+      </div>
+
+      <section id="s0">
+        <h3><span class="num">0.1</span>Un correcteur, pas un langage d'exécution</h3>
+
+        <p>
+          TypeScript est du JavaScript auquel on a ajouté des <em>annotations de
+          type</em>. Ces annotations servent uniquement pendant que vous écrivez
+          et pendant la compilation. Elles sont ensuite <strong>entièrement
+          supprimées</strong>. Le navigateur et Node.js n'exécutent que du
+          JavaScript ordinaire : ils n'ont jamais entendu parler de TypeScript.
+        </p>
+
+        <p>
+          Ce point est fondamental, et il explique un comportement qui déroute
+          souvent. Prenons du vrai code du projet :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/reservation.ts — ce que vous écrivez</figcaption>
+<pre><span class="k">export function</span> isoDate(date: Date) {
+  <span class="k">const</span> pad = (part: number) =&gt; String(part).padStart(2, "0");
+  <span class="k">return</span> `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}</pre>
+        </figure>
+
+        <figure class="code">
+          <figcaption>ce qui tourne réellement, après compilation</figcaption>
+<pre><span class="k">export function</span> isoDate(date) {
+  <span class="k">const</span> pad = (part) =&gt; String(part).padStart(2, "0");
+  <span class="k">return</span> `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}</pre>
+        </figure>
+
+        <p>
+          <code>: Date</code> et <code>: number</code> ont disparu. Il n'en reste
+          rien.
+        </p>
+
+        <div class="note key">
+          <span class="note-label">La conséquence la plus importante</span>
+          <p>
+            TypeScript ne peut <strong>rien</strong> vérifier à l'exécution. Si
+            une donnée arrive de l'extérieur — un formulaire, une requête HTTP,
+            une réponse d'API — le fait de lui avoir donné un type ne garantit
+            absolument rien. C'est précisément pour cela que
+            <code>app/actions/reservations.ts</code> revalide chaque champ à la
+            main : le type dit « ce devrait être une chaîne », le code doit
+            vérifier « c'en est bien une ».
+          </p>
+        </div>
+
+        <h4>Alors à quoi ça sert ?</h4>
+        <p>
+          À trois choses, toutes utiles avant l'exécution :
+        </p>
+        <ul>
+          <li>
+            <strong>Attraper des erreurs pendant que vous tapez.</strong> Une
+            faute de frappe dans un nom de propriété est signalée immédiatement,
+            pas à minuit en production.
+          </li>
+          <li>
+            <strong>Documenter.</strong> La signature
+            <code>validateReservation(input: ReservationInput, today: string)</code>
+            dit tout ce qu'il faut savoir pour l'appeler.
+          </li>
+          <li>
+            <strong>Rendre l'éditeur intelligent.</strong> L'autocomplétion, le
+            « aller à la définition », le renommage sûr — tout cela vient des
+            types.
+          </li>
+        </ul>
+
+        <h4>Les deux commandes à connaître</h4>
+        <figure class="code">
+          <figcaption>terminal</figcaption>
+<pre>npx tsc --noEmit   <span class="c"># vérifie les types, ne produit aucun fichier</span>
+npm run build      <span class="c"># compile le projet (vérifie les types au passage)</span></pre>
+        </figure>
+        <p>
+          <code>--noEmit</code> signifie « contrôle seulement ». C'est la
+          commande à lancer quand vous voulez savoir si votre code « tient » sans
+          attendre une compilation complète.
+        </p>
+      </section>
+
+      <!-- ================= PARTIE 1 ================= -->
+      <div class="part-head">
+        <span class="part-no">Partie 1</span>
+        <h2>Les fondations</h2>
+        <p>
+          Tout ce qu'il faut pour lire les fichiers de données du projet :
+          <code>apartments-data.ts</code>, <code>site-sections.ts</code>,
+          <code>contact-data.ts</code>.
+        </p>
+      </div>
+
+      <section id="s1">
+        <h3><span class="num">1.1</span>Types de base, et l'inférence</h3>
+
+        <p>
+          Les types primitifs sont <code>string</code>, <code>number</code>,
+          <code>boolean</code>, plus <code>null</code> et <code>undefined</code>.
+          Notez les minuscules : <code>String</code> avec une majuscule existe
+          aussi mais désigne autre chose, et n'est pratiquement jamais ce que
+          vous voulez.
+        </p>
+
+        <p>
+          Le plus important : <strong>vous n'avez presque jamais besoin de les
+          écrire.</strong> TypeScript déduit le type à partir de la valeur. C'est
+          ce qu'on appelle l'<em>inférence</em>.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/scroll-to-section.ts</figcaption>
+<pre><span class="k">export const</span> SECTION_SCROLL_DURATION = 1.5;</pre>
+        </figure>
+
+        <p>
+          Aucune annotation, et pourtant <code>SECTION_SCROLL_DURATION</code> est
+          de type <code>number</code>. Écrire
+          <code>const SECTION_SCROLL_DURATION: number = 1.5</code> serait du
+          bruit : l'information est déjà dans la valeur.
+        </p>
+
+        <p>
+          La règle pratique du projet, et une bonne règle en général :
+          <strong>annotez ce qui entre dans une fonction, laissez TypeScript
+          déduire ce qui en sort.</strong>
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">const</span> WINDOW_MS = 10 * 60 * 1000;   <span class="c">// number, déduit</span>
+<span class="k">const</span> MAX_PER_WINDOW = 5;           <span class="c">// number, déduit</span></pre>
+        </figure>
+
+        <h4>Le type <code>any</code>, et pourquoi il n'apparaît pas ici</h4>
+        <p>
+          <code>any</code> veut dire « désactive les vérifications pour cette
+          valeur ». Il se propage : tout ce qui touche un <code>any</code>
+          devient incontrôlé. Cherchez <code>any</code> dans ce projet — vous
+          n'en trouverez aucun. Quand un type est réellement inconnu, la bonne
+          réponse est <code>unknown</code>, qui oblige à vérifier avant
+          d'utiliser.
+        </p>
+      </section>
+
+      <section id="s2">
+        <h3><span class="num">1.2</span>Annoter une fonction</h3>
+
+        <p>
+          La forme est <code>nom(paramètre: Type): TypeDeRetour</code>. Le type
+          de retour est presque toujours omis, car déduit.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/scroll-to-section.ts</figcaption>
+<pre><span class="k">export function</span> scrollToSection(
+  target: string,
+  duration = SECTION_SCROLL_DURATION
+) {
+  <span class="k">const</span> el = document.querySelector&lt;HTMLElement&gt;(target);
+  <span class="k">if</span> (!el) <span class="k">return false</span>;
+
+  <span class="k">const</span> lenis = getLenis();
+  <span class="k">if</span> (lenis) lenis.scrollTo(el, { duration });
+  <span class="k">else</span> el.scrollIntoView({ behavior: "smooth" });
+
+  <span class="k">return true</span>;
+}</pre>
+        </figure>
+
+        <p>
+          Décortiquons :
+        </p>
+        <ul>
+          <li>
+            <code>target: string</code> — paramètre obligatoire, annoté.
+          </li>
+          <li>
+            <code>duration = SECTION_SCROLL_DURATION</code> — <strong>valeur par
+            défaut</strong>. Pas d'annotation nécessaire : la valeur par défaut
+            étant un <code>number</code>, le paramètre est un
+            <code>number</code>. Et parce qu'il a une valeur par défaut, il
+            devient facultatif à l'appel : <code>scrollToSection("#contact")</code>
+            fonctionne.
+          </li>
+          <li>
+            Le type de retour est <code>boolean</code>, déduit des
+            <code>return false</code> / <code>return true</code>.
+          </li>
+        </ul>
+
+        <h4>Les trois façons d'écrire une fonction</h4>
+        <figure class="code">
+          <figcaption>les trois formes, toutes présentes dans le projet</figcaption>
+<pre><span class="c">// 1. déclaration classique — components/intro-state.ts</span>
+<span class="k">export function</span> introHasPlayed() {
+  <span class="k">return</span> played;
+}
+
+<span class="c">// 2. fonction fléchée dans une constante — reservation.ts</span>
+<span class="k">const</span> pad = (part: number) =&gt; String(part).padStart(2, "0");
+
+<span class="c">// 3. fonction fléchée passée en argument — reservations.ts</span>
+APARTMENTS.some((flat) =&gt; flat.slug === input.slug)</pre>
+        </figure>
+
+        <p>
+          La flèche <code>=&gt;</code> se lit « donne ». <code>(part) =&gt;
+          String(part)</code> : « prends <code>part</code>, donne
+          <code>String(part)</code> ». Quand le corps tient sur une expression,
+          le <code>return</code> est implicite. Avec des accolades, il redevient
+          obligatoire :
+        </p>
+
+        <figure class="code">
+          <figcaption>la différence entre les deux formes fléchées</figcaption>
+<pre><span class="k">const</span> a = (x: number) =&gt; x * 2;          <span class="c">// retourne x * 2</span>
+<span class="k">const</span> b = (x: number) =&gt; { x * 2; };      <span class="c">// ne retourne RIEN</span>
+<span class="k">const</span> c = (x: number) =&gt; { <span class="k">return</span> x * 2; }; <span class="c">// retourne x * 2</span></pre>
+        </figure>
+
+        <p>
+          Dans le cas <code>b</code>, TypeScript déduit le type de retour
+          <code>void</code> — « rien ». C'est une source d'erreur classique
+          quand on ajoute des accolades pour insérer un
+          <code>console.log</code> et qu'on oublie le <code>return</code>.
+        </p>
+      </section>
+
+      <section id="s3">
+        <h3><span class="num">1.3</span>Décrire un objet avec <code>type</code></h3>
+
+        <p>
+          Pour donner un nom à la forme d'un objet, on écrit un <em>alias de
+          type</em>.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/apartments-data.ts</figcaption>
+<pre><span class="k">export type</span> Apartment = {
+  slug: keyof Dict["listings"];
+  price: number;
+  <span class="c">/** Priced per day rather than to buy. */</span>
+  perDay?: boolean;
+  <span class="c">/** Rendered as a room count, or as seating when it's the hall. */</span>
+  rooms: number;
+  seats?: boolean;
+  area: string;
+  src: string;
+};</pre>
+        </figure>
+
+        <p>
+          Ce type dit : « un <code>Apartment</code> est un objet qui a
+          obligatoirement <code>slug</code>, <code>price</code>,
+          <code>rooms</code>, <code>area</code> et <code>src</code>, et
+          éventuellement <code>perDay</code> et <code>seats</code> ». Chaque
+          propriété est séparée par un point-virgule (une virgule marche aussi).
+        </p>
+
+        <p>Une fois nommé, on s'en sert comme de n'importe quel type :</p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/apartments-data.ts</figcaption>
+<pre><span class="k">export const</span> APARTMENTS: Apartment[] = [
+  { slug: "the-penthouse", price: 1850000, rooms: 4, area: "210 m²", src: "/pexels-artbovich-7061395.jpg" },
+  <span class="c">// …</span>
+];</pre>
+        </figure>
+
+        <p>
+          <code>Apartment[]</code> se lit « tableau de <code>Apartment</code> ».
+          Les crochets après un type signifient toujours « tableau de ». Ici
+          l'annotation <em>est</em> utile, contrairement au cas de
+          <code>SECTION_SCROLL_DURATION</code> : sans elle, TypeScript déduirait
+          un type approximatif à partir du premier élément, et ne signalerait pas
+          une faute de frappe dans la trentième ligne du tableau.
+        </p>
+
+        <h4>Et <code>interface</code> ?</h4>
+        <p>
+          Vous rencontrerez souvent <code>interface Apartment { … }</code> dans
+          d'autres projets. Pour décrire un objet, les deux sont pratiquement
+          équivalents. <code>type</code> est plus général : il sait aussi nommer
+          une union (<code>type Slot = "morning" | "afternoon"</code>), ce dont
+          <code>interface</code> est incapable. Ce projet n'utilise que
+          <code>type</code>, par cohérence. Gardez la même habitude.
+        </p>
+      </section>
+
+      <section id="s4">
+        <h3><span class="num">1.4</span>Le point d'interrogation : facultatif</h3>
+
+        <p>
+          <code>perDay?: boolean</code> signifie que la propriété peut être
+          absente. Son type réel est donc <code>boolean | undefined</code>.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/apartments-data.ts</figcaption>
+<pre>{ slug: "the-penthouse", price: 1850000, rooms: 4, area: "210 m²", src: "…" },
+{ slug: "the-assembly", price: 1200, perDay: <span class="k">true</span>, rooms: 90, seats: <span class="k">true</span>, area: "180 m²", src: "…" },</pre>
+        </figure>
+
+        <p>
+          Le premier n'a pas de <code>perDay</code> : il est vendu. Le second est
+          la salle de réunion, facturée à la journée. Sans le <code>?</code>, il
+          faudrait écrire <code>perDay: false</code> sur les neuf autres lignes.
+        </p>
+
+        <p>
+          Conséquence : TypeScript vous <em>oblige</em> à traiter le cas absent.
+          Voici comment le projet s'y prend :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/apartments-data.ts</figcaption>
+<pre>price: flat.perDay
+  ? t.apartments.perDay(flat.price)
+  : t.apartments.money(flat.price),</pre>
+        </figure>
+
+        <p>
+          C'est l'<em>opérateur ternaire</em> :
+          <code>condition ? siVrai : siFaux</code>. Ici, <code>undefined</code>
+          est « faussé » (falsy), donc les appartements sans <code>perDay</code>
+          tombent bien dans la branche <code>money</code>.
+        </p>
+
+        <div class="note">
+          <span class="note-label">Attention à ne pas confondre</span>
+          <p>
+            Le <code>?</code> a trois emplois totalement différents en
+            TypeScript. Après un nom de propriété
+            (<code>perDay?: boolean</code>) il veut dire « facultatif ». Entre
+            deux expressions (<code>a ? b : c</code>) c'est le ternaire. Avant un
+            point (<code>forwarded?.split</code>) c'est le chaînage optionnel, vu
+            en 1.8. Le glossaire final récapitule tout.
+          </p>
+        </div>
+      </section>
+
+      <section id="s5">
+        <h3><span class="num">1.5</span>Unions et types littéraux</h3>
+
+        <p>
+          La barre verticale <code>|</code> signifie « ou ». Elle permet de dire
+          qu'une valeur est de l'un ou l'autre type.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/site-sections.ts</figcaption>
+<pre><span class="c">/** Keys into `dict.nav` — the visible label comes from the active language. */</span>
+<span class="k">export type</span> SectionKey =
+  | "welcome"
+  | "about"
+  | "apartments"
+  | "qualities"
+  | "contact";</pre>
+        </figure>
+
+        <p>
+          Regardez bien : les membres ne sont pas des types, ce sont des
+          <strong>chaînes précises</strong>. C'est ce qu'on appelle un
+          <em>type littéral</em>. <code>SectionKey</code> n'est pas
+          « une chaîne », c'est « exactement l'une de ces cinq chaînes ».
+        </p>
+
+        <p>
+          C'est une des idées les plus utiles de TypeScript, et elle est partout
+          dans ce projet :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> — quatre exemples</figcaption>
+<pre><span class="c">// reservation.ts — un créneau, et rien d'autre</span>
+<span class="k">export type</span> Slot = "morning" | "afternoon";
+
+<span class="c">// i18n/dictionary.ts — deux langues</span>
+<span class="k">export type</span> Locale = "en" | "fr";
+
+<span class="c">// use-drop-reveal.ts — deux déclencheurs possibles</span>
+trigger?: "scroll" | "mount";
+
+<span class="c">// TextDrop.tsx — les balises autorisées</span>
+as?: "h1" | "h2" | "h3" | "h4" | "p" | "div";</pre>
+        </figure>
+
+        <p>
+          Le bénéfice est double : l'éditeur propose les valeurs valides en
+          autocomplétion, et <code>as="span"</code> devient une erreur de
+          compilation plutôt qu'un bug silencieux.
+        </p>
+
+        <p>
+          Une union peut aussi mélanger un type et une valeur :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/site-sections.ts</figcaption>
+<pre><span class="k">export type</span> SectionLink = {
+  key: SectionKey;
+  <span class="c">/** `null` means the section doesn't exist yet — the link renders inert. */</span>
+  target: string | null;
+};</pre>
+        </figure>
+
+        <p>
+          <code>string | null</code> : soit une adresse, soit rien. Et parce que
+          <code>null</code> fait partie du type, TypeScript refusera
+          <code>target.slice(1)</code> tant que vous n'aurez pas écarté le cas
+          <code>null</code>. Ce qui est exactement ce que fait la ligne
+          suivante du fichier :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/site-sections.ts</figcaption>
+<pre><span class="k">export const</span> SECTION_IDS = SECTION_LINKS.flatMap(({ target }) =&gt;
+  target ? [target.slice(1)] : []
+);</pre>
+        </figure>
+
+        <p>
+          <code>target ? … : []</code> écarte <code>null</code>. Dans la branche
+          vraie, TypeScript sait que <code>target</code> est forcément une
+          <code>string</code> et autorise <code>.slice(1)</code>. On appelle cela
+          le <em>rétrécissement</em> (section 2.6).
+        </p>
+      </section>
+
+      <section id="s6">
+        <h3><span class="num">1.6</span><code>as const</code> : figer une valeur</h3>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/reservation.ts</figcaption>
+<pre><span class="c">/** The two windows the agency shows properties in. */</span>
+<span class="k">export const</span> SLOTS = ["morning", "afternoon"] <span class="k">as const</span>;
+<span class="k">export type</span> Slot = (<span class="k">typeof</span> SLOTS)[number];</pre>
+        </figure>
+
+        <p>Sans <code>as const</code>, TypeScript aurait déduit :</p>
+
+        <figure class="code">
+          <figcaption>comparaison</figcaption>
+<pre><span class="k">const</span> a = ["morning", "afternoon"];
+<span class="c">// type : string[]  → un tableau de chaînes quelconques</span>
+
+<span class="k">const</span> b = ["morning", "afternoon"] <span class="k">as const</span>;
+<span class="c">// type : readonly ["morning", "afternoon"]</span>
+<span class="c">//        ↑ exactement ces deux chaînes, dans cet ordre, non modifiable</span></pre>
+        </figure>
+
+        <p>
+          <code>as const</code> dit à TypeScript : « ne généralise pas, garde les
+          valeurs exactes ». C'est ce qui permet, à la ligne suivante, d'en
+          extraire le type <code>"morning" | "afternoon"</code>.
+        </p>
+
+        <p>
+          Vous retrouverez ce motif dans le formulaire :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ReservationForm.tsx</figcaption>
+<pre>{(["morning", "afternoon"] <span class="k">as const</span>).map((slot) =&gt; (
+  &lt;label className={styles.slot} key={slot}&gt;
+    …
+    &lt;span className={styles.slotLabel}&gt;{t.reserve[slot]}&lt;/span&gt;
+  &lt;/label&gt;
+))}</pre>
+        </figure>
+
+        <p>
+          Le <code>as const</code> est indispensable ici. Sans lui,
+          <code>slot</code> serait de type <code>string</code>, et
+          <code>t.reserve[slot]</code> échouerait : on ne peut pas indexer le
+          dictionnaire avec une chaîne quelconque. Avec lui, <code>slot</code>
+          vaut <code>"morning" | "afternoon"</code>, deux clés qui existent
+          réellement dans <code>t.reserve</code>.
+        </p>
+      </section>
+
+      <section id="s7">
+        <h3><span class="num">1.7</span><code>null</code>, <code>undefined</code> et le mode strict</h3>
+
+        <p>
+          Le fichier <code>tsconfig.json</code> du projet contient
+          <code>"strict": true</code>. C'est ce réglage qui rend TypeScript
+          réellement utile, et c'est lui qui provoque la majorité des erreurs
+          que vous rencontrerez au début.
+        </p>
+
+        <p>
+          En mode strict, <code>null</code> et <code>undefined</code> ne font
+          <em>pas</em> partie des autres types. Une <code>string</code> ne peut
+          pas être <code>null</code>. Si une valeur peut être absente, il faut le
+          dire explicitement, et le vérifier avant usage.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/lenis-instance.ts</figcaption>
+<pre><span class="k">import type</span> Lenis <span class="k">from</span> "lenis";
+
+<span class="k">let</span> instance: Lenis | <span class="k">null</span> = <span class="k">null</span>;
+
+<span class="k">export function</span> setLenis(next: Lenis | <span class="k">null</span>) {
+  instance = next;
+}
+
+<span class="k">export function</span> getLenis() {
+  <span class="k">return</span> instance;
+}</pre>
+        </figure>
+
+        <p>
+          <code>getLenis()</code> renvoie donc <code>Lenis | null</code>. Tout
+          appelant est forcé de gérer le cas <code>null</code> :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/scroll-to-section.ts</figcaption>
+<pre><span class="k">const</span> lenis = getLenis();
+<span class="k">if</span> (lenis) lenis.scrollTo(el, { duration });
+<span class="k">else</span> el.scrollIntoView({ behavior: "smooth" });</pre>
+        </figure>
+
+        <p>
+          Sans le <code>if</code>, TypeScript refuserait de compiler :
+          <em>« Object is possibly null »</em>. Cette contrainte n'est pas une
+          punition, c'est la fonctionnalité : elle élimine par construction la
+          famille d'erreurs la plus courante en JavaScript,
+          <code>Cannot read properties of null</code>.
+        </p>
+
+        <h4>La différence entre les deux</h4>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th></th><th>Sens habituel</th><th>D'où ça vient</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>undefined</code></td>
+                <td>« pas encore défini », accidentel</td>
+                <td>Propriété facultative absente, variable non initialisée, <code>form.get()</code> sur un champ inexistant</td>
+              </tr>
+              <tr>
+                <td><code>null</code></td>
+                <td>« délibérément vide »</td>
+                <td>Choix explicite du programmeur : <code>useRef(null)</code>, <code>view: OverlayView = null</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="s8">
+        <h3><span class="num">1.8</span><code>?.</code> et <code>??</code></h3>
+
+        <p>
+          Deux opérateurs conçus exactement pour gérer l'absence sans écrire des
+          cascades de <code>if</code>. Le serveur les utilise tous les deux dans
+          la même fonction.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="c">/** Best-effort caller identity. Spoofable, which is fine for a speed bump. */</span>
+<span class="k">async function</span> callerKey() {
+  <span class="k">const</span> list = <span class="k">await</span> headers();
+  <span class="k">const</span> forwarded = list.get("x-forwarded-for");
+  <span class="k">return</span> forwarded?.split(",")[0]?.trim() || list.get("x-real-ip") || "unknown";
+}</pre>
+        </figure>
+
+        <p>
+          <strong><code>?.</code> — le chaînage optionnel.</strong>
+          <code>list.get()</code> renvoie <code>string | null</code> : l'en-tête
+          peut ne pas exister. <code>forwarded?.split(",")</code> se lit « si
+          <code>forwarded</code> n'est ni <code>null</code> ni
+          <code>undefined</code>, appelle <code>.split()</code> ; sinon, donne
+          <code>undefined</code> et n'appelle rien ». Cela remplace :
+        </p>
+
+        <figure class="code">
+          <figcaption>équivalent, sans <code>?.</code></figcaption>
+<pre><span class="k">let</span> premier;
+<span class="k">if</span> (forwarded !== <span class="k">null</span> &amp;&amp; forwarded !== undefined) {
+  <span class="k">const</span> morceaux = forwarded.split(",");
+  <span class="k">if</span> (morceaux[0] !== undefined) premier = morceaux[0].trim();
+}</pre>
+        </figure>
+
+        <p>
+          Le second <code>?.</code>, dans <code>[0]?.trim()</code>, protège
+          contre un tableau vide : <code>morceaux[0]</code> serait alors
+          <code>undefined</code>.
+        </p>
+
+        <p>
+          <strong><code>??</code> — le coalescement nul.</strong>
+          <code>a ?? b</code> donne <code>a</code>, sauf si <code>a</code> vaut
+          <code>null</code> ou <code>undefined</code>, auquel cas il donne
+          <code>b</code>.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">const</span> fresh = (seen.get(key) ?? []).filter((at) =&gt; now - at &lt; WINDOW_MS);</pre>
+        </figure>
+
+        <p>
+          <code>seen.get(key)</code> renvoie <code>number[] | undefined</code> —
+          une <code>Map</code> ne contient pas forcément la clé demandée.
+          <code>?? []</code> fournit un tableau vide dans ce cas, ce qui permet
+          d'enchaîner <code>.filter()</code> sans test préalable.
+        </p>
+
+        <div class="note caution">
+          <span class="note-label">Le piège classique : <code>??</code> contre <code>||</code></span>
+          <p>
+            <code>||</code> se déclenche sur toute valeur « faussée » :
+            <code>0</code>, <code>""</code>, <code>false</code>,
+            <code>NaN</code>, en plus de <code>null</code> et
+            <code>undefined</code>. <code>??</code> ne se déclenche que sur
+            <code>null</code> et <code>undefined</code>.
+          </p>
+          <p>
+            <code>0 || 10</code> donne <code>10</code> — souvent pas ce qu'on
+            veut.<br />
+            <code>0 ?? 10</code> donne <code>0</code> — presque toujours ce qu'on
+            veut.
+          </p>
+          <p>
+            Dans <code>callerKey()</code>, le <code>||</code> est délibéré : une
+            chaîne vide doit basculer sur la valeur suivante, exactement comme
+            <code>null</code>. Dans <code>?? []</code>, le <code>??</code> est
+            délibéré aussi : un tableau vide existant est une valeur valable
+            qu'il ne faut pas remplacer.
+          </p>
+        </div>
+      </section>
+
+      <!-- ================= PARTIE 2 ================= -->
+      <div class="part-head">
+        <span class="part-no">Partie 2</span>
+        <h2>Le typage tel qu'il est pratiqué ici</h2>
+        <p>
+          Les motifs récurrents du projet. Une fois ces huit sections comprises,
+          plus aucun fichier ne devrait vous résister.
+        </p>
+      </div>
+
+      <section id="s9">
+        <h3><span class="num">2.1</span>Les génériques : un type en paramètre</h3>
+
+        <p>
+          Un générique, c'est un type qui prend un autre type en argument, entre
+          chevrons. L'exemple le plus simple est déjà connu :
+          <code>Apartment[]</code> peut aussi s'écrire
+          <code>Array&lt;Apartment&gt;</code>.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">const</span> seen = <span class="k">new</span> Map&lt;string, number[]&gt;();</pre>
+        </figure>
+
+        <p>
+          <code>Map</code> est une table d'association. Elle prend deux
+          paramètres de type : le type des clés, puis celui des valeurs. Ici :
+          des clés <code>string</code> (l'adresse IP de l'appelant) vers des
+          valeurs <code>number[]</code> (les horodatages de ses envois).
+        </p>
+
+        <p>
+          Le bénéfice se voit à l'usage. TypeScript sait, sans qu'on lui redise,
+          ce que chaque opération renvoie :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre>seen.get(key)      <span class="c">// number[] | undefined — undefined si la clé est absente</span>
+seen.set(key, fresh)  <span class="c">// fresh DOIT être un number[], sinon erreur</span>
+seen.size          <span class="c">// number</span>
+seen.delete(id)    <span class="c">// boolean</span></pre>
+        </figure>
+
+        <p>D'autres génériques du projet :</p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> — quatre usages</figcaption>
+<pre><span class="c">// scroll-to-section.ts — précise ce que le sélecteur va retourner</span>
+document.querySelector&lt;HTMLElement&gt;(target)
+
+<span class="c">// use-drop-reveal.ts — idem pour l'utilitaire de GSAP</span>
+gsap.utils.toArray&lt;HTMLElement&gt;(selector, root)
+
+<span class="c">// TextDrop.tsx — le type de l'élément que la ref va pointer</span>
+useRef&lt;HTMLDivElement&gt;(<span class="k">null</span>)
+
+<span class="c">// reservations.ts — ce que la promesse finira par donner</span>
+Promise&lt;ReservationState&gt;</pre>
+        </figure>
+
+        <p>
+          Sans le générique, <code>document.querySelector(target)</code> renvoie
+          <code>Element | null</code>, un type très pauvre. Avec
+          <code>&lt;HTMLElement&gt;</code>, on obtient <code>HTMLElement |
+          null</code>, et donc l'accès à <code>.scrollIntoView()</code>,
+          <code>.style</code>, etc.
+        </p>
+      </section>
+
+      <section id="s10">
+        <h3><span class="num">2.2</span><code>Record</code> et <code>Partial</code></h3>
+
+        <p>
+          TypeScript fournit des génériques prêts à l'emploi, dits <em>types
+          utilitaires</em>. Le projet en utilise deux, dans la même ligne.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/reservation.ts</figcaption>
+<pre><span class="k">export type</span> ReservationInput = Record&lt;ReservationField, string&gt;;
+
+<span class="k">export type</span> FieldErrors = Partial&lt;Record&lt;ReservationField, ErrorCode&gt;&gt;;</pre>
+        </figure>
+
+        <p>
+          <strong><code>Record&lt;Clés, Valeur&gt;</code></strong> construit un
+          objet dont les clés sont celles indiquées et dont toutes les valeurs
+          ont le même type. Comme <code>ReservationField</code> vaut
+          <code>"slug" | "name" | "phone" | "email" | "date" | "slot" |
+          "note"</code>, la première ligne est <em>exactement</em> équivalente à :
+        </p>
+
+        <figure class="code">
+          <figcaption>ce que <code>Record</code> écrit à votre place</figcaption>
+<pre><span class="k">type</span> ReservationInput = {
+  slug: string;
+  name: string;
+  phone: string;
+  email: string;
+  date: string;
+  slot: string;
+  note: string;
+};</pre>
+        </figure>
+
+        <p>
+          L'intérêt n'est pas seulement d'écrire moins. C'est surtout que si l'on
+          ajoute un champ à <code>ReservationField</code>, le type suit
+          automatiquement — et le compilateur signale alors la boucle de lecture
+          qui ne le remplit pas.
+        </p>
+
+        <p>
+          <strong><code>Partial&lt;T&gt;</code></strong> reprend un type et rend
+          toutes ses propriétés facultatives. <code>FieldErrors</code> devient
+          donc :
+        </p>
+
+        <figure class="code">
+          <figcaption>ce que <code>Partial&lt;Record&lt;…&gt;&gt;</code> produit</figcaption>
+<pre><span class="k">type</span> FieldErrors = {
+  slug?: ErrorCode;
+  name?: ErrorCode;
+  phone?: ErrorCode;
+  <span class="c">// … etc, toutes facultatives</span>
+};</pre>
+        </figure>
+
+        <p>
+          Et c'est précisément le sens voulu : un formulaire peut avoir zéro,
+          une, ou sept erreurs. Un objet vide <code>{}</code> signifie « tout est
+          valide » — ce que le code exploite directement :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">const</span> errors = validateReservation(input, isoDate(<span class="k">new</span> Date()));
+<span class="k">if</span> (Object.keys(errors).length &gt; 0) <span class="k">return</span> { status: "invalid", errors };</pre>
+        </figure>
+      </section>
+
+      <section id="s11">
+        <h3><span class="num">2.3</span>Déduire un type à partir d'une valeur</h3>
+
+        <p>
+          Voici le motif le plus élégant du projet, et il mérite qu'on s'y
+          arrête. Regardez la fin de <code>dictionary.ts</code> :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/i18n/dictionary.ts</figcaption>
+<pre><span class="k">const</span> en = {
+  code: "en",
+  label: "English",
+  nav: { … },
+  hero: { … },
+  apartments: { … },
+  reserve: { … },
+  <span class="c">// … quelque 200 lignes</span>
+};
+
+<span class="k">export type</span> Dict = <span class="k">typeof</span> en;
+
+<span class="k">const</span> fr: Dict = {
+  code: "fr",
+  label: "Français",
+  <span class="c">// … la même structure, en français</span>
+};
+
+<span class="k">export const</span> DICTIONARIES: Record&lt;Locale, Dict&gt; = { en, fr };</pre>
+        </figure>
+
+        <p>
+          <code>typeof en</code> — en position de <em>type</em>, pas de valeur —
+          signifie « le type que TypeScript a déduit pour l'objet
+          <code>en</code> ». Personne n'a écrit à la main le type du
+          dictionnaire : il est extrait de la valeur anglaise, qui devient la
+          référence.
+        </p>
+
+        <p>Puis <code>const fr: Dict</code> impose au français d'avoir exactement la même forme. Le résultat est une garantie très forte :</p>
+
+        <div class="note key">
+          <span class="note-label">Ce que ce motif vous achète</span>
+          <p>
+            Si vous ajoutez une clé en anglais et l'oubliez en français, le
+            projet <strong>ne compile plus</strong>. Si vous faites une faute de
+            frappe dans le français, il ne compile plus non plus. La traduction
+            ne peut pas dériver en silence.
+          </p>
+          <p>
+            C'est exactement ce qui s'est passé quand nous avons ajouté le bloc
+            <code>reserve</code> : il a fallu l'écrire dans les deux langues, le
+            compilateur ne laissait pas le choix.
+          </p>
+        </div>
+
+        <div class="note caution">
+          <span class="note-label">Ne confondez pas les deux <code>typeof</code></span>
+          <p>
+            En <strong>JavaScript</strong>, <code>typeof x === "string"</code>
+            est un test exécuté à l'exécution qui renvoie une chaîne. Le projet
+            l'utilise dans <code>read()</code> et dans le piège à robots.
+          </p>
+          <p>
+            En <strong>TypeScript</strong>, <code>typeof en</code> écrit à
+            l'endroit où l'on attend un type est une opération de compilation qui
+            ne produit aucun code. Même mot, deux mondes.
+          </p>
+        </div>
+      </section>
+
+      <section id="s12">
+        <h3><span class="num">2.4</span>L'accès indexé : piocher dans un type</h3>
+
+        <p>
+          On peut lire l'intérieur d'un type avec des crochets, comme on lirait
+          une propriété d'objet.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/apartments-data.ts</figcaption>
+<pre><span class="k">export type</span> Apartment = {
+  slug: keyof Dict["listings"];
+  <span class="c">// …</span>
+};</pre>
+        </figure>
+
+        <p>Décomposons cette ligne, qui est dense :</p>
+
+        <ol>
+          <li>
+            <code>Dict</code> est le type du dictionnaire (section 2.3).
+          </li>
+          <li>
+            <code>Dict["listings"]</code> est le type de sa propriété
+            <code>listings</code>, c'est-à-dire l'objet
+            <code>{ "the-penthouse": {…}, "garden-villa": {…}, … }</code>.
+          </li>
+          <li>
+            <code>keyof</code> prend un type d'objet et donne l'union de ses
+            clés : <code>"the-penthouse" | "garden-villa" | "skyline-apartment"
+            | …</code>
+          </li>
+        </ol>
+
+        <p>
+          Donc <code>slug</code> ne peut être que le nom d'une annonce qui existe
+          réellement dans le dictionnaire. Écrire
+          <code>slug: "the-penthous"</code> (faute de frappe) est une erreur de
+          compilation. Et si vous supprimez une annonce du dictionnaire, toutes
+          les données qui la référencent cessent de compiler.
+        </p>
+
+        <p>
+          L'autre forme d'accès indexé concerne les tableaux :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/reservation.ts</figcaption>
+<pre><span class="k">export const</span> SLOTS = ["morning", "afternoon"] <span class="k">as const</span>;
+<span class="k">export type</span> Slot = (<span class="k">typeof</span> SLOTS)[number];</pre>
+        </figure>
+
+        <p>
+          <code>(typeof SLOTS)</code> vaut <code>readonly ["morning",
+          "afternoon"]</code>. L'indexer par <code>[number]</code> signifie
+          « le type de ce qu'on obtient en indexant par n'importe quel
+          nombre », c'est-à-dire l'union de tous les éléments :
+          <code>"morning" | "afternoon"</code>.
+        </p>
+
+        <p>
+          Résultat : la liste des créneaux est écrite <strong>une seule
+          fois</strong>. Elle sert à la fois de valeur exécutable (pour
+          <code>SLOTS.includes(...)</code>) et de type. Ajouter
+          <code>"evening"</code> au tableau met à jour le type automatiquement.
+        </p>
+      </section>
+
+      <section id="s13">
+        <h3><span class="num">2.5</span>Les unions discriminées</h3>
+
+        <p>
+          Si vous ne deviez retenir qu'une seule idée de ce cours, ce serait
+          celle-ci. C'est le motif structurant du projet, côté client comme côté
+          serveur.
+        </p>
+
+        <p>
+          Une union discriminée, c'est une union d'objets qui partagent tous une
+          propriété commune servant d'étiquette. En lisant l'étiquette,
+          TypeScript sait de quelle variante il s'agit et débloque les propriétés
+          correspondantes.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ApartmentsOverlay.tsx</figcaption>
+<pre><span class="k">export type</span> OverlayView =
+  | { type: "list" }
+  | { type: "detail"; slug: string }
+  | { type: "reserve"; slug: string }
+  | <span class="k">null</span>;</pre>
+        </figure>
+
+        <p>
+          L'étiquette est ici <code>type</code>. Ce qui rend le motif puissant,
+          c'est que <strong>les variantes n'ont pas les mêmes propriétés</strong>.
+          La liste n'a pas de <code>slug</code> — et c'est correct, puisqu'elle
+          les affiche toutes.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ApartmentsOverlay.tsx</figcaption>
+<pre>{view.type === "list" ? (
+  &lt;ApartmentsList onSelect={onSelect} /&gt;
+) : view.type === "detail" ? (
+  &lt;ApartmentDetail slug={view.slug} onReserve={onReserve} /&gt;
+) : (
+  &lt;ReservationForm slug={view.slug} onBack={() =&gt; onSelect(view.slug)} /&gt;
+)}</pre>
+        </figure>
+
+        <p>
+          Dans la première branche, écrire <code>view.slug</code> serait une
+          erreur de compilation : la variante <code>"list"</code> n'en a pas.
+          Dans la deuxième, <code>view.slug</code> est autorisé et de type
+          <code>string</code>, pas <code>string | undefined</code>. TypeScript a
+          suivi le raisonnement tout seul.
+        </p>
+
+        <h4>Le même motif, côté serveur</h4>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/reservation.ts</figcaption>
+<pre><span class="k">export type</span> ReservationState =
+  | { status: "idle" }
+  | { status: "invalid"; errors: FieldErrors }
+  | { status: "throttled" }
+  | { status: "failed" }
+  | { status: "sent" };</pre>
+        </figure>
+
+        <p>
+          Ce type décrit tout ce que la Server Action peut répondre. Seule la
+          variante <code>"invalid"</code> transporte des erreurs — les autres
+          n'en ont pas besoin. Le formulaire lit l'étiquette et sait quoi
+          afficher :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ReservationForm.tsx</figcaption>
+<pre><span class="k">const</span> errors = state.status === "invalid" ? state.errors : {};</pre>
+        </figure>
+
+        <div class="note key">
+          <span class="note-label">Pourquoi c'est mieux qu'un objet « fourre-tout »</span>
+          <p>
+            L'alternative naïve serait
+            <code>{ ok: boolean; errors?: FieldErrors; message?: string }</code>.
+            Ce type autorise des états absurdes :
+            <code>ok: true</code> avec des erreurs, ou <code>ok: false</code>
+            sans aucune explication. L'union discriminée rend ces combinaisons
+            <em>inexprimables</em>.
+          </p>
+          <p>
+            Et lorsque nous avons ajouté <code>{ type: "reserve" }</code> à
+            <code>OverlayView</code>, le compilateur a signalé chaque endroit qui
+            ne gérait pas le nouveau cas. Un oubli possible est devenu une erreur
+            de compilation.
+          </p>
+        </div>
+      </section>
+
+      <section id="s14">
+        <h3><span class="num">2.6</span>Rétrécissement et gardes de type</h3>
+
+        <p>
+          Le <em>rétrécissement</em> (narrowing) est le mécanisme par lequel
+          TypeScript réduit un type au fil des tests que vous écrivez. Vous
+          l'utilisez sans le savoir depuis la section 1.7.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/use-drop-reveal.ts</figcaption>
+<pre><span class="k">const</span> root = rootRef.current;   <span class="c">// HTMLElement | null</span>
+<span class="k">if</span> (!root) <span class="k">return</span>;
+<span class="c">// à partir d'ici, root est HTMLElement — le null est écarté</span>
+
+<span class="k">const</span> items = gsap.utils.toArray&lt;HTMLElement&gt;(selector, root);</pre>
+        </figure>
+
+        <p>
+          Ce style — « sortir tôt si la valeur manque » — s'appelle une
+          <em>clause de garde</em>. Il évite d'imbriquer tout le corps de la
+          fonction dans un <code>if</code>, et il rétrécit le type pour tout ce
+          qui suit.
+        </p>
+
+        <p>Les tests qui rétrécissent :</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Test</th><th>Effet</th><th>Où dans le projet</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>if (!x) return</code></td>
+                <td>Écarte <code>null</code>, <code>undefined</code>, <code>""</code>, <code>0</code></td>
+                <td><code>use-drop-reveal.ts</code>, <code>ReservationForm.tsx</code></td>
+              </tr>
+              <tr>
+                <td><code>typeof x === "string"</code></td>
+                <td>Réduit à <code>string</code></td>
+                <td><code>reservations.ts</code>, fonction <code>read()</code></td>
+              </tr>
+              <tr>
+                <td><code>x.status === "invalid"</code></td>
+                <td>Sélectionne une variante d'union</td>
+                <td><code>ReservationForm.tsx</code></td>
+              </tr>
+              <tr>
+                <td><code>Array.isArray(x)</code></td>
+                <td>Réduit à un tableau</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>Écrire sa propre garde</h4>
+
+        <p>
+          Quand le test est trop spécifique pour être compris automatiquement, on
+          écrit une fonction dont le type de retour est une
+          <em>prédication de type</em>. Le projet en contient une :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/i18n/locale.tsx</figcaption>
+<pre><span class="k">const</span> isLocale = (value: unknown): value <span class="k">is</span> Locale =&gt;
+  value === "en" || value === "fr";</pre>
+        </figure>
+
+        <p>
+          Le type de retour n'est pas <code>boolean</code> mais
+          <code>value is Locale</code>. Cela dit au compilateur : « si cette
+          fonction renvoie vrai, alors <code>value</code> est un
+          <code>Locale</code> ». Voici pourquoi c'est indispensable ici :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/i18n/locale.tsx</figcaption>
+<pre><span class="k">let</span> current: Locale = "en";
+<span class="k">if</span> (<span class="k">typeof</span> window !== "undefined") {
+  <span class="k">try</span> {
+    <span class="k">const</span> saved = window.localStorage.getItem(STORAGE_KEY);  <span class="c">// string | null</span>
+    <span class="k">if</span> (isLocale(saved)) current = saved;                   <span class="c">// saved est Locale ici</span>
+  } <span class="k">catch</span> {
+    <span class="c">// private mode, storage disabled — English is a fine default</span>
+  }
+}</pre>
+        </figure>
+
+        <p>
+          <code>localStorage</code> ne renvoie que <code>string | null</code> :
+          il ne sait rien de nos langues, et l'utilisateur pourrait avoir bricolé
+          la valeur à la main. <code>isLocale</code> est la porte entre le monde
+          non fiable et notre type. Notez aussi <code>unknown</code> en
+          paramètre : c'est le type honnête pour une donnée dont on ne sait rien
+          — contrairement à <code>any</code>, il interdit tout usage tant qu'on
+          n'a pas vérifié.
+        </p>
+      </section>
+
+      <section id="s15">
+        <h3><span class="num">2.7</span>Le point d'exclamation</h3>
+
+        <p>
+          Un <code>!</code> après une expression est l'<em>assertion de
+          non-nullité</em>. Il dit : « je sais que ce n'est ni <code>null</code>
+          ni <code>undefined</code>, tais-toi et fais-moi confiance ».
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="c">/* Resolve the listing from our own data rather than trusting anything in
+   the request. Validation proved the slug exists, so this can't miss. */</span>
+<span class="k">const</span> listing = APARTMENTS.find((flat) =&gt; flat.slug === input.slug)!;</pre>
+        </figure>
+
+        <p>
+          <code>.find()</code> renvoie <code>Apartment | undefined</code>, car
+          rien ne garantit en général qu'un élément corresponde. Mais ici, la
+          ligne précédente a fait échouer la requête si le <code>slug</code>
+          n'était pas dans <code>APARTMENTS</code>. Le <code>!</code> reflète ce
+          raisonnement.
+        </p>
+
+        <div class="note caution">
+          <span class="note-label">Le <code>!</code> est une dette</span>
+          <p>
+            Chaque <code>!</code> est une vérification que vous <em>retirez</em>
+            au compilateur pour la prendre en charge vous-même. Si quelqu'un
+            déplace un jour la validation ou change son ordre, le <code>!</code>
+            devient un mensonge et l'application plante à l'exécution — sans
+            aucun avertissement.
+          </p>
+          <p>
+            C'est pour cela qu'il n'y en a qu'un seul dans tout le projet, et
+            qu'il est accompagné d'un commentaire qui explique pourquoi il est
+            légitime. Si vous êtes tenté d'en écrire un, demandez-vous d'abord
+            si une clause de garde ne ferait pas mieux l'affaire.
+          </p>
+        </div>
+
+        <p>
+          Attention à ne pas le confondre avec le <code>!</code> de négation, qui
+          se place <em>avant</em> : <code>if (!root) return;</code> veut dire
+          « si root est faussé ». Deux opérateurs, même caractère, positions
+          opposées.
+        </p>
+      </section>
+
+      <section id="s16">
+        <h3><span class="num">2.8</span>Modules, imports, et <code>import type</code></h3>
+
+        <p>
+          Chaque fichier est un module isolé. Ce qui n'est pas exporté reste
+          privé. Le fichier de l'action serveur en est une bonne
+          illustration : il contient sept fonctions, une seule est exportée.
+        </p>
+
+        <figure class="code">
+          <figcaption>les formes d'export</figcaption>
+<pre><span class="c">// export nommé — on peut en avoir autant qu'on veut</span>
+<span class="k">export function</span> isoDate(date: Date) { … }
+<span class="k">export const</span> LIMITS = { … };
+<span class="k">export type</span> Slot = "morning" | "afternoon";
+
+<span class="c">// export par défaut — un seul par fichier. Convention React pour un composant.</span>
+<span class="k">export default function</span> ReservationForm({ slug, onBack }) { … }</pre>
+        </figure>
+
+        <figure class="code">
+          <figcaption>les formes d'import correspondantes</figcaption>
+<pre><span class="c">// nommés : accolades obligatoires, le nom doit correspondre exactement</span>
+<span class="k">import</span> { APARTMENTS, describe } <span class="k">from</span> "./apartments-data";
+
+<span class="c">// défaut : pas d'accolades, et VOUS choisissez le nom</span>
+<span class="k">import</span> ReservationForm <span class="k">from</span> "./ReservationForm";
+
+<span class="c">// les deux d'un coup</span>
+<span class="k">import</span> gsap, { … } <span class="k">from</span> "gsap";</pre>
+        </figure>
+
+        <h4>L'alias <code>@/</code></h4>
+        <p>
+          Vous voyez deux styles de chemins dans le projet :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts et components/ReservationForm.tsx</figcaption>
+<pre><span class="k">import</span> { APARTMENTS, describe } <span class="k">from</span> "@/components/apartments-data";  <span class="c">// absolu</span>
+<span class="k">import</span> { APARTMENTS, describe } <span class="k">from</span> "./apartments-data";             <span class="c">// relatif</span></pre>
+        </figure>
+
+        <p>
+          <code>@/</code> désigne la racine du projet. C'est configuré dans
+          <code>tsconfig.json</code> :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> tsconfig.json</figcaption>
+<pre>"paths": {
+  "@/*": ["./*"]
+}</pre>
+        </figure>
+
+        <p>
+          La convention du projet : <code>./</code> entre fichiers voisins du
+          même dossier, <code>@/</code> pour franchir une frontière (de
+          <code>app/</code> vers <code>components/</code>, par exemple).
+        </p>
+
+        <h4><code>import type</code> : l'import qui disparaît</h4>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/lenis-instance.ts</figcaption>
+<pre><span class="k">import type</span> Lenis <span class="k">from</span> "lenis";</pre>
+        </figure>
+
+        <p>
+          <code>import type</code> importe uniquement le type, jamais le code.
+          Après compilation, cette ligne s'évapore complètement — la
+          bibliothèque <code>lenis</code> n'est pas chargée par ce fichier.
+        </p>
+
+        <p>
+          Ce n'est pas un détail de style. <code>lenis-instance.ts</code> est
+          importé par du code qui tourne côté serveur ; charger une bibliothèque
+          d'animation navigateur y serait au mieux inutile, au pire une erreur.
+          Le mot-clé <code>type</code> garantit que cela n'arrive pas.
+        </p>
+
+        <p>
+          On peut aussi marquer des imports individuels, ce que le projet fait
+          abondamment :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">import</span> {
+  isoDate,              <span class="c">// une vraie fonction : reste dans le bundle</span>
+  validateReservation,  <span class="c">// idem</span>
+  <span class="k">type</span> ReservationField,   <span class="c">// type seul : disparaît</span>
+  <span class="k">type</span> ReservationInput,   <span class="c">// idem</span>
+  <span class="k">type</span> ReservationState,   <span class="c">// idem</span>
+} <span class="k">from</span> "@/components/reservation";</pre>
+        </figure>
+      </section>
+
+      <!-- ================= PARTIE 3 ================= -->
+      <div class="part-head">
+        <span class="part-no">Partie 3</span>
+        <h2>Le serveur</h2>
+        <p>
+          La partie centrale de ce cours. Où tourne le code, ce que cela change,
+          et comment lire <code>app/actions/reservations.ts</code> de la première
+          à la dernière ligne.
+        </p>
+      </div>
+
+      <section id="s17">
+        <h3><span class="num">3.1</span>Deux machines, deux mondes</h3>
+
+        <p>
+          Une application Next.js s'exécute à deux endroits différents, et c'est
+          la source de la majorité des confusions quand on débute.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th></th><th>Serveur (Node.js)</th><th>Navigateur</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Où</strong></td>
+                <td>Votre machine en dev, l'hébergeur en production</td>
+                <td>Le téléphone ou l'ordinateur du visiteur</td>
+              </tr>
+              <tr>
+                <td><strong>Voit</strong></td>
+                <td>Le système de fichiers, les variables d'environnement, la base de données, les clés d'API</td>
+                <td>Le DOM, la souris, le clavier, <code>localStorage</code></td>
+              </tr>
+              <tr>
+                <td><strong>Ne voit pas</strong></td>
+                <td><code>window</code>, <code>document</code>, <code>localStorage</code></td>
+                <td>Tout secret. Absolument tout ce qui y arrive est public.</td>
+              </tr>
+              <tr>
+                <td><strong>Dans ce projet</strong></td>
+                <td><code>app/actions/reservations.ts</code>, <code>app/page.tsx</code>, <code>app/layout.tsx</code></td>
+                <td>Tout fichier commençant par <code>"use client"</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          Un composant sans directive est un <strong>Server Component</strong> :
+          il s'exécute uniquement sur le serveur, et seul son résultat HTML
+          parvient au navigateur. C'est le défaut dans Next.js moderne.
+        </p>
+
+        <p>
+          Dès qu'un fichier a besoin d'interactivité — un état, un gestionnaire
+          de clic, un effet — il doit devenir un <strong>Client
+          Component</strong> avec <code>"use client"</code>.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/i18n/locale.tsx — le code défensif que cela impose</figcaption>
+<pre><span class="k">let</span> current: Locale = "en";
+<span class="k">if</span> (<span class="k">typeof</span> window !== "undefined") {
+  <span class="c">// … lire localStorage</span>
+}</pre>
+        </figure>
+
+        <p>
+          Ce test est là parce que ce module est évalué <em>aussi</em> sur le
+          serveur, lors du rendu initial. Sur le serveur, <code>window</code>
+          n'existe pas : y accéder directement provoquerait
+          <code>ReferenceError: window is not defined</code>. C'est l'erreur de
+          débutant la plus fréquente en Next.js.
+        </p>
+      </section>
+
+      <section id="s18">
+        <h3><span class="num">3.2</span><code>"use client"</code> et <code>"use server"</code></h3>
+
+        <p>
+          Ces deux chaînes en tête de fichier ne sont pas des commentaires : ce
+          sont des <em>directives</em> lues par le compilateur. Elles marquent
+          une frontière.
+        </p>
+
+        <h4><code>"use client"</code></h4>
+        <p>
+          « Ce fichier, et tout ce qu'il importe, part dans le navigateur. » Il
+          est requis dès qu'on utilise un hook (<code>useState</code>,
+          <code>useEffect</code>…) ou un gestionnaire d'événement.
+        </p>
+
+        <h4><code>"use server"</code></h4>
+        <p>
+          Le contraire, et il est plus subtil : « ce fichier reste sur le
+          serveur, mais ses exports deviennent appelables depuis le navigateur ».
+        </p>
+
+        <p>
+          Concrètement, à la compilation, Next.js remplace le corps de
+          <code>requestViewing</code> dans le bundle client par une simple
+          référence chiffrée. Quand le formulaire l'« appelle », le navigateur
+          envoie en réalité une requête POST, et c'est le serveur qui exécute la
+          vraie fonction.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts — les deux premières lignes</figcaption>
+<pre>"use server";
+
+<span class="k">import</span> { headers } <span class="k">from</span> "next/headers";</pre>
+        </figure>
+
+        <div class="note caution">
+          <span class="note-label">La règle qui nous a coûté un bug</span>
+          <p>
+            Un fichier <code>"use server"</code> ne peut exporter que des
+            <strong>fonctions <code>async</code></strong>. Rien d'autre. Nous
+            avions d'abord exporté <code>INITIAL_STATE</code>, un simple objet,
+            depuis ce fichier — et l'application plantait au rendu de la page :
+          </p>
+          <p>
+            <code>A "use server" file can only export async functions, found object.</code>
+          </p>
+          <p>
+            La raison est logique : chaque export devient un point d'entrée HTTP.
+            Un objet ne peut pas en être un. Les <em>types</em>, eux, ne comptent
+            pas : ils sont effacés à la compilation, il n'en reste rien à
+            l'exécution. C'est pourquoi <code>ReservationState</code> et
+            <code>INITIAL_STATE</code> vivent désormais dans
+            <code>components/reservation.ts</code>.
+          </p>
+        </div>
+
+        <div class="note key">
+          <span class="note-label">Le point à ne jamais oublier</span>
+          <p>
+            La référence vers l'action est <strong>publique</strong>. N'importe
+            qui peut envoyer la même requête POST sans jamais ouvrir votre page,
+            avec les données de son choix. Une Server Action doit donc être
+            traitée exactement comme une route d'API publique : on ne fait
+            confiance à rien de ce qui arrive.
+          </p>
+        </div>
+      </section>
+
+      <section id="s19">
+        <h3><span class="num">3.3</span><code>Promise</code>, <code>async</code>, <code>await</code></h3>
+
+        <p>
+          Le serveur passe son temps à attendre : une lecture d'en-têtes, un
+          appel réseau, une base de données. JavaScript ne bloque pas pendant ces
+          attentes — il utilise des <em>promesses</em>.
+        </p>
+
+        <p>
+          Une <code>Promise&lt;T&gt;</code> est un jeton : « la valeur de type
+          <code>T</code> n'est pas là maintenant, mais elle arrivera ». Le
+          générique dit ce qu'elle finira par contenir.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">export async function</span> requestViewing(
+  _previous: ReservationState,
+  form: FormData
+): Promise&lt;ReservationState&gt; {</pre>
+        </figure>
+
+        <p>
+          <strong><code>async</code></strong> devant une fonction a deux effets :
+          il autorise <code>await</code> à l'intérieur, et il enveloppe
+          automatiquement le retour dans une promesse. Même si le corps fait
+          <code>return { status: "sent" }</code>, le type de retour réel est
+          <code>Promise&lt;ReservationState&gt;</code>.
+        </p>
+
+        <p>
+          <strong><code>await</code></strong> fait l'inverse : il attend qu'une
+          promesse aboutisse et en extrait la valeur.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">const</span> list = <span class="k">await</span> headers();
+<span class="c">//    ↑ HeadersList, et non Promise&lt;HeadersList&gt;</span></pre>
+        </figure>
+
+        <div class="note caution">
+          <span class="note-label">L'erreur la plus fréquente</span>
+          <p>
+            Oublier <code>await</code>. Vous manipulez alors la promesse
+            elle-même au lieu de son contenu, et vous obtenez des messages
+            déroutants du genre <em>« Property 'get' does not exist on type
+            'Promise&lt;HeadersList&gt;' »</em>.
+          </p>
+          <p>
+            Réflexe à prendre : dès que le message d'erreur contient
+            <code>Promise&lt;…&gt;</code>, il manque très probablement un
+            <code>await</code>.
+          </p>
+        </div>
+
+        <h4>Les trois <code>await</code> de l'action</h4>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">const</span> list = <span class="k">await</span> headers();                    <span class="c">// 1. lire les en-têtes HTTP</span>
+<span class="k">if</span> (!withinRate(<span class="k">await</span> callerKey())) …            <span class="c">// 2. notre propre fonction async</span>
+<span class="k">const</span> response = <span class="k">await</span> fetch("https://api.resend.com/emails", { … }); <span class="c">// 3. le réseau</span></pre>
+        </figure>
+
+        <p>
+          Notez le deuxième : <code>callerKey()</code> est
+          <code>async</code> parce qu'elle-même fait un <code>await</code>. La
+          contagion est normale et se propage jusqu'à l'appelant le plus haut —
+          ici <code>requestViewing</code>, que React sait attendre.
+        </p>
+
+        <h4>Séquentiel contre parallèle</h4>
+        <p>
+          Deux <code>await</code> à la suite s'exécutent l'un après l'autre. Si
+          les deux opérations sont indépendantes, c'est du temps perdu :
+        </p>
+
+        <figure class="code">
+          <figcaption>illustration (pas de code du projet — nous n'avons qu'un seul appel réseau)</figcaption>
+<pre><span class="c">// séquentiel : 200 ms + 300 ms = 500 ms</span>
+<span class="k">const</span> a = <span class="k">await</span> lent();
+<span class="k">const</span> b = <span class="k">await</span> autreLent();
+
+<span class="c">// parallèle : max(200, 300) = 300 ms</span>
+<span class="k">const</span> [a, b] = <span class="k">await</span> Promise.all([lent(), autreLent()]);</pre>
+        </figure>
+      </section>
+
+      <section id="s20">
+        <h3><span class="num">3.4</span>Lire un formulaire : <code>FormData</code></h3>
+
+        <p>
+          Quand un <code>&lt;form&gt;</code> est soumis à une Server Action,
+          celle-ci reçoit un objet <code>FormData</code> : la représentation
+          standard du navigateur pour le contenu d'un formulaire. Les clés sont
+          les attributs <code>name</code> des champs.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">const</span> FIELDS: ReservationField[] = [
+  "slug", "name", "phone", "email", "date", "slot", "note",
+];
+
+<span class="k">function</span> read(form: FormData): ReservationInput {
+  <span class="k">const</span> input = {} <span class="k">as</span> ReservationInput;
+  <span class="k">for</span> (<span class="k">const</span> field <span class="k">of</span> FIELDS) {
+    <span class="k">const</span> value = form.get(field);
+    <span class="c">// Anything that isn't a plain string (a file, a missing field) becomes "",</span>
+    <span class="c">// so validation sees a consistent shape rather than null | File | string.</span>
+    input[field] = <span class="k">typeof</span> value === "string" ? value.trim() : "";
+  }
+  <span class="k">return</span> input;
+}</pre>
+        </figure>
+
+        <p>Cette petite fonction mérite qu'on la lise attentivement.</p>
+
+        <p>
+          <strong><code>form.get(field)</code> renvoie
+          <code>FormDataEntryValue | null</code></strong>, où
+          <code>FormDataEntryValue</code> vaut <code>string | File</code>. Trois
+          cas possibles, donc : une chaîne, un fichier (si quelqu'un envoie un
+          formulaire trafiqué avec un champ de type fichier), ou
+          <code>null</code> si le champ est absent.
+        </p>
+
+        <p>
+          <strong><code>typeof value === "string" ? … : ""</code></strong>
+          ramène les trois cas à un seul. La validation qui suit n'a plus à se
+          demander ce qu'elle manipule : c'est une chaîne, toujours. C'est un
+          principe général et très utile — <em>normaliser tôt, valider
+          ensuite</em>.
+        </p>
+
+        <p>
+          <strong><code>const input = {} as ReservationInput</code></strong> est
+          un compromis assumé. <code>as</code> est une <em>assertion de type</em>
+          : elle dit au compilateur « traite cet objet vide comme s'il était déjà
+          complet ». C'est un mensonge temporaire, rendu vrai par la boucle qui
+          suit, laquelle remplit chaque clé de <code>FIELDS</code>.
+        </p>
+
+        <div class="note caution">
+          <span class="note-label">Sur <code>as</code></span>
+          <p>
+            Comme le <code>!</code> de la section 2.7, <code>as</code> désactive
+            une vérification. À utiliser avec parcimonie et uniquement quand vous
+            pouvez justifier pourquoi c'est sûr. Ici, la sûreté vient de ce que
+            <code>FIELDS</code> est typé <code>ReservationField[]</code> : si
+            l'on ajoutait un champ au type sans l'ajouter au tableau, le mensonge
+            deviendrait réel. C'est le point faible de cette fonction, et il est
+            accepté en connaissance de cause.
+          </p>
+        </div>
+
+        <p>
+          Deux champs ne passent pas par <code>read()</code>, et c'est
+          délibéré :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">const</span> trap = form.get("company");                       <span class="c">// le piège à robots</span>
+<span class="k">const</span> locale = form.get("locale") === "en" ? "en" : "fr"; <span class="c">// la langue</span></pre>
+        </figure>
+
+        <p>
+          Regardez la seconde ligne : elle ne fait pas confiance à la valeur
+          reçue. Tout ce qui n'est pas exactement <code>"en"</code> devient
+          <code>"fr"</code>. Aucune chaîne arbitraire venue du client ne peut se
+          retrouver dans l'email.
+        </p>
+      </section>
+
+      <section id="s21">
+        <h3><span class="num">3.5</span>L'action, ligne par ligne</h3>
+
+        <p>
+          Nous avons maintenant tous les outils. Lisons
+          <code>requestViewing</code> intégralement.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">export async function</span> requestViewing(
+  _previous: ReservationState,
+  form: FormData
+): Promise&lt;ReservationState&gt; {</pre>
+        </figure>
+
+        <p>
+          <strong>La signature.</strong> Deux paramètres, et le premier surprend.
+          <code>_previous</code> est l'état précédent : c'est
+          <code>useActionState</code> qui impose cette forme. Nous n'en avons pas
+          besoin, d'où le préfixe <code>_</code> — une convention qui signale
+          « paramètre volontairement inutilisé » et empêche ESLint de s'en
+          plaindre.
+        </p>
+
+        <figure class="code">
+          <figcaption>étape 1 — le piège</figcaption>
+<pre>  <span class="k">const</span> trap = form.get("company");
+  <span class="k">if</span> (<span class="k">typeof</span> trap === "string" &amp;&amp; trap.trim()) <span class="k">return</span> { status: "sent" };</pre>
+        </figure>
+
+        <p>
+          Le champ <code>company</code> est hors écran et hors de l'ordre de
+          tabulation : aucun humain ne le rencontre. Un robot qui remplit tout
+          se dénonce. Et on lui répond <code>"sent"</code> — un mensonge
+          délibéré : lui annoncer un échec l'inciterait à réessayer autrement.
+        </p>
+
+        <p>
+          Ce test vient <strong>en premier</strong>, avant toute validation : un
+          robot ne doit consommer ni temps de calcul ni quota d'envoi.
+        </p>
+
+        <figure class="code">
+          <figcaption>étape 2 — normaliser puis valider</figcaption>
+<pre>  <span class="k">const</span> input = read(form);
+
+  <span class="c">// The server's own clock — the client's is whatever the visitor set it to.</span>
+  <span class="k">const</span> errors = validateReservation(input, isoDate(<span class="k">new</span> Date()));
+  <span class="k">if</span> (Object.keys(errors).length &gt; 0) <span class="k">return</span> { status: "invalid", errors };</pre>
+        </figure>
+
+        <p>
+          <code>isoDate(new Date())</code> calcule « aujourd'hui » selon
+          l'horloge du serveur. Le commentaire explique pourquoi cela compte : la
+          date du visiteur est celle qu'il a réglée sur son appareil, et rien
+          n'empêche de la truquer.
+        </p>
+
+        <p>
+          <code>Object.keys(errors)</code> donne la liste des clés d'un objet.
+          Sa longueur vaut zéro quand <code>FieldErrors</code> est vide, donc
+          quand tout est valide.
+        </p>
+
+        <figure class="code">
+          <figcaption>étape 3 — la limite de débit</figcaption>
+<pre>  <span class="k">if</span> (!withinRate(<span class="k">await</span> callerKey())) <span class="k">return</span> { status: "throttled" };</pre>
+        </figure>
+
+        <p>
+          Placée <strong>après</strong> la validation, volontairement. Sinon
+          quelqu'un qui se trompe cinq fois de numéro serait bloqué dix minutes
+          sans avoir jamais rien envoyé.
+        </p>
+
+        <figure class="code">
+          <figcaption>étape 4 — reconstituer depuis nos données</figcaption>
+<pre>  <span class="k">const</span> listing = APARTMENTS.find((flat) =&gt; flat.slug === input.slug)!;
+  <span class="k">const</span> info = describe(listing, DICTIONARIES.fr);
+  <span class="k">const</span> locale = form.get("locale") === "en" ? "en" : "fr";</pre>
+        </figure>
+
+        <p>
+          Le formulaire envoie un champ caché <code>slug</code>. Un champ caché
+          est une donnée client comme une autre : modifiable en trois clics dans
+          les outils de développement. On ne l'utilise donc que comme
+          <em>référence</em> — la validation a prouvé qu'il désigne une annonce
+          réelle, et <code>describe()</code> va chercher le nom, le prix et la
+          surface dans nos propres fichiers.
+        </p>
+
+        <p>
+          <code>DICTIONARIES.fr</code> : l'agence lit son courrier en français,
+          quelle que soit la langue du visiteur. Celle-ci est notée séparément
+          dans l'email pour qu'on sache dans quelle langue répondre.
+        </p>
+
+        <figure class="code">
+          <figcaption>étape 5 — composer le message</figcaption>
+<pre>  <span class="k">const</span> lines: [string, string][] = [
+    ["Résidence", `${info.name} — ${info.kind}`],
+    ["Prix affiché", info.price],
+    <span class="c">// …</span>
+  ];</pre>
+        </figure>
+
+        <p>
+          <code>[string, string]</code> est un <strong>tuple</strong> : un
+          tableau de longueur fixe dont chaque position a son type. Ici :
+          exactement deux chaînes, l'étiquette et la valeur. Et
+          <code>[string, string][]</code> est un tableau de tels couples.
+          TypeScript refusera <code>["a", "b", "c"]</code> dans cette liste.
+        </p>
+
+        <figure class="code">
+          <figcaption>étape 6 — échapper avant de composer du HTML</figcaption>
+<pre>  <span class="k">const</span> html = `&lt;table …&gt;${lines
+    .filter(([label]) =&gt; label)
+    .map(([label, value]) =&gt;
+      `&lt;tr&gt;&lt;td …&gt;${escapeHtml(label)}&lt;/td&gt;&lt;td …&gt;${escapeHtml(value)}&lt;/td&gt;&lt;/tr&gt;`
+    )
+    .join("")}&lt;/table&gt;`;</pre>
+        </figure>
+
+        <p>
+          Trois choses ici. <code>([label]) =&gt;</code> est une
+          <strong>déstructuration</strong> du tuple directement dans le paramètre
+          — on nomme la première case sans nommer la seconde. Les
+          <code>${…}</code> dans une chaîne à accents graves sont l'interpolation
+          (voir le glossaire). Et surtout, <code>escapeHtml</code> :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">function</span> escapeHtml(value: string) {
+  <span class="k">return</span> value.replace(
+    /[&amp;&lt;&gt;"']/g,
+    (char) =&gt;
+      ({
+        "&amp;": "&amp;amp;",
+        "&lt;": "&amp;lt;",
+        "&gt;": "&amp;gt;",
+        '"': "&amp;quot;",
+        "'": "&amp;#39;",
+      })[char] <span class="k">as</span> string
+  );
+}</pre>
+        </figure>
+
+        <p>
+          Sans cette fonction, un visiteur pourrait écrire du HTML dans le champ
+          « message » et l'injecter dans l'email reçu par l'agence. La règle est
+          absolue : <strong>toute donnée venue de l'extérieur est échappée avant
+          d'être insérée dans du balisage.</strong>
+        </p>
+
+        <figure class="code">
+          <figcaption>étape 7 — envoyer, et rapporter honnêtement</figcaption>
+<pre>  <span class="k">const</span> ok = <span class="k">await</span> deliver({ subject, text, html, replyTo: input.email || undefined });
+
+  <span class="k">return</span> ok ? { status: "sent" } : { status: "failed" };
+}</pre>
+        </figure>
+
+        <p>
+          <code>input.email || undefined</code> : une chaîne vide devient
+          <code>undefined</code>, ce qui fait que la clé <code>reply_to</code>
+          est carrément omise plutôt qu'envoyée vide. Ici <code>||</code> est le
+          bon choix, précisément parce qu'il attrape aussi la chaîne vide.
+        </p>
+      </section>
+
+      <section id="s22">
+        <h3><span class="num">3.6</span>État en mémoire et fermetures</h3>
+
+        <p>
+          Le limiteur de débit illustre une notion importante : un module
+          serveur garde son état entre les requêtes, tant que le processus vit.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">const</span> WINDOW_MS = 10 * 60 * 1000;
+<span class="k">const</span> MAX_PER_WINDOW = 5;
+<span class="k">const</span> seen = <span class="k">new</span> Map&lt;string, number[]&gt;();
+
+<span class="k">function</span> withinRate(key: string) {
+  <span class="k">const</span> now = Date.now();
+  <span class="k">const</span> fresh = (seen.get(key) ?? []).filter((at) =&gt; now - at &lt; WINDOW_MS);
+
+  <span class="k">if</span> (fresh.length &gt;= MAX_PER_WINDOW) {
+    seen.set(key, fresh);
+    <span class="k">return false</span>;
+  }
+
+  fresh.push(now);
+  seen.set(key, fresh);
+
+  <span class="c">// Keep the map from growing forever on a long-lived server.</span>
+  <span class="k">if</span> (seen.size &gt; 5000) {
+    <span class="k">for</span> (<span class="k">const</span> [id, hits] <span class="k">of</span> seen) {
+      <span class="k">if</span> (hits.every((at) =&gt; now - at &gt;= WINDOW_MS)) seen.delete(id);
+    }
+  }
+
+  <span class="k">return true</span>;
+}</pre>
+        </figure>
+
+        <p><strong>Ce qu'il faut y voir :</strong></p>
+
+        <ul>
+          <li>
+            <code>seen</code> est déclaré au niveau du module. Il est créé une
+            fois, au premier chargement, et survit à toutes les requêtes
+            suivantes. C'est une variable globale au processus.
+          </li>
+          <li>
+            <code>(at) =&gt; now - at &lt; WINDOW_MS</code> est une
+            <strong>fermeture</strong> (closure) : cette petite fonction, passée
+            à <code>.filter()</code>, se souvient de <code>now</code> et de
+            <code>WINDOW_MS</code> définis à l'extérieur d'elle. C'est un
+            mécanisme fondamental de JavaScript, et vous le croiserez partout.
+          </li>
+          <li>
+            <code>for (const [id, hits] of seen)</code> parcourt la
+            <code>Map</code>. Chaque tour donne un couple
+            <code>[clé, valeur]</code>, ici déstructuré immédiatement en deux
+            variables.
+          </li>
+          <li>
+            <code>.every(…)</code> renvoie vrai si <em>tous</em> les éléments
+            satisfont le test. Son pendant, <code>.some(…)</code>, renvoie vrai
+            si <em>au moins un</em> le satisfait — c'est celui que
+            <code>validateReservation</code> utilise pour vérifier le slug.
+          </li>
+        </ul>
+
+        <div class="note caution">
+          <span class="note-label">Les limites de cette approche</span>
+          <p>
+            Parce que <code>seen</code> vit en mémoire, il est remis à zéro à
+            chaque redéploiement, et il n'est pas partagé si le site tourne sur
+            plusieurs instances. C'est assumé et documenté dans le commentaire du
+            fichier : c'est un ralentisseur, pas un mur. Une vraie protection
+            passerait par Redis, où l'état est partagé et persistant.
+          </p>
+        </div>
+      </section>
+
+      <section id="s23">
+        <h3><span class="num">3.7</span>Les variables d'environnement</h3>
+
+        <p>
+          Une clé d'API ne doit jamais figurer dans le code : le code part sur
+          Git, et parfois dans le navigateur. On la lit dans l'environnement.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre><span class="k">const</span> key = process.env.RESEND_API_KEY;
+<span class="k">const</span> to = process.env.RESERVATIONS_TO;
+<span class="k">const</span> from = process.env.RESERVATIONS_FROM;</pre>
+        </figure>
+
+        <p>
+          Le type de chacune est <code>string | undefined</code> — TypeScript ne
+          peut pas savoir si la variable est définie. D'où la garde qui suit
+          immédiatement :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre>  <span class="k">if</span> (!key || !to || !from) {
+    <span class="k">if</span> (process.env.NODE_ENV === "production") {
+      console.error(
+        "[reservations] RESEND_API_KEY / RESERVATIONS_TO / RESERVATIONS_FROM " +
+          "are not set — the request was NOT delivered."
+      );
+      <span class="k">return false</span>;
+    }
+
+    console.info(`[reservations] no mail configured; would have sent:\n${text}`);
+    <span class="k">return true</span>;
+  }</pre>
+        </figure>
+
+        <p>
+          Après ce bloc, TypeScript sait que les trois sont des
+          <code>string</code> : le rétrécissement de la section 2.6 à l'œuvre.
+          Elles peuvent être passées à <code>fetch</code> sans autre
+          vérification.
+        </p>
+
+        <p>
+          Notez au passage le choix de conception, qui n'a rien de technique : en
+          développement, l'absence de configuration écrit dans le terminal et
+          laisse l'interface dire « envoyé ». En production, la même situation
+          échoue bruyamment. Annoncer « nous vous recontactons » à un client
+          alors que rien n'est parti serait bien pire qu'afficher une erreur.
+        </p>
+
+        <div class="note caution">
+          <span class="note-label">La règle absolue de <code>NEXT_PUBLIC_</code></span>
+          <p>
+            Une variable préfixée <code>NEXT_PUBLIC_</code> est
+            <strong>inscrite en clair dans le JavaScript envoyé au
+            navigateur</strong>. Elle est lisible par n'importe qui. Ce préfixe
+            est réservé à ce qui est déjà public : un identifiant d'analytics,
+            une URL de site.
+          </p>
+          <p>
+            Une clé d'API ne doit <em>jamais</em> le porter. Nos trois variables
+            n'ont pas de préfixe, et ne sont lues que dans un fichier
+            <code>"use server"</code> — doublement à l'abri.
+          </p>
+        </div>
+      </section>
+
+      <section id="s24">
+        <h3><span class="num">3.8</span><code>fetch</code> et le monde extérieur</h3>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> app/actions/reservations.ts</figcaption>
+<pre>  <span class="k">const</span> response = <span class="k">await</span> fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject,
+      text,
+      html,
+      ...(replyTo ? { reply_to: replyTo } : {}),
+    }),
+  });
+
+  <span class="k">if</span> (!response.ok) {
+    console.error(
+      `[reservations] Resend rejected the send: ${response.status} ${<span class="k">await</span> response.text()}`
+    );
+    <span class="k">return false</span>;
+  }
+
+  <span class="k">return true</span>;</pre>
+        </figure>
+
+        <p><strong>Les points à relever :</strong></p>
+
+        <ul>
+          <li>
+            <code>fetch</code> est intégré à Node.js moderne. C'est pourquoi ce
+            projet n'a installé <em>aucune</em> dépendance pour envoyer des
+            emails : la bibliothèque officielle de Resend ne ferait qu'envelopper
+            cet appel.
+          </li>
+          <li>
+            <code>{ from, to: [to], subject, text, html }</code> — quand la
+            variable porte déjà le nom de la clé, on peut écrire juste
+            <code>from</code> au lieu de <code>from: from</code>. C'est le
+            <em>raccourci de propriété</em>.
+          </li>
+          <li>
+            <code>...(replyTo ? { reply_to: replyTo } : {})</code> — les trois
+            points sont l'opérateur de <em>décomposition</em> (spread). Il étale
+            le contenu d'un objet dans un autre. Combiné à un ternaire, il permet
+            d'ajouter une clé <em>conditionnellement</em> : si
+            <code>replyTo</code> est vide, on étale un objet vide, et la clé
+            n'existe tout simplement pas.
+          </li>
+          <li>
+            <code>JSON.stringify</code> transforme l'objet JavaScript en texte
+            JSON, format attendu par l'API.
+          </li>
+          <li>
+            <code>response.ok</code> est vrai pour un statut HTTP de 200 à 299.
+            <strong>Point crucial :</strong> <code>fetch</code> ne lève pas
+            d'exception sur une réponse 400 ou 500. Il ne rejette que si le
+            réseau lui-même échoue. Sans ce test <code>if (!response.ok)</code>,
+            un refus de l'API passerait complètement inaperçu et l'utilisateur
+            verrait « envoyé ».
+          </li>
+        </ul>
+
+        <div class="note">
+          <span class="note-label">Le type de retour de <code>deliver</code></span>
+          <p>
+            <code>deliver</code> renvoie <code>Promise&lt;boolean&gt;</code> :
+            vrai si c'est parti, faux sinon. Cette valeur remonte jusqu'à
+            <code>return ok ? { status: "sent" } : { status: "failed" }</code>.
+            La chaîne est complète : un refus de l'API de Resend se traduit par
+            un message honnête affiché au visiteur.
+          </p>
+        </div>
+      </section>
+
+      <section id="s25">
+        <h3><span class="num">3.9</span>La frontière de confiance</h3>
+
+        <p>
+          Résumons le principe qui gouverne tout ce fichier. Il y a une ligne
+          invisible : d'un côté ce que nous contrôlons, de l'autre ce qui vient
+          du monde extérieur.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Provenance</th><th>Fiabilité</th><th>Traitement</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>APARTMENTS</code>, <code>DICTIONARIES</code></td>
+                <td>Notre code</td>
+                <td>Utilisable directement</td>
+              </tr>
+              <tr>
+                <td><code>process.env</code></td>
+                <td>Notre déploiement</td>
+                <td>Vérifier la présence, jamais le contenu</td>
+              </tr>
+              <tr>
+                <td>Les champs du formulaire</td>
+                <td>Aucune</td>
+                <td>Normaliser, valider, échapper</td>
+              </tr>
+              <tr>
+                <td>Les champs <em>cachés</em></td>
+                <td>Aucune non plus</td>
+                <td>Traiter comme une simple référence, revalider</td>
+              </tr>
+              <tr>
+                <td>Les en-têtes HTTP</td>
+                <td>Falsifiables</td>
+                <td>Bon pour un ralentisseur, pas pour une sécurité</td>
+              </tr>
+              <tr>
+                <td>La réponse de Resend</td>
+                <td>Externe</td>
+                <td>Vérifier <code>response.ok</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note key">
+          <span class="note-label">La phrase à retenir</span>
+          <p>
+            Les types de TypeScript s'arrêtent à la frontière. À l'intérieur, ils
+            vous protègent. À la frontière, seul du code exécuté protège —
+            <code>typeof</code>, <code>validateReservation</code>,
+            <code>escapeHtml</code>, <code>response.ok</code>. Écrire
+            <code>form.get("name") as string</code> serait syntaxiquement
+            valide, compilerait sans broncher, et ne vérifierait strictement
+            rien.
+          </p>
+        </div>
+      </section>
+
+      <!-- ================= PARTIE 4 ================= -->
+      <div class="part-head">
+        <span class="part-no">Partie 4</span>
+        <h2>React et TSX</h2>
+        <p>
+          Ce qui se passe de l'autre côté de la frontière : comment l'interface
+          est décrite, et comment les hooks sont typés.
+        </p>
+      </div>
+
+      <section id="s26">
+        <h3><span class="num">4.1</span>Un composant est une fonction</h3>
+
+        <p>
+          Un composant React est une fonction qui prend un objet de propriétés
+          (les <em>props</em>) et renvoie une description de ce qu'il faut
+          afficher. C'est tout.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/CloseButton.tsx (structure)</figcaption>
+<pre><span class="k">export default function</span> ReservationForm({
+  slug,
+  onBack,
+}: {
+  slug: string;
+  onBack: () =&gt; <span class="k">void</span>;
+}) {
+  <span class="c">// … de la logique …</span>
+  <span class="k">return</span> (
+    &lt;div className={styles.page}&gt;…&lt;/div&gt;
+  );
+}</pre>
+        </figure>
+
+        <p>
+          Deux conventions non négociables : le nom commence par une
+          <strong>majuscule</strong> (React distingue les composants des balises
+          HTML par là), et la fonction est pure au sens où on l'appelle sans
+          rien faire d'autre.
+        </p>
+
+        <p>
+          Notez le type de <code>onBack</code> : <code>() =&gt; void</code>.
+          Cela se lit « une fonction qui ne prend aucun argument et ne renvoie
+          rien ». Passer une fonction en propriété est le mécanisme standard pour
+          qu'un enfant prévienne son parent qu'il s'est passé quelque chose.
+        </p>
+      </section>
+
+      <section id="s27">
+        <h3><span class="num">4.2</span>La syntaxe TSX</h3>
+
+        <p>
+          TSX, c'est TypeScript plus la syntaxe de balises. Ces balises ne sont
+          pas du HTML : ce sont des appels de fonction déguisés, transformés à la
+          compilation.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>En HTML</th><th>En TSX</th><th>Pourquoi</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>class="x"</code></td>
+                <td><code>className="x"</code></td>
+                <td><code>class</code> est un mot réservé de JavaScript</td>
+              </tr>
+              <tr>
+                <td><code>for="x"</code></td>
+                <td><code>htmlFor="x"</code></td>
+                <td><code>for</code> aussi</td>
+              </tr>
+              <tr>
+                <td><code>onclick=""</code></td>
+                <td><code>onClick={fn}</code></td>
+                <td>camelCase, et une vraie fonction</td>
+              </tr>
+              <tr>
+                <td><code>tabindex</code></td>
+                <td><code>tabIndex</code></td>
+                <td>camelCase partout</td>
+              </tr>
+              <tr>
+                <td><code>&lt;br&gt;</code></td>
+                <td><code>&lt;br /&gt;</code></td>
+                <td>Toute balise doit être fermée</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          Les accolades <code>{ }</code> font sortir du mode balise pour revenir
+          au mode JavaScript :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ReservationForm.tsx</figcaption>
+<pre>&lt;button className={styles.submit} type="submit" disabled={pending}&gt;
+  {pending ? t.reserve.sending : t.reserve.submit}
+&lt;/button&gt;</pre>
+        </figure>
+
+        <ul>
+          <li>
+            <code>className={styles.submit}</code> — accolades : la valeur est
+            une variable JavaScript.
+          </li>
+          <li>
+            <code>type="submit"</code> — guillemets : une chaîne littérale.
+          </li>
+          <li>
+            <code>disabled={pending}</code> — un booléen ; le bouton se désactive
+            pendant l'envoi.
+          </li>
+          <li>
+            <code>{pending ? … : …}</code> — entre les balises, les accolades
+            insèrent le résultat d'une expression. Le libellé change pendant
+            l'envoi.
+          </li>
+        </ul>
+
+        <h4>L'attribut étalé</h4>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ReservationForm.tsx</figcaption>
+<pre><span class="k">const</span> invalid = (field: keyof <span class="k">typeof</span> errors) =&gt;
+  errors[field]
+    ? ({ "aria-invalid": <span class="k">true</span>, "aria-describedby": id(`${field}-error`) } <span class="k">as const</span>)
+    : {};
+
+<span class="c">// puis, sur le champ :</span>
+&lt;input … {...invalid("name")} /&gt;</pre>
+        </figure>
+
+        <p>
+          <code>{...objet}</code> étale les clés de l'objet comme autant
+          d'attributs. Ici, les attributs d'accessibilité ne sont ajoutés que
+          si le champ est en erreur — sinon on étale <code>{}</code> et rien
+          n'est ajouté. C'est le même opérateur de décomposition que dans le
+          corps de la requête à Resend (section 3.8).
+        </p>
+      </section>
+
+      <section id="s28">
+        <h3><span class="num">4.3</span>Typer les props</h3>
+
+        <p>
+          Le projet emploie deux styles, selon la taille.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/TextDrop.tsx — type nommé, avec documentation</figcaption>
+<pre><span class="k">type</span> TextDropProps = {
+  <span class="c">/** One entry per line. Line breaks are deliberate — each one hinges alone. */</span>
+  lines: string[];
+  <span class="c">/** Element to render the copy as. Pick for document outline, not for looks. */</span>
+  as?: "h1" | "h2" | "h3" | "h4" | "p" | "div";
+  <span class="c">/** Applied to the text element, so callers can override the type scale. */</span>
+  className?: string;
+  <span class="c">/** "mount" for copy that's already on screen when the page loads. */</span>
+  trigger?: "scroll" | "mount";
+};
+
+<span class="k">export default function</span> TextDrop({
+  lines,
+  as: Tag = "div",
+  className,
+  trigger = "scroll",
+}: TextDropProps) {</pre>
+        </figure>
+
+        <p>
+          Les commentaires <code>/** … */</code> ne sont pas décoratifs :
+          l'éditeur les affiche en infobulle quand on utilise le composant
+          ailleurs. C'est de la documentation qui vient à vous.
+        </p>
+
+        <p>
+          <strong><code>as: Tag = "div"</code></strong> mérite un arrêt. C'est
+          une déstructuration avec renommage <em>et</em> valeur par défaut : on
+          extrait la prop <code>as</code>, on l'appelle <code>Tag</code>
+          localement, et on lui donne <code>"div"</code> par défaut. Le renommage
+          est indispensable — React n'utilise une variable comme balise que si
+          son nom commence par une majuscule :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/TextDrop.tsx</figcaption>
+<pre>&lt;Tag className={`${styles.text}${className ? ` ${className}` : ""}`}&gt;
+  {lines.map((line, i) =&gt; (
+    &lt;span key={`${i}-${line}`} className={dropItemClass}&gt;
+      {line}
+    &lt;/span&gt;
+  ))}
+&lt;/Tag&gt;</pre>
+        </figure>
+
+        <p>
+          Écrit <code>&lt;tag&gt;</code> en minuscule, React chercherait une
+          balise HTML nommée « tag ».
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ApartmentDetail.tsx — type en ligne, pour deux props</figcaption>
+<pre><span class="k">export default function</span> ApartmentDetail({
+  slug,
+  onReserve,
+}: {
+  slug: string;
+  onReserve: (slug: string) =&gt; <span class="k">void</span>;
+}) {</pre>
+        </figure>
+      </section>
+
+      <section id="s29">
+        <h3><span class="num">4.4</span>L'état : <code>useState</code></h3>
+
+        <p>
+          Un composant est réexécuté chaque fois que son affichage doit changer.
+          Une variable ordinaire serait donc réinitialisée à chaque fois.
+          <code>useState</code> est la mémoire qui survit à ces réexécutions.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ApartmentsSection.tsx</figcaption>
+<pre><span class="k">const</span> [view, setView] = useState&lt;OverlayView&gt;(<span class="k">null</span>);
+<span class="k">const</span> [atEnd, setAtEnd] = useState(<span class="k">false</span>);
+<span class="k">const</span> [hintTaken, setHintTaken] = useState(<span class="k">false</span>);</pre>
+        </figure>
+
+        <p>
+          <code>useState</code> renvoie un tableau de deux éléments, qu'on
+          déstructure aussitôt : la valeur, et la fonction qui la change.
+          Appeler <code>setView(...)</code> demande à React de réafficher le
+          composant avec la nouvelle valeur.
+        </p>
+
+        <p>
+          <strong>Quand faut-il le générique ?</strong> Quand la valeur initiale
+          ne suffit pas à deviner le type.
+        </p>
+
+        <ul>
+          <li>
+            <code>useState(false)</code> — inutile de préciser : c'est un
+            <code>boolean</code>.
+          </li>
+          <li>
+            <code>useState&lt;OverlayView&gt;(null)</code> — indispensable. Sans
+            le générique, TypeScript déduirait <code>null</code> tout court, et
+            <code>setView({ type: "detail", slug })</code> serait refusé.
+          </li>
+        </ul>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ReservationForm.tsx</figcaption>
+<pre><span class="c">/* The overlay only ever mounts after a click, so this never renders on the
+   server and can't disagree with itself at hydration. */</span>
+<span class="k">const</span> [today] = useState(() =&gt; isoDate(<span class="k">new</span> Date()));</pre>
+        </figure>
+
+        <p>
+          Deux subtilités. D'abord, seule la valeur est extraite — il n'y a pas
+          de setter, la date d'ouverture ne changera pas. Ensuite, l'argument est
+          une <em>fonction</em> et non une valeur : c'est l'
+          <em>initialisation paresseuse</em>. React ne l'appelle qu'au premier
+          rendu. Écrire <code>useState(isoDate(new Date()))</code> recalculerait
+          la date à chaque réaffichage pour rien.
+        </p>
+      </section>
+
+      <section id="s30">
+        <h3><span class="num">4.5</span>Les effets : <code>useEffect</code></h3>
+
+        <p>
+          <code>useEffect</code> sert à tout ce qui n'est pas « calculer
+          l'affichage » : s'abonner à un événement, lancer une animation, parler
+          à une bibliothèque extérieure. Le code s'exécute <em>après</em> que
+          React a mis à jour le DOM.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ApartmentsSection.tsx</figcaption>
+<pre>useEffect(() =&gt; {
+  <span class="k">const</span> viewport = viewportRef.current;
+  <span class="k">if</span> (!viewport) <span class="k">return</span>;
+
+  <span class="k">const</span> read = () =&gt; {
+    <span class="k">const</span> overflow = viewport.scrollWidth - viewport.clientWidth;
+    <span class="k">const</span> spent = overflow &lt;= 2 || viewport.scrollLeft &gt;= overflow - 2;
+    setAtEnd(spent);
+    <span class="k">if</span> (spent || viewport.scrollLeft &gt; 24) setHintTaken(<span class="k">true</span>);
+  };
+
+  read();
+  viewport.addEventListener("scroll", read, { passive: <span class="k">true</span> });
+  window.addEventListener("resize", read);
+
+  <span class="k">return</span> () =&gt; {
+    viewport.removeEventListener("scroll", read);
+    window.removeEventListener("resize", read);
+  };
+}, []);</pre>
+        </figure>
+
+        <p><strong>Les trois parties d'un effet :</strong></p>
+
+        <ol>
+          <li>
+            <strong>Le corps</strong> — ce qui s'exécute. Ici : brancher deux
+            écouteurs d'événements.
+          </li>
+          <li>
+            <strong>Le retour</strong> — la fonction de <em>nettoyage</em>. React
+            l'appelle quand le composant disparaît, ou avant de rejouer l'effet.
+            Sans elle, les écouteurs s'accumuleraient à chaque montage : c'est
+            une fuite de mémoire classique.
+          </li>
+          <li>
+            <strong>Le tableau de dépendances</strong> — <code>[]</code> ici.
+            Vide, il signifie « exécute une seule fois, au montage ». S'il
+            contenait <code>[slug]</code>, l'effet serait rejoué à chaque
+            changement de <code>slug</code>.
+          </li>
+        </ol>
+
+        <p>
+          Le nettoyage est visible aussi dans les effets GSAP du projet, sous une
+          autre forme :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/use-drop-reveal.ts</figcaption>
+<pre><span class="k">const</span> ctx = gsap.context(() =&gt; {
+  <span class="c">// … créer les animations …</span>
+}, root);
+
+<span class="k">return</span> () =&gt; ctx.revert();</pre>
+        </figure>
+
+        <p>
+          <code>gsap.context</code> enregistre tout ce qui est créé à
+          l'intérieur ; <code>revert()</code> défait le tout d'un coup. Sans
+          cela, les animations d'un composant démonté continueraient d'exister et
+          de manipuler des éléments disparus.
+        </p>
+      </section>
+
+      <section id="s31">
+        <h3><span class="num">4.6</span>Les références : <code>useRef</code></h3>
+
+        <p>
+          Une <em>ref</em> sert à deux choses : pointer un élément du DOM, ou
+          retenir une valeur sans provoquer de réaffichage.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ApartmentsSection.tsx</figcaption>
+<pre><span class="k">const</span> sectionRef = useRef&lt;HTMLElement&gt;(<span class="k">null</span>);
+<span class="k">const</span> trackRef = useRef&lt;HTMLDivElement&gt;(<span class="k">null</span>);
+<span class="k">const</span> viewportRef = useRef&lt;HTMLDivElement&gt;(<span class="k">null</span>);
+
+<span class="c">// … puis dans le TSX :</span>
+&lt;div className={styles.viewport} ref={viewportRef}&gt;</pre>
+        </figure>
+
+        <p>
+          Le générique indique quel élément la ref pointera :
+          <code>HTMLDivElement</code> pour un <code>&lt;div&gt;</code>,
+          <code>HTMLElement</code> pour un <code>&lt;section&gt;</code>. C'est ce
+          qui donne accès à <code>.scrollWidth</code>, <code>.clientWidth</code>
+          et compagnie avec l'autocomplétion.
+        </p>
+
+        <p>
+          On accède à l'élément par <code>.current</code>, dont le type est
+          <code>HTMLDivElement | null</code> — <code>null</code> avant que React
+          n'ait branché l'élément. D'où l'inévitable garde :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ApartmentsSection.tsx</figcaption>
+<pre><span class="k">const</span> viewport = viewportRef.current;
+<span class="k">if</span> (!viewport) <span class="k">return</span>;</pre>
+        </figure>
+
+        <p>
+          Une ref se passe aussi en argument, ce que fait le hook partagé :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/use-drop-reveal.ts</figcaption>
+<pre><span class="k">import</span> { useEffect, <span class="k">type</span> RefObject } <span class="k">from</span> "react";
+
+<span class="k">export function</span> useDropReveal(
+  rootRef: RefObject&lt;HTMLElement | <span class="k">null</span>&gt;,
+  signature?: string,
+  { trigger = "scroll", selector = `.${dropItemClass}` }: DropOptions = {}
+) {</pre>
+        </figure>
+
+        <p>
+          Le troisième paramètre est remarquable : c'est un objet déstructuré,
+          avec des valeurs par défaut pour chaque clé, <em>et</em> une valeur par
+          défaut <code>= {}</code> pour l'objet entier. Ce dernier
+          <code>= {}</code> permet d'appeler la fonction sans troisième argument
+          du tout — sans lui, déstructurer <code>undefined</code> lèverait une
+          erreur.
+        </p>
+      </section>
+
+      <section id="s32">
+        <h3><span class="num">4.7</span>Les autres hooks du projet</h3>
+
+        <h4><code>useActionState</code> — le pont vers le serveur</h4>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ReservationForm.tsx</figcaption>
+<pre><span class="k">const</span> [state, formAction, pending] = useActionState(
+  requestViewing,
+  INITIAL_STATE
+);</pre>
+        </figure>
+
+        <p>Trois valeurs, et c'est tout ce dont le formulaire a besoin :</p>
+        <ul>
+          <li>
+            <code>state</code> — ce que l'action a renvoyé, du type
+            <code>ReservationState</code>. C'est l'union discriminée de la
+            section 2.5.
+          </li>
+          <li>
+            <code>formAction</code> — à passer à
+            <code>&lt;form action={formAction}&gt;</code>.
+          </li>
+          <li>
+            <code>pending</code> — <code>true</code> pendant l'aller-retour. Il
+            désactive le bouton et change son libellé.
+          </li>
+        </ul>
+
+        <p>
+          C'est ce hook qui impose la signature
+          <code>(previousState, formData)</code> à l'action serveur, expliquée en
+          3.5.
+        </p>
+
+        <h4><code>useId</code> — des identifiants uniques</h4>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ReservationForm.tsx</figcaption>
+<pre><span class="k">const</span> fieldId = useId();
+<span class="k">const</span> id = (field: string) =&gt; `${fieldId}-${field}`;
+
+<span class="c">// puis :</span>
+&lt;label htmlFor={id("name")}&gt;…&lt;/label&gt;
+&lt;input id={id("name")} … /&gt;</pre>
+        </figure>
+
+        <p>
+          Un <code>&lt;label htmlFor&gt;</code> doit désigner un <code>id</code>
+          unique dans toute la page. Écrire <code>id="name"</code> en dur
+          casserait si le composant apparaissait deux fois.
+          <code>useId</code> génère un préfixe garanti unique, et cohérent entre
+          le rendu serveur et le rendu client — ce que
+          <code>Math.random()</code> ne saurait pas faire.
+        </p>
+
+        <h4><code>useSyncExternalStore</code> — s'abonner à l'extérieur</h4>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/i18n/locale.tsx</figcaption>
+<pre><span class="k">const</span> getSnapshot = () =&gt; current;
+<span class="k">const</span> getServerSnapshot = (): Locale =&gt; "en";
+
+<span class="k">export function</span> useLocale(): Locale {
+  <span class="k">return</span> useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
+<span class="c">/** The copy for the active language. */</span>
+<span class="k">export function</span> useT(): Dict {
+  <span class="k">return</span> DICTIONARIES[useLocale()];
+}</pre>
+        </figure>
+
+        <p>
+          La langue n'est pas rangée dans l'état d'un composant : c'est une
+          variable de module, partagée par toute l'application.
+          <code>useSyncExternalStore</code> est le hook prévu pour brancher React
+          sur une telle source extérieure. Il prend trois fonctions : comment
+          s'abonner, comment lire la valeur côté client, comment la lire côté
+          serveur.
+        </p>
+
+        <p>
+          Le troisième argument existe précisément à cause de la section 3.1 : sur
+          le serveur, <code>localStorage</code> n'existe pas, donc la valeur y
+          est toujours <code>"en"</code>. React compare les deux instantanés et
+          effectue un réaffichage correctif si le visiteur avait choisi le
+          français — au lieu de planter avec une erreur d'hydratation.
+        </p>
+
+        <p>
+          <code>useT()</code> montre au passage qu'un hook peut en appeler un
+          autre : c'est ainsi qu'on fabrique ses propres hooks. Le projet en a
+          trois — <code>useT</code>, <code>useLocale</code> et
+          <code>useDropReveal</code>. La convention veut que leur nom commence
+          par <code>use</code>.
+        </p>
+      </section>
+
+      <section id="s33">
+        <h3><span class="num">4.8</span>Listes, <code>key</code>, rendu conditionnel</h3>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/RoomGallery.tsx</figcaption>
+<pre>&lt;dl className={styles.specs}&gt;
+  {active.specs.map((spec) =&gt; (
+    &lt;div className={styles.spec} key={spec.label}&gt;
+      &lt;dt&gt;{spec.label}&lt;/dt&gt;
+      &lt;dd&gt;{spec.value}&lt;/dd&gt;
+    &lt;/div&gt;
+  ))}
+&lt;/dl&gt;</pre>
+        </figure>
+
+        <p>
+          <code>.map()</code> transforme un tableau de données en tableau
+          d'éléments. React sait afficher un tableau d'éléments.
+        </p>
+
+        <p>
+          <strong><code>key</code></strong> est obligatoire, et souvent mal
+          compris. React s'en sert pour reconnaître un élément d'un
+          réaffichage à l'autre. Une bonne clé est <em>stable</em> et
+          <em>unique parmi ses frères</em>. Utiliser l'indice de boucle est
+          déconseillé : si la liste est réordonnée, React associe les mauvais
+          éléments.
+        </p>
+
+        <p>
+          Les clés du projet : <code>key={spec.label}</code>,
+          <code>key={flat.slug}</code>, <code>key={part.id}</code> — toutes des
+          identifiants réels. Une seule exception, assumée :
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/TextDrop.tsx</figcaption>
+<pre>{lines.map((line, i) =&gt; (
+  &lt;span key={`${i}-${line}`} className={dropItemClass}&gt;</pre>
+        </figure>
+
+        <p>
+          Deux lignes de texte peuvent être identiques ; l'indice seul serait
+          instable. La combinaison des deux est ici le meilleur compromis
+          disponible.
+        </p>
+
+        <h4>Les trois façons d'afficher conditionnellement</h4>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> — les trois motifs présents dans le projet</figcaption>
+<pre><span class="c">// 1. sortie anticipée — ReservationForm.tsx</span>
+<span class="k">if</span> (state.status === "sent") {
+  <span class="k">return</span> (&lt;div&gt;… écran de confirmation …&lt;/div&gt;);
+}
+
+<span class="c">// 2. ternaire dans le TSX — ApartmentsOverlay.tsx</span>
+{view.type === "list" ? &lt;ApartmentsList … /&gt; : &lt;ApartmentDetail … /&gt;}
+
+<span class="c">// 3. le ET logique — ReservationForm.tsx</span>
+{state.status === "failed" &amp;&amp; t.reserve.failed}</pre>
+        </figure>
+
+        <p>
+          Le troisième mérite une explication : <code>a &amp;&amp; b</code>
+          donne <code>b</code> si <code>a</code> est vrai, et <code>a</code>
+          sinon. Comme React n'affiche rien pour <code>false</code>, cela revient
+          à « affiche ceci seulement si la condition tient ».
+        </p>
+
+        <div class="note caution">
+          <span class="note-label">Le piège du <code>&amp;&amp;</code> avec un nombre</span>
+          <p>
+            <code>{items.length &amp;&amp; &lt;Liste /&gt;}</code> affiche
+            littéralement <code>0</code> quand la liste est vide — car
+            <code>0</code> est faussé, mais React <em>affiche</em> le nombre
+            zéro. Préférez <code>{items.length &gt; 0 &amp;&amp; …}</code>, qui
+            produit un vrai <code>false</code>.
+          </p>
+        </div>
+
+        <h4>Les modules CSS</h4>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/ReservationForm.tsx</figcaption>
+<pre><span class="k">import</span> styles <span class="k">from</span> "./reservation-form.module.css";
+
+&lt;div className={styles.page}&gt;
+&lt;p className={styles.error}&gt;
+&lt;div className={`${styles.field} ${styles.row}`}&gt;   <span class="c">// deux classes</span></pre>
+        </figure>
+
+        <p>
+          Un fichier <code>.module.css</code> est importé comme un objet dont les
+          clés sont vos noms de classes. Au build, chaque nom est rendu unique
+          (<code>page</code> devient quelque chose comme
+          <code>reservation-form_page__x7f2q</code>), ce qui rend impossible
+          toute collision entre deux composants. Pour combiner plusieurs classes,
+          on utilise une chaîne à accents graves avec interpolation.
+        </p>
+      </section>
+
+      <!-- ================= PARTIE 5 ================= -->
+      <div class="part-head">
+        <span class="part-no">Partie 5</span>
+        <h2>Synthèse</h2>
+      </div>
+
+      <section id="s34">
+        <h3><span class="num">5.1</span>Un fichier de bout en bout</h3>
+
+        <p>
+          Reprenons <code>components/reservation.ts</code> dans l'ordre, en
+          nommant la notion à l'œuvre à chaque ligne. Si tout vous paraît clair
+          ici, le cours a rempli son office.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag real">réel</span> components/reservation.ts — annoté</figcaption>
+<pre><span class="k">import</span> { APARTMENTS } <span class="k">from</span> "./apartments-data";
+<span class="c">// ↑ 2.8 · import nommé, chemin relatif</span>
+
+<span class="k">export const</span> SLOTS = ["morning", "afternoon"] <span class="k">as const</span>;
+<span class="c">// ↑ 1.6 · as const : fige les valeurs exactes</span>
+
+<span class="k">export type</span> Slot = (<span class="k">typeof</span> SLOTS)[number];
+<span class="c">// ↑ 2.3 + 2.4 · typeof sur une valeur, puis accès indexé [number]</span>
+<span class="c">//   résultat : "morning" | "afternoon"</span>
+
+<span class="k">export type</span> ReservationField =
+  | "slug" | "name" | "phone" | "email" | "date" | "slot" | "note";
+<span class="c">// ↑ 1.5 · union de types littéraux</span>
+
+<span class="k">export type</span> ErrorCode =
+  | "required" | "tooShort" | "tooLong" | "badEmail" | "badPhone"
+  | "badDate" | "pastDate" | "tooFar" | "badSlot" | "unknownListing";
+<span class="c">// ↑ 1.5 · des CODES, pas des phrases : le serveur ignore la langue du visiteur</span>
+
+<span class="k">export type</span> FieldErrors = Partial&lt;Record&lt;ReservationField, ErrorCode&gt;&gt;;
+<span class="c">// ↑ 2.2 · Record construit l'objet, Partial rend tout facultatif</span>
+
+<span class="k">export type</span> ReservationState =
+  | { status: "idle" }
+  | { status: "invalid"; errors: FieldErrors }
+  | { status: "throttled" }
+  | { status: "failed" }
+  | { status: "sent" };
+<span class="c">// ↑ 2.5 · union discriminée sur `status`</span>
+<span class="c">//   ici plutôt que dans l'action : 3.2, un fichier "use server"</span>
+<span class="c">//   ne peut exporter que des fonctions async</span>
+
+<span class="k">export const</span> INITIAL_STATE: ReservationState = { status: "idle" };
+
+<span class="k">export const</span> LIMITS = { name: 80, phone: 30, email: 120, note: 600, aheadDays: 180 };
+<span class="c">// ↑ 1.1 · types déduits, aucune annotation nécessaire</span>
+
+<span class="k">export type</span> ReservationInput = Record&lt;ReservationField, string&gt;;
+<span class="c">// ↑ 2.2 · les sept champs, tous en string</span>
+
+<span class="k">export function</span> isoDate(date: Date) {
+  <span class="k">const</span> pad = (part: number) =&gt; String(part).padStart(2, "0");
+  <span class="k">return</span> `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+<span class="c">// ↑ 1.2 · paramètre annoté, retour déduit (string)</span>
+<span class="c">//   glossaire · accents graves + ${} = interpolation</span>
+
+<span class="k">export function</span> validateReservation(
+  input: ReservationInput,
+  today: string
+): FieldErrors {
+  <span class="k">const</span> errors: FieldErrors = {};
+
+  <span class="k">if</span> (!APARTMENTS.some((flat) =&gt; flat.slug === input.slug)) {
+    errors.slug = "unknownListing";
+  }
+  <span class="c">// ↑ 1.2 · fonction fléchée en argument · .some() = « au moins un »</span>
+
+  <span class="k">const</span> name = input.name.trim();
+  <span class="k">if</span> (!name) errors.name = "required";
+  <span class="k">else if</span> (name.length &lt; 2) errors.name = "tooShort";
+  <span class="k">else if</span> (name.length &gt; LIMITS.name) errors.name = "tooLong";
+  <span class="c">// ↑ 1.5 · seules les valeurs de ErrorCode sont acceptées ici</span>
+
+  <span class="c">// … les autres champs …</span>
+
+  <span class="k">return</span> errors;
+}</pre>
+        </figure>
+
+        <div class="note key">
+          <span class="note-label">Le fil rouge</span>
+          <p>
+            Ce fichier n'exporte que des types et des fonctions pures : aucun
+            accès au DOM, aucun accès au réseau, aucune dépendance à React. C'est
+            précisément ce qui lui permet d'être importé
+            <strong>des deux côtés</strong> de la frontière — par le formulaire
+            dans le navigateur et par l'action sur le serveur.
+          </p>
+          <p>
+            Les règles de validation ne peuvent donc pas diverger entre les deux.
+            C'est un bon réflexe à garder : le code partagé doit être le plus
+            neutre possible.
+          </p>
+        </div>
+      </section>
+
+      <section id="s35">
+        <h3><span class="num">5.2</span>Glossaire des symboles</h3>
+
+        <p>
+          Les symboles de TypeScript changent de sens selon leur position. Ce
+          tableau est fait pour être consulté quand une ligne vous arrête.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Symbole</th><th>Position</th><th>Sens</th><th>§</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>?</code></td><td>Après un nom de propriété</td><td>Facultatif : <code>perDay?: boolean</code></td><td>1.4</td></tr>
+              <tr><td><code>? :</code></td><td>Entre trois expressions</td><td>Ternaire : <code>a ? b : c</code></td><td>1.4</td></tr>
+              <tr><td><code>?.</code></td><td>Avant un point</td><td>Chaînage optionnel</td><td>1.8</td></tr>
+              <tr><td><code>??</code></td><td>Entre deux expressions</td><td>Valeur de repli si <code>null</code>/<code>undefined</code></td><td>1.8</td></tr>
+              <tr><td><code>!</code></td><td>Avant une expression</td><td>Négation : <code>if (!root)</code></td><td>2.7</td></tr>
+              <tr><td><code>!</code></td><td>Après une expression</td><td>« ce n'est pas null, promis »</td><td>2.7</td></tr>
+              <tr><td><code>|</code></td><td>Entre deux types</td><td>Union : « l'un ou l'autre »</td><td>1.5</td></tr>
+              <tr><td><code>[]</code></td><td>Après un type</td><td>Tableau de ce type</td><td>1.3</td></tr>
+              <tr><td><code>[number]</code></td><td>Après un type de tuple</td><td>Union des éléments</td><td>2.4</td></tr>
+              <tr><td><code>["clé"]</code></td><td>Après un type d'objet</td><td>Type de cette propriété</td><td>2.4</td></tr>
+              <tr><td><code>&lt;T&gt;</code></td><td>Après un nom de type/fonction</td><td>Paramètre de type (générique)</td><td>2.1</td></tr>
+              <tr><td><code>=&gt;</code></td><td>Dans une valeur</td><td>Fonction fléchée</td><td>1.2</td></tr>
+              <tr><td><code>=&gt;</code></td><td>Dans un type</td><td>Type d'une fonction : <code>() =&gt; void</code></td><td>4.1</td></tr>
+              <tr><td><code>...</code></td><td>Avant un objet/tableau</td><td>Décomposition (spread)</td><td>3.8</td></tr>
+              <tr><td><code>{...obj}</code></td><td>Dans du TSX</td><td>Étale des attributs</td><td>4.2</td></tr>
+              <tr><td><code>`…${x}…`</code></td><td>Accents graves</td><td>Chaîne avec interpolation</td><td>3.5</td></tr>
+              <tr><td><code>as</code></td><td>Après une expression</td><td>Assertion de type (désactive un contrôle)</td><td>3.4</td></tr>
+              <tr><td><code>as const</code></td><td>Après une valeur</td><td>Fige les valeurs littérales</td><td>1.6</td></tr>
+              <tr><td><code>keyof</code></td><td>Avant un type d'objet</td><td>Union de ses clés</td><td>2.4</td></tr>
+              <tr><td><code>typeof</code></td><td>Position de type</td><td>Le type d'une valeur existante</td><td>2.3</td></tr>
+              <tr><td><code>typeof</code></td><td>Position de valeur</td><td>Test à l'exécution, renvoie une chaîne</td><td>3.4</td></tr>
+              <tr><td><code>is</code></td><td>En type de retour</td><td>Prédication de type (garde)</td><td>2.6</td></tr>
+              <tr><td><code>_nom</code></td><td>Nom de paramètre</td><td>Convention : volontairement inutilisé</td><td>3.5</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>Pour continuer</h4>
+        <ul>
+          <li>
+            <strong>Survolez.</strong> Dans VS Code, passer la souris sur une
+            variable affiche son type déduit. C'est l'outil d'apprentissage le
+            plus efficace qui soit, et il est déjà installé.
+          </li>
+          <li>
+            <strong>F12.</strong> « Aller à la définition » sur n'importe quel
+            type vous emmène là où il est écrit. Essayez sur
+            <code>Dict</code>, puis sur <code>OverlayView</code>.
+          </li>
+          <li>
+            <strong>Cassez des choses.</strong> Changez
+            <code>slot: "evening"</code> quelque part et lisez l'erreur. Retirez
+            un <code>await</code>. Supprimez une clé du dictionnaire français.
+            Les messages du compilateur sont le meilleur professeur, à condition
+            de les provoquer volontairement.
+          </li>
+          <li>
+            <strong>Le guide compagnon.</strong>
+            <a href="tutoriel-reservation.html">tutoriel-reservation.html</a>
+            reprend la même fonctionnalité sous l'angle de l'implémentation :
+            quels fichiers, dans quel ordre, et pourquoi.
+          </li>
+        </ul>
+      </section>
+
+      <p class="end">
+        Tous les exemples de ce cours sont extraits du dépôt Odza. Les
+        commentaires dans le code sont en anglais, comme dans le projet ; les
+        explications sont en français.
+      </p>
+    </main>
+  </div>
+</div>
+
+<script>
+  // Surligne dans le sommaire la section en cours de lecture.
+  (function () {
+    var links = Array.prototype.slice.call(
+      document.querySelectorAll('.toc a[href^="#"]')
+    );
+    if (!links.length || !('IntersectionObserver' in window)) return;
+
+    var visible = new Set();
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) visible.add(entry.target.id);
+          else visible.delete(entry.target.id);
+        });
+
+        var current = null;
+        for (var i = 0; i < links.length; i++) {
+          var id = links[i].getAttribute('href').slice(1);
+          if (visible.has(id)) { current = id; break; }
+        }
+
+        links.forEach(function (link) {
+          if (link.getAttribute('href').slice(1) === current) {
+            link.setAttribute('aria-current', 'true');
+          } else {
+            link.removeAttribute('aria-current');
+          }
+        });
+      },
+      { rootMargin: '-8% 0px -72% 0px' }
+    );
+
+    links.forEach(function (link) {
+      var section = document.getElementById(link.getAttribute('href').slice(1));
+      if (section) observer.observe(section);
+    });
+  })();
+</script>
+</body>
+</html>

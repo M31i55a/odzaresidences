@@ -1,0 +1,275 @@
+/* Same page frame as the listing views it opens from, on a narrower measure —
+   a form reads better in a single column than across the full overlay. */
+.page {
+  padding: clamp(4rem, 12vh, 7rem) clamp(20px, 5vw, 80px)
+    clamp(5rem, 14vh, 9rem);
+}
+
+.inner {
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-brass);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.5vw, 3.25rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--color-cream);
+}
+
+.intro {
+  margin: clamp(1rem, 2.5vh, 1.5rem) 0 0;
+  max-width: 46ch;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-cream-soft);
+}
+
+/* ---------------- the form ---------------- */
+.form {
+  margin-top: clamp(2rem, 5vh, 3rem);
+  display: grid;
+  gap: clamp(1.1rem, 2.6vh, 1.6rem);
+}
+
+/* Two up where there's room, stacked where there isn't. */
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.1rem, 2.6vh, 1.6rem);
+}
+
+@media (max-width: 560px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* <fieldset> carries a default border and padding in every browser. */
+.field {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-cream-soft);
+}
+
+.optional {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+  color: rgba(237, 230, 218, 0.35);
+}
+
+.input {
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid rgba(237, 230, 218, 0.16);
+  border-radius: 4px;
+  background: var(--color-walnut-soft);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-cream);
+  /* Makes the native date picker and its calendar render dark rather than as
+     a white card dropped onto the overlay. */
+  color-scheme: dark;
+  transition: border-color 0.28s ease, background 0.28s ease;
+}
+
+.input:hover {
+  border-color: rgba(237, 230, 218, 0.28);
+}
+
+.input:focus-visible {
+  outline: none;
+  border-color: var(--color-brass);
+}
+
+.input[aria-invalid="true"] {
+  border-color: #d98b7a;
+}
+
+.note {
+  resize: vertical;
+  min-height: 88px;
+  line-height: 1.6;
+}
+
+/* ---------------- morning / afternoon ---------------- */
+.slots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.slot {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+
+/* Not `display: none` — a hidden-that-way radio drops out of the tab order
+   and off the keyboard entirely. This keeps it focusable and invisible. */
+.slotInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.slotLabel {
+  display: block;
+  padding: 13px 10px;
+  border: 1px solid rgba(237, 230, 218, 0.16);
+  border-radius: 4px;
+  background: var(--color-walnut-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-align: center;
+  color: var(--color-cream-soft);
+  transition: border-color 0.28s ease, color 0.28s ease, background 0.28s ease;
+}
+
+.slot:hover .slotLabel {
+  border-color: rgba(237, 230, 218, 0.28);
+  color: var(--color-cream);
+}
+
+.slotInput:checked + .slotLabel {
+  border-color: var(--color-brass);
+  background: var(--color-brass-dim);
+  color: var(--color-cream);
+}
+
+/* The ring the browser would have drawn on the radio itself, moved onto the
+   thing the user can actually see. */
+.slotInput:focus-visible + .slotLabel {
+  outline: 2px solid var(--color-brass);
+  outline-offset: 2px;
+}
+
+/* ---------------- feedback ---------------- */
+.error {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: #e0a091;
+}
+
+/* Always in the DOM so the live region exists before it has anything to say —
+   a region inserted at the same moment as its text often goes unannounced. */
+.status:empty {
+  display: none;
+}
+
+.status {
+  margin: 0;
+  padding: 12px 15px;
+  border: 1px solid rgba(224, 160, 145, 0.4);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: #e0a091;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(12px, 2vw, 20px);
+  margin-top: clamp(0.5rem, 1.5vh, 1rem);
+}
+
+.submit {
+  cursor: pointer;
+  border: 0;
+  padding: 15px 30px;
+  border-radius: 999px;
+  background: var(--color-brass);
+  color: var(--color-walnut);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  transition: transform 0.26s ease, background 0.26s ease, opacity 0.26s ease;
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--color-cream);
+  transform: translateY(-2px);
+}
+
+.submit:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.back {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  color: var(--color-cream-soft);
+  transition: color 0.26s ease;
+}
+
+.back:hover {
+  color: var(--color-brass);
+}
+
+/* ---------------- after it's sent ---------------- */
+.sentBody {
+  margin: clamp(1rem, 2.5vh, 1.5rem) 0 clamp(2rem, 5vh, 3rem);
+  max-width: 46ch;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-cream-soft);
+}
+
+/* ---------------- the honeypot ----------------
+   Pushed off-screen rather than hidden with `display: none` or `hidden`: the
+   more careful bots skip fields no human could reach by those markers, and the
+   point is that they DO fill this one in. */
+.trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

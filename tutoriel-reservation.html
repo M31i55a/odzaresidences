@@ -1,0 +1,2317 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ajouter la réservation de visites — Odza</title>
+
+<style>
+  /* ---------------------------------------------------------------
+     Palette reprise du site lui-même : noyer, laiton, crème.
+     Thème sombre par défaut (le monde d'Odza), thème clair = papier.
+     --------------------------------------------------------------- */
+  :root {
+    --ground: #1b1815;
+    --surface: #221e19;
+    --surface-2: #2a251f;
+    --ink: #ede6da;
+    --ink-soft: rgba(237, 230, 218, 0.58);
+    --ink-faint: rgba(237, 230, 218, 0.34);
+    --accent: #c9a567;
+    --accent-soft: rgba(201, 165, 103, 0.14);
+    --line: rgba(237, 230, 218, 0.14);
+    --line-strong: rgba(237, 230, 218, 0.26);
+    --new: #8fbf86;
+    --new-soft: rgba(143, 191, 134, 0.14);
+    --warn: #e0a091;
+    --warn-soft: rgba(224, 160, 145, 0.12);
+
+    /* Le code garde le même fond dans les deux thèmes : c'est un choix,
+       pas un oubli — un bloc de code se lit comme un terminal. */
+    --code-bg: #16130f;
+    --code-ink: #ddd5c6;
+    --code-comment: #8a8073;
+    --code-accent: #c9a567;
+
+    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+      "Times New Roman", serif;
+    --font-body: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial,
+      sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "Cascadia Mono", Consolas,
+      "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --ground: #f3f1ec;
+      --surface: #ffffff;
+      --surface-2: #e9e5dc;
+      --ink: #1b1815;
+      --ink-soft: rgba(27, 24, 21, 0.62);
+      --ink-faint: rgba(27, 24, 21, 0.4);
+      --accent: #7d5f24;
+      --accent-soft: rgba(125, 95, 36, 0.1);
+      --line: rgba(27, 24, 21, 0.14);
+      --line-strong: rgba(27, 24, 21, 0.26);
+      --new: #3f7a36;
+      --new-soft: rgba(63, 122, 54, 0.1);
+      --warn: #9c4a35;
+      --warn-soft: rgba(156, 74, 53, 0.09);
+    }
+  }
+
+  /* La bascule du lecteur doit gagner dans les deux sens. */
+  :root[data-theme="dark"] {
+    --ground: #1b1815;
+    --surface: #221e19;
+    --surface-2: #2a251f;
+    --ink: #ede6da;
+    --ink-soft: rgba(237, 230, 218, 0.58);
+    --ink-faint: rgba(237, 230, 218, 0.34);
+    --accent: #c9a567;
+    --accent-soft: rgba(201, 165, 103, 0.14);
+    --line: rgba(237, 230, 218, 0.14);
+    --line-strong: rgba(237, 230, 218, 0.26);
+    --new: #8fbf86;
+    --new-soft: rgba(143, 191, 134, 0.14);
+    --warn: #e0a091;
+    --warn-soft: rgba(224, 160, 145, 0.12);
+  }
+
+  :root[data-theme="light"] {
+    --ground: #f3f1ec;
+    --surface: #ffffff;
+    --surface-2: #e9e5dc;
+    --ink: #1b1815;
+    --ink-soft: rgba(27, 24, 21, 0.62);
+    --ink-faint: rgba(27, 24, 21, 0.4);
+    --accent: #7d5f24;
+    --accent-soft: rgba(125, 95, 36, 0.1);
+    --line: rgba(27, 24, 21, 0.14);
+    --line-strong: rgba(27, 24, 21, 0.26);
+    --new: #3f7a36;
+    --new-soft: rgba(63, 122, 54, 0.1);
+    --warn: #9c4a35;
+    --warn-soft: rgba(156, 74, 53, 0.09);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16.5px;
+    line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------------- charpente ---------------- */
+  .shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 clamp(20px, 4vw, 48px) clamp(5rem, 12vh, 8rem);
+  }
+
+  .masthead {
+    padding: clamp(3.5rem, 10vh, 7rem) 0 clamp(2.5rem, 6vh, 4rem);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .kicker {
+    margin: 0 0 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 6vw, 4.4rem);
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    margin: clamp(1.25rem, 3vh, 2rem) 0 0;
+    max-width: 62ch;
+    font-size: clamp(1.02rem, 1.5vw, 1.2rem);
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+
+  .stack {
+    margin: clamp(2rem, 5vh, 3rem) 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .stack li {
+    padding: 6px 13px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    padding-top: clamp(2.5rem, 6vh, 4rem);
+  }
+
+  @media (min-width: 1000px) {
+    .layout { grid-template-columns: 208px minmax(0, 1fr); }
+  }
+
+  /* ---------------- sommaire ---------------- */
+  .toc { align-self: start; }
+
+  @media (min-width: 1000px) {
+    .toc {
+      position: sticky;
+      top: 2rem;
+      max-height: calc(100vh - 4rem);
+      overflow-y: auto;
+    }
+  }
+
+  .toc h2 {
+    margin: 0 0 1rem;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .toc ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    counter-reset: toc;
+  }
+
+  .toc a {
+    display: flex;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 13.5px;
+    line-height: 1.4;
+    text-decoration: none;
+    color: var(--ink-soft);
+    border-radius: 3px;
+    transition: color 0.2s ease;
+  }
+
+  .toc a::before {
+    counter-increment: toc;
+    content: counter(toc, decimal-leading-zero);
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    padding-top: 3px;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .toc a:hover { color: var(--ink); }
+  .toc a[aria-current="true"] { color: var(--accent); }
+  .toc a[aria-current="true"]::before { color: var(--accent); }
+
+  /* ---------------- corps ---------------- */
+  main { min-width: 0; }
+
+  section { margin-bottom: clamp(3.5rem, 9vh, 6rem); scroll-margin-top: 2rem; }
+
+  h2 {
+    margin: 0 0 1.25rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.65rem, 3.2vw, 2.35rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  .step-no {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  h3 {
+    margin: 2.5rem 0 0.85rem;
+    font-family: var(--font-body);
+    font-size: 1.06rem;
+    font-weight: 650;
+    letter-spacing: -0.005em;
+  }
+
+  p { margin: 0 0 1.15rem; max-width: 68ch; }
+
+  main ul, main ol.prose { max-width: 68ch; padding-left: 1.2rem; }
+  main li { margin-bottom: 0.5rem; }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+
+  code:not(pre code) {
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--accent-soft);
+    font-family: var(--font-mono);
+    font-size: 0.855em;
+    color: var(--accent);
+    word-break: break-word;
+  }
+
+  strong { font-weight: 650; }
+
+  /* ---------------- blocs de code ---------------- */
+  figure.code {
+    margin: 1.5rem 0 1.75rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--code-bg);
+  }
+
+  figure.code figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(237, 230, 218, 0.1);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.03em;
+    color: #a49a8b;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .tag {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .tag.new { background: var(--new-soft); color: var(--new); }
+  .tag.mod { background: var(--accent-soft); color: var(--accent); }
+
+  pre {
+    margin: 0;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 12.8px;
+    line-height: 1.72;
+    color: var(--code-ink);
+    tab-size: 2;
+  }
+
+  pre .c { color: var(--code-comment); font-style: italic; }
+  pre .k { color: var(--code-accent); }
+  pre .add { color: var(--new); }
+  pre .del { color: var(--warn); }
+
+  /* ---------------- encadrés ---------------- */
+  .note {
+    margin: 1.5rem 0;
+    padding: 15px 18px;
+    max-width: 68ch;
+    border-left: 2px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0 4px 4px 0;
+    font-size: 15px;
+  }
+
+  .note p { margin: 0; max-width: none; }
+  .note p + p { margin-top: 0.75rem; }
+
+  .note.caution { border-left-color: var(--warn); background: var(--warn-soft); }
+
+  .note .note-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .note.caution .note-label { color: var(--warn); }
+
+  /* ---------------- le parcours ---------------- */
+  .flow {
+    margin: 2rem 0;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 720px) {
+    .flow { grid-template-columns: repeat(5, 1fr); align-items: stretch; }
+  }
+
+  .flow-step {
+    position: relative;
+    padding: 14px 15px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--surface);
+  }
+
+  .flow-step b {
+    display: block;
+    margin-bottom: 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .flow-step span { font-size: 13.5px; line-height: 1.45; color: var(--ink-soft); }
+
+  /* ---------------- arborescence ---------------- */
+  .tree {
+    margin: 1.5rem 0;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 12.8px;
+    line-height: 1.95;
+  }
+
+  .tree .dir { color: var(--ink-soft); }
+  .tree .n { color: var(--new); }
+  .tree .m { color: var(--accent); }
+  .tree .why { color: var(--ink-faint); }
+
+  /* ---------------- tableaux ---------------- */
+  .table-wrap { margin: 1.5rem 0; overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+  }
+
+  th, td {
+    padding: 11px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  th {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    white-space: nowrap;
+  }
+
+  td code { white-space: nowrap; }
+
+  /* ---------------- repliables ---------------- */
+  details {
+    margin: 1.5rem 0;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+  }
+
+  summary {
+    padding: 13px 17px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.03em;
+    color: var(--ink-soft);
+  }
+
+  summary:hover { color: var(--ink); }
+  details[open] summary { border-bottom: 1px solid var(--line); }
+  details figure.code { margin: 0; border: 0; border-radius: 0; }
+  details figure.code figcaption { border-radius: 0; }
+
+  /* ---------------- divers ---------------- */
+  a:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  hr {
+    margin: 3rem 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .end {
+    margin-top: clamp(3rem, 8vh, 5rem);
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  }
+
+  html { scroll-behavior: smooth; }
+</style>
+
+</head>
+<body>
+<div class="shell">
+  <header class="masthead">
+    <p class="kicker">Odza · Guide d'implémentation</p>
+    <h1>Ajouter la réservation de visites</h1>
+    <p class="standfirst">
+      Le site est aujourd'hui une vitrine : de belles images, aucun formulaire,
+      aucun serveur. Ce guide ajoute la première fonctionnalité qui parle au
+      serveur — un visiteur demande à visiter une résidence, et l'agence reçoit
+      la demande par email. Chaque fichier créé est expliqué : à quoi il sert,
+      pourquoi il est là, et ce que fait chaque morceau de code.
+    </p>
+    <ul class="stack">
+      <li>Next.js 16.2.12</li>
+      <li>React 19</li>
+      <li>Server Actions</li>
+      <li>Aucune base de données</li>
+      <li>0 nouvelle dépendance</li>
+    </ul>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Sommaire">
+      <h2>Sommaire</h2>
+      <ol>
+        <li><a href="#apercu">Ce que nous construisons</a></li>
+        <li><a href="#decisions">Les trois décisions</a></li>
+        <li><a href="#arbo">L'arborescence</a></li>
+        <li><a href="#etape1">La validation partagée</a></li>
+        <li><a href="#etape2">La Server Action</a></li>
+        <li><a href="#etape3">Le formulaire</a></li>
+        <li><a href="#etape4">Les styles</a></li>
+        <li><a href="#etape5">Brancher dans l'overlay</a></li>
+        <li><a href="#etape6">Les textes (FR / EN)</a></li>
+        <li><a href="#etape7">Les variables d'environnement</a></li>
+        <li><a href="#tester">Tester</a></li>
+        <li><a href="#securite">La sécurité en résumé</a></li>
+        <li><a href="#apres">Et après</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <!-- ============================================================ -->
+      <section id="apercu">
+        <h2>Ce que nous construisons</h2>
+
+        <p>
+          Sur la fiche d'une résidence, un bouton <strong>« Réserver une
+          visite »</strong> ouvre un formulaire. Le visiteur donne son nom, son
+          téléphone, le jour qui l'arrange et un créneau (matin ou après-midi).
+          Il envoie. L'agence reçoit un email formaté, et peut répondre
+          directement au visiteur. Rien n'est stocké, rien n'est payé.
+        </p>
+
+        <div class="flow">
+          <div class="flow-step">
+            <b>1 · Navigateur</b>
+            <span>Le visiteur remplit le formulaire et clique sur envoyer.</span>
+          </div>
+          <div class="flow-step">
+            <b>2 · Vérif. client</b>
+            <span>Le navigateur contrôle les champs et affiche les erreurs tout de suite.</span>
+          </div>
+          <div class="flow-step">
+            <b>3 · Serveur</b>
+            <span>La Server Action revérifie tout, sans faire confiance au navigateur.</span>
+          </div>
+          <div class="flow-step">
+            <b>4 · Email</b>
+            <span>La demande part vers la boîte de l'agence, en français.</span>
+          </div>
+          <div class="flow-step">
+            <b>5 · Retour</b>
+            <span>Le formulaire affiche « Demande bien reçue » ou l'erreur.</span>
+          </div>
+        </div>
+
+        <div class="note">
+          <span class="note-label">À retenir</span>
+          <p>
+            L'étape 2 et l'étape 3 font <em>le même travail</em>. Ce n'est pas
+            une redondance inutile : la vérification côté navigateur existe pour
+            le confort (une réponse immédiate, sans aller-retour réseau), celle
+            du serveur existe pour la sécurité. On ne peut jamais supprimer la
+            seconde, parce qu'un attaquant peut envoyer la requête sans jamais
+            ouvrir votre page.
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="decisions">
+        <h2>Les trois décisions</h2>
+
+        <p>
+          Avant d'écrire une ligne, trois choix structurent tout le reste. Les
+          voici avec leur justification, parce qu'ils expliquent la forme du
+          code qui suit.
+        </p>
+
+        <h3>1. Une Server Action, pas une route d'API</h3>
+        <p>
+          Next.js propose deux façons d'envoyer des données au serveur : un
+          <em>Route Handler</em> (un fichier <code>route.ts</code> qui crée une
+          URL <code>/api/…</code>) ou une <em>Server Action</em> (une fonction
+          marquée <code>"use server"</code> qu'un formulaire appelle
+          directement).
+        </p>
+        <p>
+          Nous prenons la Server Action. Elle évite d'écrire à la main la
+          sérialisation JSON et le <code>fetch</code>, elle donne l'état de
+          chargement et les erreurs gratuitement via le hook
+          <code>useActionState</code>, et Next.js y ajoute d'office une
+          protection CSRF (il compare l'en-tête <code>Origin</code> au
+          <code>Host</code> et rejette ce qui ne correspond pas) ainsi qu'une
+          limite de taille de corps à 1 Mo.
+        </p>
+
+        <h3>2. Pas de base de données</h3>
+        <p>
+          L'agence travaille depuis sa boîte mail. Ajouter une base de données
+          maintenant, ce serait ajouter un schéma, des migrations, un écran
+          d'administration et une authentification — avant même de savoir si
+          quelqu'un utilise le formulaire. Toute la fonctionnalité tient donc en
+          « vérifier, puis envoyer un email ».
+        </p>
+        <p>
+          Le code est écrit pour que ce choix soit réversible : la seule
+          fonction qui touche à l'envoi s'appelle <code>deliver</code>. Le jour
+          où vous voulez enregistrer les demandes, vous changez cette
+          fonction-là et rien d'autre.
+        </p>
+
+        <h3>3. Zéro nouvelle dépendance</h3>
+        <p>
+          Le projet ne dépend aujourd'hui que de <code>gsap</code>,
+          <code>lenis</code>, <code>next</code> et <code>react</code>. Pour
+          rester sur cette ligne, nous n'installons pas le SDK d'un service
+          d'email : nous appelons l'API HTTP de Resend avec le
+          <code>fetch</code> déjà présent dans Node. C'est une dizaine de lignes,
+          et cela laisse le champ libre pour changer de fournisseur.
+        </p>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="arbo">
+        <h2>L'arborescence</h2>
+
+        <p>
+          Cinq fichiers créés, six modifiés. Le vert signale une création, le
+          laiton une modification.
+        </p>
+
+        <div class="tree">
+<span class="dir">odza/</span>
+<span class="dir">├── app/</span>
+<span class="dir">│   └── actions/</span>
+<span class="dir">│       └── </span><span class="n">reservations.ts</span>          <span class="why">← créé · le code serveur : vérifie et envoie</span>
+<span class="dir">├── components/</span>
+<span class="dir">│   ├── </span><span class="n">reservation.ts</span>              <span class="why">← créé · les règles de validation, partagées</span>
+<span class="dir">│   ├── </span><span class="n">ReservationForm.tsx</span>         <span class="why">← créé · le formulaire</span>
+<span class="dir">│   ├── </span><span class="n">reservation-form.module.css</span> <span class="why">← créé · son habillage</span>
+<span class="dir">│   ├── </span><span class="m">ApartmentsOverlay.tsx</span>       <span class="why">← modifié · une 3ᵉ vue « reserve »</span>
+<span class="dir">│   ├── </span><span class="m">ApartmentDetail.tsx</span>         <span class="why">← modifié · le bouton d'appel</span>
+<span class="dir">│   ├── </span><span class="m">apartment-detail.module.css</span> <span class="why">← modifié · le style du bouton</span>
+<span class="dir">│   ├── </span><span class="m">ApartmentsSection.tsx</span>       <span class="why">← modifié · branche la nouvelle vue</span>
+<span class="dir">│   └── i18n/</span>
+<span class="dir">│       └── </span><span class="m">dictionary.ts</span>           <span class="why">← modifié · les textes FR et EN</span>
+<span class="dir">├── </span><span class="n">.env.example</span>                    <span class="why">← créé · le modèle de configuration</span>
+<span class="dir">└── </span><span class="m">.gitignore</span>                      <span class="why">← modifié · pour laisser passer le modèle</span>
+        </div>
+
+        <h3>Pourquoi ces emplacements ?</h3>
+        <ul>
+          <li>
+            <code>app/actions/</code> — dans Next.js, tout ce qui vit sous
+            <code>app/</code> est du ressort du serveur ou du routage. Une
+            Server Action peut techniquement être placée n'importe où, mais la
+            ranger ici indique clairement qu'il s'agit de code qui ne tourne
+            <em>jamais</em> dans le navigateur.
+          </li>
+          <li>
+            <code>components/</code> — le projet range déjà tout ici, y compris
+            ses fichiers de données (<code>apartments-data.ts</code>,
+            <code>contact-data.ts</code>). Nos nouveaux fichiers suivent la même
+            convention plutôt que d'inventer un dossier <code>lib/</code>.
+          </li>
+          <li>
+            Chaque composant a son <code>.module.css</code> voisin, du même nom.
+            C'est déjà la règle du projet : on la respecte.
+          </li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="etape1">
+        <h2><span class="step-no">Étape 1</span>La validation partagée</h2>
+
+        <p>
+          Commençons par les règles : qu'est-ce qu'une demande valable ? Ce
+          fichier ne contient aucun affichage et aucun envoi — uniquement des
+          règles. Il est importé <em>à la fois</em> par le formulaire et par le
+          serveur, ce qui garantit que les deux ne pourront jamais diverger.
+        </p>
+
+        <div class="note">
+          <span class="note-label">Le point clé</span>
+          <p>
+            La fonction renvoie des <strong>codes</strong>
+            (<code>"badEmail"</code>) et non des phrases. Le serveur ignore
+            totalement dans quelle langue le visiteur lit le site : c'est le
+            formulaire qui traduira le code en phrase, via le dictionnaire.
+          </p>
+        </div>
+
+        <figure class="code">
+          <figcaption><span class="tag new">créé</span> components/reservation.ts</figcaption>
+<pre><span class="k">import</span> { APARTMENTS } <span class="k">from</span> "./apartments-data";
+
+<span class="c">/* Shared by the form and the Server Action on purpose. The browser checks so
+   the visitor gets a fast, friendly answer; the server checks because the
+   browser's check is a courtesy and not a guarantee — a Server Action is a
+   POST endpoint that anyone can hit directly. One module means the two rules
+   can't drift apart. */</span>
+
+<span class="c">/** The two windows the agency shows properties in. */</span>
+<span class="k">export const</span> SLOTS = ["morning", "afternoon"] <span class="k">as const</span>;
+<span class="k">export type</span> Slot = (<span class="k">typeof</span> SLOTS)[number];
+
+<span class="k">export type</span> ReservationField =
+  | "slug"
+  | "name"
+  | "phone"
+  | "email"
+  | "date"
+  | "slot"
+  | "note";
+
+<span class="c">/* Codes rather than sentences: the server has no idea which language the
+   visitor is reading, so the form looks the wording up in the dictionary. */</span>
+<span class="k">export type</span> ErrorCode =
+  | "required"
+  | "tooShort"
+  | "tooLong"
+  | "badEmail"
+  | "badPhone"
+  | "badDate"
+  | "pastDate"
+  | "tooFar"
+  | "badSlot"
+  | "unknownListing";
+
+<span class="k">export type</span> FieldErrors = Partial&lt;Record&lt;ReservationField, ErrorCode&gt;&gt;;
+
+<span class="c">/**
+ * What the form gets back from the Server Action. Deliberately narrow — an
+ * action's return value is serialised to the browser, so nothing goes in here
+ * that the UI won't render, and the submission is never echoed back.
+ *
+ * This lives here rather than beside the action because a `"use server"` file
+ * may only export async functions. `INITIAL_STATE` is a plain object, so
+ * exporting it from there is a runtime error: "A 'use server' file can only
+ * export async functions, found object."
+ */</span>
+<span class="k">export type</span> ReservationState =
+  | { status: "idle" }
+  | { status: "invalid"; errors: FieldErrors }
+  | { status: "throttled" }
+  | { status: "failed" }
+  | { status: "sent" };
+
+<span class="k">export const</span> INITIAL_STATE: ReservationState = { status: "idle" };
+
+<span class="k">export const</span> LIMITS = {
+  name: 80,
+  phone: 30,
+  email: 120,
+  note: 600,
+  <span class="c">/** How far ahead a viewing can be booked. */</span>
+  aheadDays: 180,
+};
+
+<span class="k">export type</span> ReservationInput = Record&lt;ReservationField, string&gt;;
+
+<span class="c">/** `YYYY-MM-DD` in local time. `toISOString()` would shift the day for anyone
+    east or west of UTC, which is how "today" becomes "yesterday" at 1am. */</span>
+<span class="k">export function</span> isoDate(date: Date) {
+  <span class="k">const</span> pad = (part: number) =&gt; String(part).padStart(2, "0");
+  <span class="k">return</span> `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+<span class="c">/** Built from local parts for the same reason — `new Date("2026-08-11")` is
+    parsed as UTC midnight, which lands on the 10th for anyone behind it. */</span>
+<span class="k">export function</span> shiftIsoDate(iso: string, days: number) {
+  <span class="k">const</span> [year, month, day] = iso.split("-").map(Number);
+  <span class="k">const</span> date = <span class="k">new</span> Date(year, month - 1, day);
+  date.setDate(date.getDate() + days);
+  <span class="k">return</span> isoDate(date);
+}
+
+<span class="c">/**
+ * Everything wrong with a submission, keyed by field. An empty object means
+ * it's good to send.
+ *
+ * `today` is passed in rather than read here so the caller decides whose clock
+ * counts — the visitor's on the client, the server's on the server.
+ */</span>
+<span class="k">export function</span> validateReservation(
+  input: ReservationInput,
+  today: string
+): FieldErrors {
+  <span class="k">const</span> errors: FieldErrors = {};
+
+  <span class="c">// The slug picks which listing the email names, so it has to be one of ours</span>
+  <span class="c">// rather than whatever arrived in the request body.</span>
+  <span class="k">if</span> (!APARTMENTS.some((flat) =&gt; flat.slug === input.slug)) {
+    errors.slug = "unknownListing";
+  }
+
+  <span class="k">const</span> name = input.name.trim();
+  <span class="k">if</span> (!name) errors.name = "required";
+  <span class="k">else if</span> (name.length &lt; 2) errors.name = "tooShort";
+  <span class="k">else if</span> (name.length &gt; LIMITS.name) errors.name = "tooLong";
+
+  <span class="k">const</span> phone = input.phone.trim();
+  <span class="k">const</span> digits = phone.replace(/\D/g, "");
+  <span class="k">if</span> (!phone) errors.phone = "required";
+  <span class="k">else if</span> (phone.length &gt; LIMITS.phone) errors.phone = "tooLong";
+  <span class="c">/* Deliberately loose. 8 digits covers a local Cameroonian number written
+     without its country code, 15 is the E.164 ceiling. Anything stricter
+     starts rejecting real customers over a space or a dash. */</span>
+  <span class="k">else if</span> (digits.length &lt; 8 || digits.length &gt; 15) errors.phone = "badPhone";
+
+  <span class="c">// Optional — plenty of people here would rather be called than emailed.</span>
+  <span class="k">const</span> email = input.email.trim();
+  <span class="k">if</span> (email) {
+    <span class="k">if</span> (email.length &gt; LIMITS.email) errors.email = "tooLong";
+    <span class="c">/* Not RFC 5322. A full-fidelity email regex is famously enormous and still
+       can't tell you whether the address exists; this only catches typos and,
+       importantly, forbids the whitespace that would let someone smuggle a
+       header into the reply-to. */</span>
+    <span class="k">else if</span> (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      errors.email = "badEmail";
+    }
+  }
+
+  <span class="k">if</span> (!input.date) errors.date = "required";
+  <span class="k">else if</span> (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) errors.date = "badDate";
+  <span class="c">// Zero-padded ISO dates sort correctly as plain strings, so no Date needed.</span>
+  <span class="k">else if</span> (input.date &lt; today) errors.date = "pastDate";
+  <span class="k">else if</span> (input.date &gt; shiftIsoDate(today, LIMITS.aheadDays)) {
+    errors.date = "tooFar";
+  }
+
+  <span class="k">if</span> (!input.slot) errors.slot = "required";
+  <span class="k">else if</span> (!SLOTS.includes(input.slot <span class="k">as</span> Slot)) errors.slot = "badSlot";
+
+  <span class="k">if</span> (input.note.length &gt; LIMITS.note) errors.note = "tooLong";
+
+  <span class="k">return</span> errors;
+}</pre>
+        </figure>
+
+        <h3>Trois détails qui méritent une explication</h3>
+
+        <p>
+          <strong>Les dates sont des chaînes, pas des objets <code>Date</code>.</strong>
+          Une date au format <code>YYYY-MM-DD</code> avec des zéros de
+          remplissage se compare correctement avec <code>&lt;</code> et
+          <code>&gt;</code> comme du simple texte : <code>"2026-08-09"</code> est
+          bien inférieur à <code>"2026-08-11"</code>. Cela évite toute
+          manipulation d'objets <code>Date</code>, et donc toute une famille de
+          bugs de fuseau horaire.
+        </p>
+
+        <p>
+          <strong>Pourquoi ne pas utiliser <code>toISOString()</code> ?</strong>
+          Parce qu'elle convertit en UTC. À 1 h du matin au Cameroun (UTC+1),
+          <code>toISOString()</code> renvoie encore la veille — le formulaire
+          refuserait alors « aujourd'hui » comme étant dans le passé. Nos deux
+          fonctions construisent la date à partir des composants locaux, ce qui
+          règle le problème définitivement.
+        </p>
+
+        <p>
+          <strong>La validation du téléphone est volontairement permissive.</strong>
+          C'est un choix, pas un oubli. Un contrôle trop strict rejette des
+          clients réels parce qu'ils ont mis un espace ou un tiret. Nous
+          comptons simplement les chiffres : entre 8 (un numéro camerounais
+          local sans indicatif) et 15 (le maximum de la norme E.164).
+        </p>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="etape2">
+        <h2><span class="step-no">Étape 2</span>La Server Action</h2>
+
+        <p>
+          C'est le cœur serveur. La directive <code>"use server"</code> en haut
+          du fichier indique à Next.js que ces fonctions ne doivent
+          <em>jamais</em> être envoyées au navigateur : à la compilation, il
+          remplace le corps de la fonction, dans le bundle client, par une simple
+          référence chiffrée qui déclenche une requête POST vers le serveur.
+        </p>
+
+        <div class="note caution">
+          <span class="note-label">Important</span>
+          <p>
+            Cette référence est publique. N'importe qui peut envoyer la même
+            requête POST sans jamais ouvrir votre page. C'est pour cela que la
+            Server Action revalide tout, ne fait confiance à aucun champ
+            (y compris les champs cachés), et ne renvoie au navigateur que des
+            données volontairement minimales.
+          </p>
+        </div>
+
+        <div class="note caution">
+          <span class="note-label">Le piège à éviter</span>
+          <p>
+            Un fichier <code>"use server"</code> ne peut exporter
+            <strong>que des fonctions <code>async</code></strong>. Rien d'autre.
+            Si vous y ajoutez une constante — même minuscule, même évidente —
+            l'application plante au chargement de la page :
+          </p>
+          <p>
+            <code>A "use server" file can only export async functions, found object.</code>
+          </p>
+          <p>
+            La raison est logique : chaque export d'un tel fichier devient un
+            point d'entrée HTTP côté serveur. Un objet ne peut pas en être un.
+            C'est pourquoi <code>ReservationState</code> et
+            <code>INITIAL_STATE</code> vivent dans
+            <code>components/reservation.ts</code> et non ici — et pourquoi
+            <code>requestViewing</code> est le <em>seul</em> export de ce
+            fichier.
+          </p>
+          <p>
+            À noter : les <em>types</em> ne comptent pas, car TypeScript les
+            efface à la compilation — il n'en reste rien à l'exécution. Seules
+            les valeurs réelles posent problème. Et attention,
+            <code>npm run build</code> ne détecte pas toujours l'erreur : elle
+            peut n'apparaître qu'au moment où la page est réellement rendue.
+          </p>
+        </div>
+
+        <figure class="code">
+          <figcaption><span class="tag new">créé</span> app/actions/reservations.ts</figcaption>
+<pre>"use server";
+
+<span class="k">import</span> { headers } <span class="k">from</span> "next/headers";
+<span class="k">import</span> { APARTMENTS, describe } <span class="k">from</span> "@/components/apartments-data";
+<span class="k">import</span> { DICTIONARIES } <span class="k">from</span> "@/components/i18n/dictionary";
+<span class="k">import</span> {
+  isoDate,
+  validateReservation,
+  <span class="k">type</span> ReservationField,
+  <span class="k">type</span> ReservationInput,
+  <span class="k">type</span> ReservationState,
+} <span class="k">from</span> "@/components/reservation";
+
+<span class="c">/* A viewing request. No database: the agency works out of an inbox, so the
+   whole feature is "validate it, then email it". Swapping the send for a
+   database insert later means changing `deliver` and nothing else.
+
+   `requestViewing` is the ONLY export here, and that is a hard rule rather
+   than a preference: a `"use server"` file may only export async functions.
+   The state type and its initial value live in components/reservation.ts —
+   exporting the plain object from here fails at runtime with "A 'use server'
+   file can only export async functions, found object". */</span>
+
+<span class="c">/* ---------------- rate limiting ----------------
+   A fixed window held in memory. Being in memory means it is per-instance and
+   it resets on every deploy, so treat it as a speed bump against someone
+   holding down the submit button rather than as a wall against a determined
+   flood. If this site ever runs more than one instance, move it to Redis
+   (Upstash's rate limiter is a drop-in) — the shape of the check stays. */</span>
+<span class="k">const</span> WINDOW_MS = 10 * 60 * 1000;
+<span class="k">const</span> MAX_PER_WINDOW = 5;
+<span class="k">const</span> seen = <span class="k">new</span> Map&lt;string, number[]&gt;();
+
+<span class="k">function</span> withinRate(key: string) {
+  <span class="k">const</span> now = Date.now();
+  <span class="k">const</span> fresh = (seen.get(key) ?? []).filter((at) =&gt; now - at &lt; WINDOW_MS);
+
+  <span class="k">if</span> (fresh.length &gt;= MAX_PER_WINDOW) {
+    seen.set(key, fresh);
+    <span class="k">return false</span>;
+  }
+
+  fresh.push(now);
+  seen.set(key, fresh);
+
+  <span class="c">// Keep the map from growing forever on a long-lived server.</span>
+  <span class="k">if</span> (seen.size &gt; 5000) {
+    <span class="k">for</span> (<span class="k">const</span> [id, hits] <span class="k">of</span> seen) {
+      <span class="k">if</span> (hits.every((at) =&gt; now - at &gt;= WINDOW_MS)) seen.delete(id);
+    }
+  }
+
+  <span class="k">return true</span>;
+}
+
+<span class="c">/** Best-effort caller identity. Spoofable, which is fine for a speed bump. */</span>
+<span class="k">async function</span> callerKey() {
+  <span class="k">const</span> list = <span class="k">await</span> headers();
+  <span class="k">const</span> forwarded = list.get("x-forwarded-for");
+  <span class="k">return</span> forwarded?.split(",")[0]?.trim() || list.get("x-real-ip") || "unknown";
+}
+
+<span class="c">/* ---------------- delivery ---------------- */</span>
+
+<span class="k">function</span> escapeHtml(value: string) {
+  <span class="k">return</span> value.replace(
+    /[&amp;&lt;&gt;"']/g,
+    (char) =&gt;
+      ({
+        "&amp;": "&amp;amp;",
+        "&lt;": "&amp;lt;",
+        "&gt;": "&amp;gt;",
+        '"': "&amp;quot;",
+        "'": "&amp;#39;",
+      })[char] <span class="k">as</span> string
+  );
+}
+
+<span class="k">type</span> Delivery = {
+  subject: string;
+  text: string;
+  html: string;
+  <span class="c">/** Set only when the visitor left an address, so the agency can hit reply. */</span>
+  replyTo?: string;
+};
+
+<span class="k">async function</span> deliver({ subject, text, html, replyTo }: Delivery) {
+  <span class="k">const</span> key = process.env.RESEND_API_KEY;
+  <span class="k">const</span> to = process.env.RESERVATIONS_TO;
+  <span class="k">const</span> from = process.env.RESERVATIONS_FROM;
+
+  <span class="c">/* Without a key configured there is nowhere to send. In development that
+     shouldn't stop anyone working on the form, so the request goes to the
+     terminal and the UI carries on as though it sent. In production the same
+     situation is a misconfiguration and has to fail loudly — quietly telling
+     a customer "we'll be in touch" when nothing was sent is far worse than
+     showing them an error. */</span>
+  <span class="k">if</span> (!key || !to || !from) {
+    <span class="k">if</span> (process.env.NODE_ENV === "production") {
+      console.error(
+        "[reservations] RESEND_API_KEY / RESERVATIONS_TO / RESERVATIONS_FROM " +
+          "are not set — the request was NOT delivered."
+      );
+      <span class="k">return false</span>;
+    }
+
+    console.info(`[reservations] no mail configured; would have sent:\n${text}`);
+    <span class="k">return true</span>;
+  }
+
+  <span class="k">const</span> response = <span class="k">await</span> fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject,
+      text,
+      html,
+      ...(replyTo ? { reply_to: replyTo } : {}),
+    }),
+  });
+
+  <span class="k">if</span> (!response.ok) {
+    console.error(
+      `[reservations] Resend rejected the send: ${response.status} ${<span class="k">await</span> response.text()}`
+    );
+    <span class="k">return false</span>;
+  }
+
+  <span class="k">return true</span>;
+}
+
+<span class="c">/* ---------------- the action ---------------- */</span>
+
+<span class="k">const</span> FIELDS: ReservationField[] = [
+  "slug",
+  "name",
+  "phone",
+  "email",
+  "date",
+  "slot",
+  "note",
+];
+
+<span class="k">function</span> read(form: FormData): ReservationInput {
+  <span class="k">const</span> input = {} <span class="k">as</span> ReservationInput;
+  <span class="k">for</span> (<span class="k">const</span> field <span class="k">of</span> FIELDS) {
+    <span class="k">const</span> value = form.get(field);
+    <span class="c">// Anything that isn't a plain string (a file, a missing field) becomes "",</span>
+    <span class="c">// so validation sees a consistent shape rather than null | File | string.</span>
+    input[field] = <span class="k">typeof</span> value === "string" ? value.trim() : "";
+  }
+  <span class="k">return</span> input;
+}
+
+<span class="k">export async function</span> requestViewing(
+  _previous: ReservationState,
+  form: FormData
+): Promise&lt;ReservationState&gt; {
+  <span class="c">/* The honeypot. `company` is off-screen and out of the tab order, so a
+     person never fills it in and a bot that fills every field does. Answering
+     "sent" rather than an error is the point: a bot that's told it failed
+     tries again with a different shape. */</span>
+  <span class="k">const</span> trap = form.get("company");
+  <span class="k">if</span> (<span class="k">typeof</span> trap === "string" &amp;&amp; trap.trim()) <span class="k">return</span> { status: "sent" };
+
+  <span class="k">const</span> input = read(form);
+
+  <span class="c">// The server's own clock — the client's is whatever the visitor set it to.</span>
+  <span class="k">const</span> errors = validateReservation(input, isoDate(<span class="k">new</span> Date()));
+  <span class="k">if</span> (Object.keys(errors).length &gt; 0) <span class="k">return</span> { status: "invalid", errors };
+
+  <span class="k">if</span> (!withinRate(<span class="k">await</span> callerKey())) <span class="k">return</span> { status: "throttled" };
+
+  <span class="c">/* Resolve the listing from our own data rather than trusting anything in
+     the request. Validation proved the slug exists, so this can't miss. The
+     agency reads its mail in French; the visitor's own language is recorded
+     separately below so they get replied to in it. */</span>
+  <span class="k">const</span> listing = APARTMENTS.find((flat) =&gt; flat.slug === input.slug)!;
+  <span class="k">const</span> info = describe(listing, DICTIONARIES.fr);
+  <span class="k">const</span> locale = form.get("locale") === "en" ? "en" : "fr";
+
+  <span class="k">const</span> lines: [string, string][] = [
+    ["Résidence", `${info.name} — ${info.kind}`],
+    ["Prix affiché", info.price],
+    ["Surface", info.area],
+    ["", ""],
+    ["Nom", input.name],
+    ["Téléphone", input.phone],
+    ["Email", input.email || "—"],
+    ["Jour souhaité", input.date],
+    ["Créneau", input.slot === "morning" ? "Matin" : "Après-midi"],
+    ["Langue du visiteur", locale === "fr" ? "Français" : "English"],
+    ["Message", input.note || "—"],
+  ];
+
+  <span class="k">const</span> subject = `Visite — ${info.name} — ${input.date} (${
+    input.slot === "morning" ? "matin" : "après-midi"
+  })`;
+
+  <span class="k">const</span> text = lines
+    .map(([label, value]) =&gt; (label ? `${label}: ${value}` : ""))
+    .join("\n");
+
+  <span class="c">/* Every value here came from the form, so it is escaped before going near
+     an HTML email. The labels are ours and the listing details come from our
+     own data, but escaping the lot is cheaper than remembering which is which
+     the next time someone edits this. */</span>
+  <span class="k">const</span> html = `&lt;table style="font-family:system-ui,sans-serif;font-size:14px"&gt;${lines
+    .filter(([label]) =&gt; label)
+    .map(
+      ([label, value]) =&gt;
+        `&lt;tr&gt;&lt;td style="padding:4px 16px 4px 0;color:#666"&gt;${escapeHtml(
+          label
+        )}&lt;/td&gt;&lt;td style="padding:4px 0"&gt;&lt;strong&gt;${escapeHtml(
+          value
+        )}&lt;/strong&gt;&lt;/td&gt;&lt;/tr&gt;`
+    )
+    .join("")}&lt;/table&gt;`;
+
+  <span class="k">const</span> ok = <span class="k">await</span> deliver({
+    subject,
+    text,
+    html,
+    <span class="c">// Validation forbids whitespace in the address, so this can't smuggle a</span>
+    <span class="c">// second header in through a newline.</span>
+    replyTo: input.email || undefined,
+  });
+
+  <span class="k">return</span> ok ? { status: "sent" } : { status: "failed" };
+}</pre>
+        </figure>
+
+        <h3>L'ordre des contrôles n'est pas anodin</h3>
+        <p>
+          Le piège à robots est testé <em>en premier</em>, avant même la
+          validation. Un robot ne doit consommer ni CPU ni quota d'envoi. Et il
+          reçoit <code>"sent"</code>, c'est-à-dire un mensonge : si on lui
+          répondait « erreur », il réessaierait en changeant de tactique.
+        </p>
+        <p>
+          La limite de débit vient <em>après</em> la validation. Sinon, une
+          personne qui se trompe cinq fois de suite dans son numéro se
+          retrouverait bloquée pour dix minutes — alors qu'elle n'a rien envoyé
+          du tout.
+        </p>
+
+        <h3>Pourquoi relire la résidence depuis nos propres données ?</h3>
+        <p>
+          Le formulaire envoie un champ caché <code>slug</code>. Un champ caché
+          reste une donnée fournie par le client : on peut le modifier avec les
+          outils de développement. Nous ne l'utilisons donc que comme une
+          <em>référence</em> — la validation vérifie qu'il correspond à une
+          résidence existante, puis <code>APARTMENTS.find(…)</code> va chercher
+          le nom, le prix et la surface dans notre fichier de données. L'email
+          ne contient ainsi jamais de texte arbitraire venu de l'extérieur.
+        </p>
+
+        <div class="note">
+          <span class="note-label">Sur la limite de débit</span>
+          <p>
+            Elle est stockée dans une simple <code>Map</code> en mémoire. Cela
+            veut dire qu'elle se réinitialise à chaque déploiement et qu'elle
+            n'est pas partagée si le site tourne sur plusieurs instances. C'est
+            assumé : c'est un ralentisseur contre quelqu'un qui martèle le
+            bouton, pas un mur contre une attaque déterminée. Si le besoin se
+            présente, on remplace <code>withinRate</code> par un limiteur Redis
+            — la forme du test ne change pas.
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="etape3">
+        <h2><span class="step-no">Étape 3</span>Le formulaire</h2>
+
+        <p>
+          Le composant est marqué <code>"use client"</code> parce qu'il a besoin
+          d'état et d'interactivité. Il utilise <code>useActionState</code>, le
+          hook React qui relie un formulaire à une Server Action et renvoie
+          trois choses : l'état retourné par l'action, la fonction à passer à
+          <code>action</code>, et un booléen <code>pending</code> pendant
+          l'envoi.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag new">créé</span> components/ReservationForm.tsx — l'ossature</figcaption>
+<pre>"use client";
+
+<span class="k">import</span> { useActionState, useId, useState } <span class="k">from</span> "react";
+<span class="k">import</span> { requestViewing } <span class="k">from</span> "@/app/actions/reservations";
+<span class="k">import</span> { APARTMENTS, describe } <span class="k">from</span> "./apartments-data";
+<span class="k">import</span> {
+  INITIAL_STATE,
+  LIMITS,
+  isoDate,
+  shiftIsoDate,
+  <span class="k">type</span> ErrorCode,
+} <span class="k">from</span> "./reservation";
+<span class="k">import</span> { useLocale, useT } <span class="k">from</span> "./i18n/locale";
+<span class="k">import</span> styles <span class="k">from</span> "./reservation-form.module.css";
+
+<span class="c">/** Request a viewing of one listing. Opened from the detail view. */</span>
+<span class="k">export default function</span> ReservationForm({
+  slug,
+  onBack,
+}: {
+  slug: string;
+  onBack: () =&gt; <span class="k">void</span>;
+}) {
+  <span class="k">const</span> t = useT();
+  <span class="k">const</span> locale = useLocale();
+  <span class="k">const</span> fieldId = useId();
+  <span class="k">const</span> [state, formAction, pending] = useActionState(
+    requestViewing,
+    INITIAL_STATE
+  );
+
+  <span class="c">/* The overlay only ever mounts after a click, so this never renders on the
+     server and can't disagree with itself at hydration. */</span>
+  <span class="k">const</span> [today] = useState(() =&gt; isoDate(<span class="k">new</span> Date()));
+
+  <span class="k">const</span> listing = APARTMENTS.find((flat) =&gt; flat.slug === slug);
+  <span class="k">if</span> (!listing) <span class="k">return null</span>;
+
+  <span class="k">const</span> info = describe(listing, t);
+  <span class="k">const</span> errors = state.status === "invalid" ? state.errors : {};
+  <span class="k">const</span> id = (field: string) =&gt; `${fieldId}-${field}`;
+
+  <span class="k">const</span> errorFor = (field: keyof <span class="k">typeof</span> errors) =&gt; {
+    <span class="k">const</span> code = errors[field] <span class="k">as</span> ErrorCode | undefined;
+    <span class="k">if</span> (!code) <span class="k">return null</span>;
+    <span class="k">return</span> (
+      &lt;p className={styles.error} id={id(`${field}-error`)}&gt;
+        {t.reserve.errors[code]}
+      &lt;/p&gt;
+    );
+  };
+
+  <span class="c">// Wired onto every input so the browser announces and outlines the bad one.</span>
+  <span class="k">const</span> invalid = (field: keyof <span class="k">typeof</span> errors) =&gt;
+    errors[field]
+      ? ({ "aria-invalid": <span class="k">true</span>, "aria-describedby": id(`${field}-error`) } <span class="k">as const</span>)
+      : {};</pre>
+        </figure>
+
+        <h3>L'écran de confirmation</h3>
+        <p>
+          Quand l'action renvoie <code>"sent"</code>, on ne réaffiche pas le
+          formulaire : on le remplace. Cela évite qu'une personne renvoie la
+          même demande trois fois en croyant que le clic n'a pas marché.
+        </p>
+
+        <figure class="code">
+          <figcaption>components/ReservationForm.tsx — après l'envoi</figcaption>
+<pre>  <span class="k">if</span> (state.status === "sent") {
+    <span class="k">return</span> (
+      &lt;div className={styles.page}&gt;
+        &lt;div className={styles.inner}&gt;
+          &lt;p className={styles.eyebrow}&gt;{info.name}&lt;/p&gt;
+          &lt;h2 className={styles.title}&gt;{t.reserve.sentTitle}&lt;/h2&gt;
+          &lt;p className={styles.sentBody}&gt;{t.reserve.sentBody}&lt;/p&gt;
+
+          &lt;button type="button" className={styles.back} onClick={onBack}&gt;
+            {t.reserve.back}
+          &lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    );
+  }</pre>
+        </figure>
+
+        <h3>Les champs cachés et le piège</h3>
+
+        <figure class="code">
+          <figcaption>components/ReservationForm.tsx — le début du &lt;form&gt;</figcaption>
+<pre>        &lt;form className={styles.form} action={formAction} noValidate&gt;
+          <span class="c">{/* Which listing, and which language to reply in. Both are checked
+              again on the server — a hidden input is only a suggestion. */}</span>
+          &lt;input type="hidden" name="slug" value={slug} /&gt;
+          &lt;input type="hidden" name="locale" value={locale} /&gt;
+
+          <span class="c">{/* The honeypot. Off-screen, out of the tab order and hidden from
+              assistive tech, so no person ever meets it; bots fill every field
+              they find and give themselves away. Not `display: none`, which
+              the better bots know to skip. */}</span>
+          &lt;div className={styles.trap} aria-hidden="true"&gt;
+            &lt;label htmlFor={id("company")}&gt;Company&lt;/label&gt;
+            &lt;input
+              id={id("company")}
+              type="text"
+              name="company"
+              tabIndex={-1}
+              autoComplete="off"
+            /&gt;
+          &lt;/div&gt;</pre>
+        </figure>
+
+        <p>
+          <code>noValidate</code> désactive les bulles de validation natives du
+          navigateur. Ce n'est pas pour supprimer la validation — les attributs
+          <code>required</code>, <code>maxLength</code> et <code>min</code> sont
+          bien présents — mais parce que ces bulles ne sont ni traduisibles ni
+          stylables, et jureraient avec le reste du site.
+        </p>
+
+        <h3>Un champ, dans le détail</h3>
+
+        <figure class="code">
+          <figcaption>components/ReservationForm.tsx — le champ « nom »</figcaption>
+<pre>          &lt;div className={styles.field}&gt;
+            &lt;label className={styles.label} htmlFor={id("name")}&gt;
+              {t.reserve.name}
+            &lt;/label&gt;
+            &lt;input
+              id={id("name")}
+              className={styles.input}
+              type="text"
+              name="name"
+              maxLength={LIMITS.name}
+              autoComplete="name"
+              required
+              {...invalid("name")}
+            /&gt;
+            {errorFor("name")}
+          &lt;/div&gt;</pre>
+        </figure>
+
+        <ul>
+          <li>
+            <code>useId()</code> génère un identifiant unique et stable. Il est
+            indispensable parce que <code>label htmlFor</code> doit pointer vers
+            un <code>id</code> unique dans toute la page — et le formulaire
+            pourrait, un jour, apparaître deux fois.
+          </li>
+          <li>
+            <code>autoComplete="name"</code>, <code>"tel"</code>,
+            <code>"email"</code> permettent au téléphone de remplir les champs
+            tout seul. Sur mobile, c'est la différence entre une demande envoyée
+            et une demande abandonnée.
+          </li>
+          <li>
+            <code>{'{...invalid("name")}'}</code> ajoute
+            <code>aria-invalid</code> et <code>aria-describedby</code> uniquement
+            quand le champ est en erreur, ce qui relie visuellement <em>et</em>
+            vocalement le message au champ concerné.
+          </li>
+        </ul>
+
+        <h3>Le créneau et la date</h3>
+
+        <figure class="code">
+          <figcaption>components/ReservationForm.tsx — date et créneau</figcaption>
+<pre>            &lt;div className={styles.field}&gt;
+              &lt;label className={styles.label} htmlFor={id("date")}&gt;
+                {t.reserve.date}
+              &lt;/label&gt;
+              <span class="c">{/* The range is enforced again on the server; these just stop the
+                  native picker offering days that would be rejected. */}</span>
+              &lt;input
+                id={id("date")}
+                className={styles.input}
+                type="date"
+                name="date"
+                min={today}
+                max={shiftIsoDate(today, LIMITS.aheadDays)}
+                required
+                {...invalid("date")}
+              /&gt;
+              {errorFor("date")}
+            &lt;/div&gt;
+
+            &lt;fieldset className={styles.field}&gt;
+              &lt;legend className={styles.label}&gt;{t.reserve.slot}&lt;/legend&gt;
+              &lt;div className={styles.slots}&gt;
+                {(["morning", "afternoon"] <span class="k">as const</span>).map((slot) =&gt; (
+                  &lt;label className={styles.slot} key={slot}&gt;
+                    &lt;input
+                      className={styles.slotInput}
+                      type="radio"
+                      name="slot"
+                      value={slot}
+                      defaultChecked={slot === "morning"}
+                    /&gt;
+                    &lt;span className={styles.slotLabel}&gt;{t.reserve[slot]}&lt;/span&gt;
+                  &lt;/label&gt;
+                ))}
+              &lt;/div&gt;
+              {errorFor("slot")}
+            &lt;/fieldset&gt;</pre>
+        </figure>
+
+        <p>
+          Les deux boutons radio sont enveloppés dans un <code>fieldset</code>
+          avec une <code>legend</code> : c'est la structure HTML correcte pour
+          un groupe de choix, et c'est ce qui permet à un lecteur d'écran
+          d'annoncer « Créneau souhaité : matin » plutôt que juste « matin ».
+        </p>
+
+        <h3>Le retour d'information</h3>
+
+        <figure class="code">
+          <figcaption>components/ReservationForm.tsx — état et boutons</figcaption>
+<pre>          <span class="c">{/* Announced rather than just shown — a failure that only exists as
+              a colour is invisible to anyone using a screen reader. */}</span>
+          &lt;p className={styles.status} role="status" aria-live="polite"&gt;
+            {state.status === "failed" &amp;&amp; t.reserve.failed}
+            {state.status === "throttled" &amp;&amp; t.reserve.throttled}
+          &lt;/p&gt;
+
+          &lt;div className={styles.actions}&gt;
+            &lt;button className={styles.submit} type="submit" disabled={pending}&gt;
+              {pending ? t.reserve.sending : t.reserve.submit}
+            &lt;/button&gt;
+
+            &lt;button type="button" className={styles.back} onClick={onBack}&gt;
+              {t.reserve.back}
+            &lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/form&gt;</pre>
+        </figure>
+
+        <div class="note">
+          <span class="note-label">Détail d'accessibilité</span>
+          <p>
+            Le <code>&lt;p role="status"&gt;</code> est <em>toujours</em> présent
+            dans le DOM, même vide (le CSS le masque avec
+            <code>.status:empty</code>). C'est délibéré : une zone
+            <code>aria-live</code> insérée au moment même où elle reçoit son
+            texte n'est souvent pas annoncée. Elle doit exister avant d'avoir
+            quelque chose à dire.
+          </p>
+        </div>
+
+        <p>
+          <code>disabled={'{pending}'}</code> empêche le double envoi pendant
+          que la requête est en cours, et le libellé du bouton passe de
+          « Demander la visite » à « Envoi… ». Deux lignes, mais c'est ce qui
+          distingue un formulaire qui semble marcher d'un formulaire qui semble
+          planté.
+        </p>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="etape4">
+        <h2><span class="step-no">Étape 4</span>Les styles</h2>
+
+        <p>
+          Rien de nouveau conceptuellement : un module CSS voisin, comme partout
+          ailleurs dans le projet, qui réutilise les variables de couleur
+          définies dans <code>app/globals.css</code>. Trois points méritent
+          toutefois un commentaire.
+        </p>
+
+        <ul>
+          <li>
+            <code>color-scheme: dark</code> sur les champs. Sans cela, le
+            sélecteur de date natif s'ouvre en carte blanche au milieu de
+            l'overlay sombre.
+          </li>
+          <li>
+            Les boutons radio ne sont pas masqués avec
+            <code>display: none</code> — cela les sortirait de l'ordre de
+            tabulation et les rendrait inatteignables au clavier. Ils sont
+            réduits à 1 px et rendus transparents, et l'anneau de focus est
+            reporté sur l'étiquette visible via
+            <code>.slotInput:focus-visible + .slotLabel</code>.
+          </li>
+          <li>
+            Le piège à robots est déplacé hors écran avec
+            <code>left: -9999px</code>, et non masqué. Les robots les plus
+            soignés ignorent les champs marqués <code>display: none</code> ou
+            <code>hidden</code> — or tout l'intérêt est qu'ils le remplissent.
+          </li>
+        </ul>
+
+        <details>
+          <summary>Voir le fichier complet — components/reservation-form.module.css</summary>
+          <figure class="code">
+<pre><span class="c">/* Same page frame as the listing views it opens from, on a narrower measure —
+   a form reads better in a single column than across the full overlay. */</span>
+.page {
+  padding: clamp(4rem, 12vh, 7rem) clamp(20px, 5vw, 80px)
+    clamp(5rem, 14vh, 9rem);
+}
+
+.inner { max-width: 620px; margin: 0 auto; }
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-brass);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.5vw, 3.25rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--color-cream);
+}
+
+.intro {
+  margin: clamp(1rem, 2.5vh, 1.5rem) 0 0;
+  max-width: 46ch;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-cream-soft);
+}
+
+<span class="c">/* ---------------- the form ---------------- */</span>
+.form {
+  margin-top: clamp(2rem, 5vh, 3rem);
+  display: grid;
+  gap: clamp(1.1rem, 2.6vh, 1.6rem);
+}
+
+<span class="c">/* Two up where there's room, stacked where there isn't. */</span>
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.1rem, 2.6vh, 1.6rem);
+}
+
+@media (max-width: 560px) {
+  .row { grid-template-columns: 1fr; }
+}
+
+<span class="c">/* &lt;fieldset&gt; carries a default border and padding in every browser. */</span>
+.field {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-cream-soft);
+}
+
+.optional {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+  color: rgba(237, 230, 218, 0.35);
+}
+
+.input {
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid rgba(237, 230, 218, 0.16);
+  border-radius: 4px;
+  background: var(--color-walnut-soft);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-cream);
+  <span class="c">/* Makes the native date picker and its calendar render dark rather than as
+     a white card dropped onto the overlay. */</span>
+  color-scheme: dark;
+  transition: border-color 0.28s ease, background 0.28s ease;
+}
+
+.input:hover { border-color: rgba(237, 230, 218, 0.28); }
+
+.input:focus-visible {
+  outline: none;
+  border-color: var(--color-brass);
+}
+
+.input[aria-invalid="true"] { border-color: #d98b7a; }
+
+.note { resize: vertical; min-height: 88px; line-height: 1.6; }
+
+<span class="c">/* ---------------- morning / afternoon ---------------- */</span>
+.slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.slot { position: relative; display: block; cursor: pointer; }
+
+<span class="c">/* Not `display: none` — a hidden-that-way radio drops out of the tab order
+   and off the keyboard entirely. This keeps it focusable and invisible. */</span>
+.slotInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.slotLabel {
+  display: block;
+  padding: 13px 10px;
+  border: 1px solid rgba(237, 230, 218, 0.16);
+  border-radius: 4px;
+  background: var(--color-walnut-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-align: center;
+  color: var(--color-cream-soft);
+  transition: border-color 0.28s ease, color 0.28s ease, background 0.28s ease;
+}
+
+.slot:hover .slotLabel {
+  border-color: rgba(237, 230, 218, 0.28);
+  color: var(--color-cream);
+}
+
+.slotInput:checked + .slotLabel {
+  border-color: var(--color-brass);
+  background: var(--color-brass-dim);
+  color: var(--color-cream);
+}
+
+<span class="c">/* The ring the browser would have drawn on the radio itself, moved onto the
+   thing the user can actually see. */</span>
+.slotInput:focus-visible + .slotLabel {
+  outline: 2px solid var(--color-brass);
+  outline-offset: 2px;
+}
+
+<span class="c">/* ---------------- feedback ---------------- */</span>
+.error {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: #e0a091;
+}
+
+<span class="c">/* Always in the DOM so the live region exists before it has anything to say —
+   a region inserted at the same moment as its text often goes unannounced. */</span>
+.status:empty { display: none; }
+
+.status {
+  margin: 0;
+  padding: 12px 15px;
+  border: 1px solid rgba(224, 160, 145, 0.4);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: #e0a091;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(12px, 2vw, 20px);
+  margin-top: clamp(0.5rem, 1.5vh, 1rem);
+}
+
+.submit {
+  cursor: pointer;
+  border: 0;
+  padding: 15px 30px;
+  border-radius: 999px;
+  background: var(--color-brass);
+  color: var(--color-walnut);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  transition: transform 0.26s ease, background 0.26s ease, opacity 0.26s ease;
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--color-cream);
+  transform: translateY(-2px);
+}
+
+.submit:disabled { cursor: progress; opacity: 0.6; }
+
+.back {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  color: var(--color-cream-soft);
+  transition: color 0.26s ease;
+}
+
+.back:hover { color: var(--color-brass); }
+
+<span class="c">/* ---------------- after it's sent ---------------- */</span>
+.sentBody {
+  margin: clamp(1rem, 2.5vh, 1.5rem) 0 clamp(2rem, 5vh, 3rem);
+  max-width: 46ch;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-cream-soft);
+}
+
+<span class="c">/* ---------------- the honeypot ----------------
+   Pushed off-screen rather than hidden with `display: none` or `hidden`: the
+   more careful bots skip fields no human could reach by those markers, and the
+   point is that they DO fill this one in. */</span>
+.trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}</pre>
+          </figure>
+        </details>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="etape5">
+        <h2><span class="step-no">Étape 5</span>Brancher dans l'overlay</h2>
+
+        <p>
+          C'est ici que le travail devient très court, grâce à une structure qui
+          existait déjà. <code>ApartmentsOverlay</code> décrit ce qu'il affiche
+          avec une <em>union discriminée</em> — un type qui dit « c'est soit
+          ceci, soit cela ». Ajouter une vue revient à ajouter une branche.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag mod">modifié</span> components/ApartmentsOverlay.tsx</figcaption>
+<pre> <span class="k">import</span> ApartmentDetail <span class="k">from</span> "./ApartmentDetail";
+ <span class="k">import</span> ApartmentsList <span class="k">from</span> "./ApartmentsList";
+<span class="add">+import ReservationForm from "./ReservationForm";</span>
+ <span class="k">import</span> CloseButton <span class="k">from</span> "./CloseButton";
+
+ <span class="k">export type</span> OverlayView =
+   | { type: "list" }
+   | { type: "detail"; slug: string }
+<span class="add">+  | { type: "reserve"; slug: string }</span>
+   | <span class="k">null</span>;
+
+ <span class="k">type</span> ApartmentsOverlayProps = {
+   view: OverlayView;
+   onClose: () =&gt; <span class="k">void</span>;
+   onSelect: (slug: string) =&gt; <span class="k">void</span>;
+<span class="add">+  onReserve: (slug: string) =&gt; void;</span>
+ };
+
+<span class="add">+const LABELS = {</span>
+<span class="add">+  list: "All apartments",</span>
+<span class="add">+  detail: "Apartment details",</span>
+<span class="add">+  reserve: "Book a viewing",</span>
+<span class="add">+};</span></pre>
+        </figure>
+
+        <figure class="code">
+          <figcaption>components/ApartmentsOverlay.tsx — le rendu</figcaption>
+<pre><span class="del">-      aria-label={view.type === "list" ? "All apartments" : "Apartment details"}</span>
+<span class="add">+      aria-label={LABELS[view.type]}</span>
+     &gt;
+       &lt;CloseButton onClose={onClose} /&gt;
+
+       &lt;div className={styles.body}&gt;
+         {view.type === "list" ? (
+           &lt;ApartmentsList onSelect={onSelect} /&gt;
+<span class="del">-        ) : (</span>
+<span class="del">-          &lt;ApartmentDetail slug={view.slug} /&gt;</span>
+<span class="add">+        ) : view.type === "detail" ? (</span>
+<span class="add">+          &lt;ApartmentDetail slug={view.slug} onReserve={onReserve} /&gt;</span>
+<span class="add">+        ) : (</span>
+<span class="add">+          /* Back goes to the residence it was opened from rather than closing</span>
+<span class="add">+             the overlay outright — someone who changes their mind about the</span>
+<span class="add">+             date is still interested in the flat. */</span>
+<span class="add">+          &lt;ReservationForm slug={view.slug} onBack={() =&gt; onSelect(view.slug)} /&gt;</span>
+         )}
+       &lt;/div&gt;</pre>
+        </figure>
+
+        <p>
+          Le formulaire hérite ainsi, sans une ligne de plus, du portail vers
+          <code>document.body</code>, du blocage du défilement Lenis, de la
+          fermeture par la touche Échap et du bouton de fermeture. C'est
+          l'intérêt d'ajouter une vue plutôt que de créer une page.
+        </p>
+
+        <h3>Le bouton d'appel</h3>
+
+        <figure class="code">
+          <figcaption><span class="tag mod">modifié</span> components/ApartmentDetail.tsx</figcaption>
+<pre> <span class="c">/** One listing, room by room. */</span>
+<span class="del">-export default function ApartmentDetail({ slug }: { slug: string }) {</span>
+<span class="add">+export default function ApartmentDetail({</span>
+<span class="add">+  slug,</span>
+<span class="add">+  onReserve,</span>
+<span class="add">+}: {</span>
+<span class="add">+  slug: string;</span>
+<span class="add">+  onReserve: (slug: string) =&gt; void;</span>
+<span class="add">+}) {</span>
+   <span class="k">const</span> t = useT();
+
+<span class="c">   … plus bas, à la fin du &lt;header&gt; :</span>
+
+<span class="add">+          &lt;button</span>
+<span class="add">+            type="button"</span>
+<span class="add">+            className={styles.reserve}</span>
+<span class="add">+            onClick={() =&gt; onReserve(slug)}</span>
+<span class="add">+          &gt;</span>
+<span class="add">+            {t.reserve.cta}</span>
+<span class="add">+            &lt;svg className={styles.reserveArrow} viewBox="0 0 16 10" aria-hidden="true"&gt;</span>
+<span class="add">+              &lt;path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" /&gt;</span>
+<span class="add">+            &lt;/svg&gt;</span>
+<span class="add">+          &lt;/button&gt;</span>
+         &lt;/header&gt;</pre>
+        </figure>
+
+        <p>
+          <code>.head</code> est déjà une rangée flex qui passe à la ligne : sur
+          un grand écran le bouton se place à côté des caractéristiques, sur un
+          petit il descend tout seul. Aucun média-query supplémentaire n'a été
+          nécessaire.
+        </p>
+
+        <h3>Et enfin, l'état</h3>
+
+        <figure class="code">
+          <figcaption><span class="tag mod">modifié</span> components/ApartmentsSection.tsx</figcaption>
+<pre>       &lt;ApartmentsOverlay
+         view={view}
+         onClose={() =&gt; setView(<span class="k">null</span>)}
+         onSelect={(slug) =&gt; setView({ type: "detail", slug })}
+<span class="add">+        onReserve={(slug) =&gt; setView({ type: "reserve", slug })}</span>
+       /&gt;</pre>
+        </figure>
+
+        <div class="note">
+          <span class="note-label">Pourquoi TypeScript aide ici</span>
+          <p>
+            Dès que <code>"reserve"</code> a été ajouté à l'union
+            <code>OverlayView</code>, le compilateur a signalé chaque endroit
+            qui ne traitait pas ce cas. C'est exactement ce qu'on attend d'une
+            union discriminée : elle transforme un oubli possible en erreur de
+            compilation.
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="etape6">
+        <h2><span class="step-no">Étape 6</span>Les textes (FR / EN)</h2>
+
+        <p>
+          Le site est bilingue. Dans <code>dictionary.ts</code>, l'objet
+          <code>en</code> sert de référence de type
+          (<code>export type Dict = typeof en</code>) et <code>fr</code> est
+          déclaré <code>const fr: Dict</code>. Conséquence pratique : si vous
+          ajoutez une clé en anglais sans l'ajouter en français, le projet ne
+          compile plus. C'est une sécurité, pas une gêne.
+        </p>
+
+        <details>
+          <summary>Voir le bloc ajouté — français</summary>
+          <figure class="code">
+<pre>  reserve: {
+    cta: "Réserver une visite",
+    title: "Réserver une visite",
+    intro:
+      "Dites-nous quand cela vous arrange, nous confirmons par téléphone ou par email. Rien n'est engagé avant.",
+    back: "Retour à la résidence",
+    name: "Votre nom",
+    phone: "Téléphone",
+    email: "Email",
+    optional: "facultatif",
+    date: "Jour souhaité",
+    slot: "Créneau souhaité",
+    morning: "Matin",
+    afternoon: "Après-midi",
+    note: "Quelque chose à nous signaler ?",
+    submit: "Demander la visite",
+    sending: "Envoi…",
+    sentTitle: "Demande bien reçue.",
+    sentBody:
+      "Nous revenons vers vous très vite pour confirmer le jour et l'heure. Rien n'est réservé avant.",
+    failed:
+      "Un problème de notre côté : la demande n'est pas partie. Réessayez, ou appelez-nous.",
+    throttled:
+      "Cela fait plusieurs demandes d'affilée. Patientez quelques minutes, ou appelez-nous et nous réglons cela tout de suite.",
+    errors: {
+      required: "Ce champ est nécessaire.",
+      tooShort: "C'est un peu court.",
+      tooLong: "C'est plus long que ce que nous pouvons accepter.",
+      badEmail: "Cet email semble incorrect.",
+      badPhone: "Ce numéro semble incorrect.",
+      badDate: "Cette date semble incorrecte.",
+      pastDate: "Choisissez un jour à partir d'aujourd'hui.",
+      tooFar: "C'est trop loin — dans les six mois, s'il vous plaît.",
+      badSlot: "Choisissez un créneau.",
+      unknownListing: "Nous ne trouvons pas cette résidence.",
+    },
+  },</pre>
+          </figure>
+        </details>
+
+        <p>
+          C'est ce bloc <code>errors</code> qui referme la boucle commencée à
+          l'étape 1 : le serveur renvoie <code>"badPhone"</code>, et
+          <code>t.reserve.errors["badPhone"]</code> devient « Ce numéro semble
+          incorrect. » dans la langue que lit le visiteur.
+        </p>
+
+        <div class="note">
+          <span class="note-label">Sur la langue des messages d'erreur</span>
+          <p>
+            Ils sont écrits en langage courant, jamais en jargon technique.
+            « Choisissez un jour à partir d'aujourd'hui » dit à la fois ce qui
+            ne va pas et comment le corriger. « Date invalide » ne dit ni l'un
+            ni l'autre.
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="etape7">
+        <h2><span class="step-no">Étape 7</span>Les variables d'environnement</h2>
+
+        <p>
+          Trois valeurs sont nécessaires pour que l'email parte réellement. Elles
+          ne doivent jamais être écrites dans le code ni envoyées sur Git.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag new">créé</span> .env.example</figcaption>
+<pre><span class="c"># Copy to .env.local and fill in. .env.local is gitignored — never commit keys.
+#
+# Without these three, viewing requests are printed to the terminal in
+# development and fail loudly in production. See app/actions/reservations.ts.</span>
+
+<span class="c"># https://resend.com → API Keys. Server-side only: no NEXT_PUBLIC_ prefix, or
+# it would be inlined into the browser bundle for anyone to read.</span>
+RESEND_API_KEY=
+
+<span class="c"># Where viewing requests land. The agency's inbox.</span>
+RESERVATIONS_TO=reservations@example.cm
+
+<span class="c"># The From address. Must be on a domain verified in Resend, otherwise the send
+# is rejected. Not the visitor's address — their email becomes the Reply-To.</span>
+RESERVATIONS_FROM=Odza &lt;reservations@example.cm&gt;</pre>
+        </figure>
+
+        <h3>Le détail du .gitignore</h3>
+        <p>
+          Le <code>.gitignore</code> du projet contenait <code>.env*</code>, ce
+          qui ignorait aussi <code>.env.example</code> — or ce fichier ne
+          contient aucun secret et doit être versionné, puisque c'est lui qui
+          documente la configuration attendue.
+        </p>
+
+        <figure class="code">
+          <figcaption><span class="tag mod">modifié</span> .gitignore</figcaption>
+<pre> <span class="c"># env files (can opt-in for committing if needed)</span>
+ .env*
+<span class="add">+# ...except the template, which holds no secrets and documents what to set.</span>
+<span class="add">+!.env.example</span></pre>
+        </figure>
+
+        <div class="note caution">
+          <span class="note-label">Règle absolue</span>
+          <p>
+            Le préfixe <code>NEXT_PUBLIC_</code> rend une variable accessible au
+            navigateur : Next.js l'écrit en clair dans le JavaScript envoyé au
+            visiteur. Une clé d'API ne doit <strong>jamais</strong> porter ce
+            préfixe. Nos trois variables n'en ont pas, et ne sont lues que dans
+            un fichier <code>"use server"</code>.
+          </p>
+        </div>
+
+        <h3>La marche à suivre chez Resend</h3>
+        <ol class="prose">
+          <li>Créer un compte sur <code>resend.com</code>.</li>
+          <li>
+            Ajouter le domaine de l'agence et publier les enregistrements DNS
+            proposés (SPF et DKIM). Sans cette étape, l'expéditeur est refusé.
+          </li>
+          <li>Générer une clé d'API et la coller dans <code>.env.local</code>.</li>
+          <li>
+            Sur l'hébergeur (Vercel ou autre), déclarer les trois mêmes
+            variables dans les réglages du projet — <code>.env.local</code>
+            reste sur votre machine.
+          </li>
+        </ol>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="tester">
+        <h2>Tester</h2>
+
+        <p>
+          Bonne nouvelle : le formulaire est utilisable immédiatement, sans
+          compte Resend. Sans clé configurée et en développement, la demande est
+          affichée dans le terminal et l'interface se comporte comme si l'envoi
+          avait réussi.
+        </p>
+
+        <figure class="code">
+          <figcaption>terminal</figcaption>
+<pre>npm run dev</pre>
+        </figure>
+
+        <p>Puis, dans le navigateur :</p>
+
+        <ol class="prose">
+          <li>Aller à la section « Appartements ».</li>
+          <li>Ouvrir une résidence avec « Voir en détail ».</li>
+          <li>Cliquer sur « Réserver une visite ».</li>
+          <li>Remplir et envoyer.</li>
+        </ol>
+
+        <p>
+          Le terminal doit afficher un bloc commençant par
+          <code>[reservations] no mail configured; would have sent:</code> suivi
+          de la demande formatée.
+        </p>
+
+        <h3>Ce qu'il faut aussi essayer</h3>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Essai</th>
+                <th>Résultat attendu</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Envoyer le formulaire vide</td>
+                <td>Les messages d'erreur apparaissent sous le nom et le téléphone, en rouge, sans rechargement de page.</td>
+              </tr>
+              <tr>
+                <td>Saisir <code>abc</code> comme téléphone</td>
+                <td>« Ce numéro semble incorrect. »</td>
+              </tr>
+              <tr>
+                <td>Envoyer 6 demandes de suite</td>
+                <td>La 6ᵉ affiche le message de limitation.</td>
+              </tr>
+              <tr>
+                <td>Basculer en anglais puis rouvrir</td>
+                <td>Tous les libellés et toutes les erreurs passent en anglais.</td>
+              </tr>
+              <tr>
+                <td>Naviguer au clavier seul (Tab)</td>
+                <td>Tous les champs sont atteignables, y compris les créneaux, avec un anneau de focus visible.</td>
+              </tr>
+              <tr>
+                <td>Cliquer « Retour à la résidence »</td>
+                <td>Retour à la fiche, l'overlay ne se ferme pas.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          Avant de mettre en ligne, vérifiez que tout compile :
+        </p>
+
+        <figure class="code">
+          <figcaption>terminal</figcaption>
+<pre>npx tsc --noEmit   <span class="c"># les types</span>
+npx eslint .       <span class="c"># le style de code</span>
+npm run build      <span class="c"># la compilation complète</span></pre>
+        </figure>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="securite">
+        <h2>La sécurité en résumé</h2>
+
+        <p>
+          Un formulaire public est une porte ouverte sur votre serveur. Voici
+          les six protections en place et ce que chacune arrête.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Protection</th>
+                <th>Où</th>
+                <th>Ce qu'elle empêche</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Validation serveur</td>
+                <td><code>reservations.ts</code></td>
+                <td>Les requêtes envoyées directement, sans passer par la page.</td>
+              </tr>
+              <tr>
+                <td>Résidence relue côté serveur</td>
+                <td><code>reservations.ts</code></td>
+                <td>Qu'un champ caché trafiqué mette du texte arbitraire dans l'email.</td>
+              </tr>
+              <tr>
+                <td>Piège à robots</td>
+                <td>Formulaire + action</td>
+                <td>Les robots de spam les plus courants, sans gêner personne.</td>
+              </tr>
+              <tr>
+                <td>Limite de débit</td>
+                <td><code>reservations.ts</code></td>
+                <td>Le martèlement du bouton et les envois en rafale.</td>
+              </tr>
+              <tr>
+                <td>Échappement HTML</td>
+                <td><code>escapeHtml()</code></td>
+                <td>L'injection de balises dans l'email reçu par l'agence.</td>
+              </tr>
+              <tr>
+                <td>Protection CSRF</td>
+                <td>Next.js, d'office</td>
+                <td>Qu'un autre site soumette le formulaire à votre place.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note caution">
+          <span class="note-label">Ce qui n'est pas couvert</span>
+          <p>
+            La limite de débit est en mémoire : elle est remise à zéro à chaque
+            déploiement et n'est pas partagée entre plusieurs instances. Il n'y
+            a pas non plus de CAPTCHA. Pour un formulaire de prise de rendez-vous
+            sur un site vitrine, c'est un compromis raisonnable — mais si le
+            spam devient un problème, ce sont les deux premiers leviers.
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="apres">
+        <h2>Et après</h2>
+
+        <p>
+          Cette première version est volontairement la plus simple qui rende
+          réellement service. Voici les suites possibles, dans l'ordre où elles
+          deviennent utiles.
+        </p>
+
+        <h3>Enregistrer les demandes</h3>
+        <p>
+          Le jour où un email se perd, vous voudrez une trace. Une table
+          <code>reservations</code> dans Postgres et un écran
+          <code>/admin</code> protégé suffisent. Rappel : seule la fonction
+          <code>deliver</code> est à modifier — c'est pour cela qu'elle est
+          isolée.
+        </p>
+
+        <h3>Le calendrier de la salle</h3>
+        <p>
+          Une des dix annonces, <code>the-assembly</code>, est facturée à la
+          journée (<code>perDay: true</code>). Pour elle, « réserver » veut dire
+          bloquer des dates, avec vérification des conflits — ce qui exige une
+          base de données. Le formulaire actuel reste valable pour les neuf
+          autres, qui sont des visites.
+        </p>
+
+        <h3>Une confirmation au visiteur</h3>
+        <p>
+          Aujourd'hui, seule l'agence reçoit un email. Un second envoi vers
+          l'adresse du visiteur — quand il en a laissé une — rassure et réduit
+          les demandes en double. C'est une dizaine de lignes dans
+          <code>deliver</code>.
+        </p>
+
+        <h3>WhatsApp</h3>
+        <p>
+          Au Cameroun, beaucoup d'échanges commerciaux passent par WhatsApp. Un
+          second bouton construisant un lien <code>wa.me</code> pré-rempli, à
+          côté du formulaire, coûte très peu et correspond aux usages réels.
+        </p>
+
+        <hr />
+
+        <h3>Récapitulatif des commandes</h3>
+        <figure class="code">
+          <figcaption>terminal</figcaption>
+<pre><span class="c"># 1. configurer l'envoi (optionnel en développement)</span>
+cp .env.example .env.local
+<span class="c">#    puis remplir RESEND_API_KEY, RESERVATIONS_TO, RESERVATIONS_FROM</span>
+
+<span class="c"># 2. lancer</span>
+npm run dev
+
+<span class="c"># 3. vérifier avant de déployer</span>
+npx tsc --noEmit
+npx eslint .
+npm run build</pre>
+        </figure>
+      </section>
+
+      <p class="end">
+        Les commentaires dans le code sont en anglais, comme partout ailleurs
+        dans ce dépôt. Les explications de ce guide sont en français.
+      </p>
+    </main>
+  </div>
+</div>
+
+<script>
+  // Surligne dans le sommaire la section en cours de lecture.
+  (function () {
+    var links = Array.prototype.slice.call(
+      document.querySelectorAll('.toc a[href^="#"]')
+    );
+    if (!links.length || !('IntersectionObserver' in window)) return;
+
+    var byId = {};
+    links.forEach(function (link) {
+      byId[link.getAttribute('href').slice(1)] = link;
+    });
+
+    var visible = new Set();
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) visible.add(entry.target.id);
+          else visible.delete(entry.target.id);
+        });
+
+        // La première section visible dans l'ordre du document gagne.
+        var current = null;
+        for (var i = 0; i < links.length; i++) {
+          var id = links[i].getAttribute('href').slice(1);
+          if (visible.has(id)) { current = id; break; }
+        }
+
+        links.forEach(function (link) {
+          var id = link.getAttribute('href').slice(1);
+          if (id === current) link.setAttribute('aria-current', 'true');
+          else link.removeAttribute('aria-current');
+        });
+      },
+      { rootMargin: '-10% 0px -70% 0px' }
+    );
+
+    Object.keys(byId).forEach(function (id) {
+      var section = document.getElementById(id);
+      if (section) observer.observe(section);
+    });
+  })();
+</script>
+</body>
+</html>

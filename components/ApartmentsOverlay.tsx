@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import ApartmentDetail from "./ApartmentDetail";
 import ApartmentsList from "./ApartmentsList";
+import ReservationForm from "./ReservationForm";
 import CloseButton from "./CloseButton";
 import { getLenis } from "./lenis-instance";
 import styles from "./apartments-overlay.module.css";
@@ -11,18 +12,27 @@ import styles from "./apartments-overlay.module.css";
 export type OverlayView =
   | { type: "list" }
   | { type: "detail"; slug: string }
+  | { type: "reserve"; slug: string }
   | null;
 
 type ApartmentsOverlayProps = {
   view: OverlayView;
   onClose: () => void;
   onSelect: (slug: string) => void;
+  onReserve: (slug: string) => void;
+};
+
+const LABELS = {
+  list: "All apartments",
+  detail: "Apartment details",
+  reserve: "Book a viewing",
 };
 
 export default function ApartmentsOverlay({
   view,
   onClose,
   onSelect,
+  onReserve,
 }: ApartmentsOverlayProps) {
   const open = view !== null;
 
@@ -59,15 +69,20 @@ export default function ApartmentsOverlay({
       data-lenis-prevent
       role="dialog"
       aria-modal="true"
-      aria-label={view.type === "list" ? "All apartments" : "Apartment details"}
+      aria-label={LABELS[view.type]}
     >
       <CloseButton onClose={onClose} />
 
       <div className={styles.body}>
         {view.type === "list" ? (
           <ApartmentsList onSelect={onSelect} />
+        ) : view.type === "detail" ? (
+          <ApartmentDetail slug={view.slug} onReserve={onReserve} />
         ) : (
-          <ApartmentDetail slug={view.slug} />
+          /* Back goes to the residence it was opened from rather than closing
+             the overlay outright — someone who changes their mind about the
+             date is still interested in the flat. */
+          <ReservationForm slug={view.slug} onBack={() => onSelect(view.slug)} />
         )}
       </div>
     </div>,

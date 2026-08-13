@@ -8,7 +8,13 @@ import { useT } from "./i18n/locale";
 import styles from "./apartment-detail.module.css";
 
 /** One listing, room by room. */
-export default function ApartmentDetail({ slug }: { slug: string }) {
+export default function ApartmentDetail({
+  slug,
+  onReserve,
+}: {
+  slug: string;
+  onReserve: (slug: string) => void;
+}) {
   const t = useT();
 
   const index = APARTMENTS.findIndex((item) => item.slug === slug);
@@ -48,6 +54,17 @@ export default function ApartmentDetail({ slug }: { slug: string }) {
               <dd>{info.area}</dd>
             </div>
           </dl>
+
+          <button
+            type="button"
+            className={styles.reserve}
+            onClick={() => onReserve(slug)}
+          >
+            {t.reserve.cta}
+            <svg className={styles.reserveArrow} viewBox="0 0 16 10" aria-hidden="true">
+              <path d="M1 5 H14 M10 1.5 L14 5 L10 8.5" />
+            </svg>
+          </button>
         </header>
 
         <RoomGallery key={slug} parts={parts} initialId={DEFAULT_PART_ID} />
