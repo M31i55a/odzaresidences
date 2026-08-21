@@ -9,9 +9,6 @@
      the ink-on-sky look it wears over the hero. */
   --nav-ink: var(--color-ink);
   --nav-badge-bg: var(--color-ink);
-  --nav-pill-bg: var(--color-ink);
-  --nav-pill-ink: #fff;
-  --nav-pill-hover: var(--color-brass);
 
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     background 0.4s ease, box-shadow 0.4s ease;
@@ -32,9 +29,6 @@
 
   --nav-ink: var(--color-cream);
   --nav-badge-bg: var(--color-cream);
-  --nav-pill-bg: var(--color-brass);
-  --nav-pill-ink: var(--color-walnut);
-  --nav-pill-hover: var(--color-cream);
 }
 
 /* The bar is wrapped in the loader's .line-mask, which clips to the bar's own

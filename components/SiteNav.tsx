@@ -51,9 +51,9 @@ export default function SiteNav() {
         <span className={styles.brandName}>Odza</span>
       </a>
 
-      {/* `display: contents` on wide screens, so links / language / sign-in sit
-          straight in the nav grid. Below the breakpoint it becomes a real
-          panel that drops from the bar. */}
+      {/* `display: contents` on wide screens, so the links and the language
+          switcher sit straight in the nav grid. Below the breakpoint it
+          becomes a real panel that drops from the bar. */}
       <div className={styles.menu} id={MENU_ID} data-open={open}>
         <div className={styles.links}>
           {SECTION_LINKS.map(({ key, target }) =>
@@ -78,9 +78,6 @@ export default function SiteNav() {
 
         <div className={styles.right}>
           <LanguageSwitcher />
-          <a className={styles.signIn} href="#">
-            {t.nav.signIn}
-          </a>
         </div>
       </div>
 

@@ -91,34 +91,7 @@
   opacity: 0.38;
 }
 
-/* ---------- sign in ---------- */
-.signIn {
-  display: inline-flex;
-  align-items: center;
-  padding: 7px 17px;
-  border-radius: 999px;
-  background: var(--nav-pill-bg, var(--color-ink));
-  color: var(--nav-pill-ink, #fff);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.01em;
-  text-decoration: none;
-  transition: background 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Walnut suits both hover surfaces — brass on the black bar, cream once the
-   pill is already brass in the floating state. */
-.signIn:hover,
-.signIn:focus-visible {
-  background: var(--nav-pill-hover, var(--color-brass));
-  color: var(--color-walnut);
-  transform: translateY(-1px);
-}
-
-
-/* ---------- right cluster: language + sign in ---------- */
+/* ---------- right cluster: the language switcher ---------- */
 .right {
   justify-self: end;
   display: inline-flex;
@@ -245,9 +218,6 @@
        resolved --nav-ink to ink before this override existed. */
     --nav-ink: var(--color-cream);
     color: var(--nav-ink);
-    --nav-pill-bg: var(--color-brass);
-    --nav-pill-ink: var(--color-walnut);
-    --nav-pill-hover: var(--color-cream);
 
     opacity: 0;
     visibility: hidden;
@@ -279,11 +249,10 @@
     color: var(--color-brass);
   }
 
-  /* Language and sign-in move down here too, which is what frees the bar. */
+  /* The language switcher moves down here too, which is what frees the bar. */
   .right {
     justify-self: start;
     width: 100%;
-    justify-content: space-between;
     padding-top: clamp(12px, 2vh, 18px);
     border-top: 1px solid rgba(237, 230, 218, 0.12);
   }
