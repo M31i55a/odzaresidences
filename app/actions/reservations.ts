@@ -94,8 +94,22 @@ type Delivery = {
   replyTo?: string;
 };
 
+/**
+ * `Odza <reservations@odza.cm>` — one env var in the form every mail client
+ * writes — split into the two fields Brevo asks for. A bare address with no
+ * name is accepted too, and sends without a display name rather than failing.
+ */
+function sender(value: string) {
+  const match = /^\s*(.*?)\s*<([^>]+)>\s*$/.exec(value);
+  if (!match) return { email: value.trim() };
+
+  // `"Odza" <…>` is just as legal a way to write it.
+  const name = match[1].replace(/^"|"$/g, "").trim();
+  return name ? { name, email: match[2].trim() } : { email: match[2].trim() };
+}
+
 async function deliver({ subject, text, html, replyTo }: Delivery) {
-  const key = process.env.RESEND_API_KEY;
+  const key = process.env.BREVO_API_KEY;
   const to = process.env.RESERVATIONS_TO;
   const from = process.env.RESERVATIONS_FROM;
 
@@ -108,7 +122,7 @@ async function deliver({ subject, text, html, replyTo }: Delivery) {
   if (!key || !to || !from) {
     if (process.env.NODE_ENV === "production") {
       console.error(
-        "[reservations] RESEND_API_KEY / RESERVATIONS_TO / RESERVATIONS_FROM " +
+        "[reservations] BREVO_API_KEY / RESERVATIONS_TO / RESERVATIONS_FROM " +
           "are not set — the request was NOT delivered."
       );
       return false;
@@ -118,25 +132,31 @@ async function deliver({ subject, text, html, replyTo }: Delivery) {
     return true;
   }
 
-  const response = await fetch("https://api.resend.com/emails", {
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${key}`,
+      /* Brevo's own header, and it is not a bearer token: an
+         `Authorization: Bearer …` here is ignored and the call comes back 401
+         with nothing to explain why. */
+      "api-key": key,
       "Content-Type": "application/json",
+      accept: "application/json",
     },
     body: JSON.stringify({
-      from,
-      to: [to],
+      sender: sender(from),
+      to: [{ email: to }],
       subject,
-      text,
-      html,
-      ...(replyTo ? { reply_to: replyTo } : {}),
+      htmlContent: html,
+      textContent: text,
+      ...(replyTo ? { replyTo: { email: replyTo } } : {}),
     }),
   });
 
+  /* A send answers 201, a scheduled one 202 — `ok` covers both, so there's no
+     status to match exactly. */
   if (!response.ok) {
     console.error(
-      `[reservations] Resend rejected the send: ${response.status} ${await response.text()}`
+      `[reservations] Brevo rejected the send: ${response.status} ${await response.text()}`
     );
     return false;
   }
