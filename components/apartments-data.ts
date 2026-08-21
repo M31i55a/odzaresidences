@@ -4,8 +4,9 @@ import type { Dict } from "./i18n/dictionary";
     dictionary, keyed by slug; rooms and prices are formatted per language. */
 export type Apartment = {
   slug: keyof Dict["listings"];
+  /** What one unit of a stay costs — a night, or a day for the hall. */
   price: number;
-  /** Priced per day rather than to buy. */
+  /** Let by the day rather than by the night: nobody sleeps in the hall. */
   perDay?: boolean;
   /** Rendered as a room count, or as seating when it's the hall. */
   rooms: number;
@@ -40,7 +41,7 @@ export function describe(flat: Apartment, t: Dict) {
     kind: listing.kind,
     price: flat.perDay
       ? t.apartments.perDay(flat.price)
-      : t.apartments.money(flat.price),
+      : t.apartments.perNight(flat.price),
     rooms: flat.seats
       ? t.apartments.seats(flat.rooms)
       : t.apartments.roomCount(flat.rooms),

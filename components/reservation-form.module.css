@@ -122,14 +122,20 @@
   line-height: 1.6;
 }
 
-/* ---------------- morning / afternoon ---------------- */
-.slots {
+/* ---------------- how many, and how they pay ---------------- */
+
+/* A count reads as a number, so it doesn't need the width of a name. */
+.guests {
+  max-width: 9rem;
+}
+
+.choices {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
-.slot {
+.choice {
   position: relative;
   display: block;
   cursor: pointer;
@@ -137,7 +143,7 @@
 
 /* Not `display: none` — a hidden-that-way radio drops out of the tab order
    and off the keyboard entirely. This keeps it focusable and invisible. */
-.slotInput {
+.choiceInput {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -145,7 +151,7 @@
   pointer-events: none;
 }
 
-.slotLabel {
+.choiceLabel {
   display: block;
   padding: 13px 10px;
   border: 1px solid rgba(237, 230, 218, 0.16);
@@ -159,12 +165,12 @@
   transition: border-color 0.28s ease, color 0.28s ease, background 0.28s ease;
 }
 
-.slot:hover .slotLabel {
+.choice:hover .choiceLabel {
   border-color: rgba(237, 230, 218, 0.28);
   color: var(--color-cream);
 }
 
-.slotInput:checked + .slotLabel {
+.choiceInput:checked + .choiceLabel {
   border-color: var(--color-brass);
   background: var(--color-brass-dim);
   color: var(--color-cream);
@@ -172,9 +178,87 @@
 
 /* The ring the browser would have drawn on the radio itself, moved onto the
    thing the user can actually see. */
-.slotInput:focus-visible + .slotLabel {
+.choiceInput:focus-visible + .choiceLabel {
   outline: 2px solid var(--color-brass);
   outline-offset: 2px;
+}
+
+/* ---------------- the running total ----------------
+   Set apart from the fields around it: this is the part of the form the
+   visitor is agreeing to, not another thing to fill in. */
+.summary {
+  padding: clamp(16px, 3vh, 22px) clamp(16px, 3vw, 22px);
+  border: 1px solid rgba(237, 230, 218, 0.16);
+  border-radius: 6px;
+  background: var(--color-walnut-soft);
+}
+
+.summaryTitle {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-brass);
+}
+
+.summaryEmpty {
+  margin: 0.9rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: rgba(237, 230, 218, 0.45);
+}
+
+.lines {
+  display: grid;
+  gap: 0.7rem;
+  margin: 1rem 0 0;
+}
+
+.line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-cream-soft);
+}
+
+.line dt,
+.line dd {
+  margin: 0;
+}
+
+/* The sum, not its workings — the second line explains where it came from. */
+.lineNote {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: rgba(237, 230, 218, 0.4);
+}
+
+/* What they're actually being asked for, so it reads before the rest. */
+.lineDue {
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(237, 230, 218, 0.14);
+  color: var(--color-cream);
+}
+
+.lineDue dd {
+  font-size: 16px;
+  color: var(--color-brass);
+}
+
+/* Information, not an error — quieter than .status and always present. */
+.notice {
+  margin: -0.4rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: rgba(237, 230, 218, 0.45);
 }
 
 /* ---------------- feedback ---------------- */
@@ -253,6 +337,14 @@
 }
 
 /* ---------------- after it's sent ---------------- */
+
+/* The same rows without the panel around them — there's nothing left to
+   change, so they're a record rather than a running total. */
+.sentLines {
+  max-width: 24rem;
+  margin-bottom: clamp(2rem, 5vh, 3rem);
+}
+
 .sentBody {
   margin: clamp(1rem, 2.5vh, 1.5rem) 0 clamp(2rem, 5vh, 3rem);
   max-width: 46ch;

@@ -25,7 +25,7 @@ type ApartmentsOverlayProps = {
 const LABELS = {
   list: "All apartments",
   detail: "Apartment details",
-  reserve: "Book a viewing",
+  reserve: "Book a reservation",
 };
 
 export default function ApartmentsOverlay({
@@ -81,7 +81,7 @@ export default function ApartmentsOverlay({
         ) : (
           /* Back goes to the residence it was opened from rather than closing
              the overlay outright — someone who changes their mind about the
-             date is still interested in the flat. */
+             dates is still interested in the flat. */
           <ReservationForm slug={view.slug} onBack={() => onSelect(view.slug)} />
         )}
       </div>

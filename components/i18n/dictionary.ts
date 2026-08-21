@@ -86,35 +86,60 @@ const en = {
     price: "Price",
     rooms: "Rooms",
     area: "Area",
+    /* Plain formatter — used for totals, which are not per anything. */
     money: (amount: number) => `${group(amount, ",")} XAF`,
+    /* The listed figure is a rate: by the day for the hall, by the night for
+       everywhere someone sleeps. Both are what one unit of a stay costs. */
     perDay: (amount: number) => `${group(amount, ",")} XAF / day`,
+    perNight: (amount: number) => `${group(amount, ",")} XAF / night`,
     interiorAlt: (name: string) => `Interior of ${name}`,
     roomCount: (count: number) => `${count} room${count === 1 ? "" : "s"}`,
     seats: (count: number) => `Seats ${count}`,
   },
 
   reserve: {
-    cta: "Book a viewing",
-    title: "Book a viewing",
+    cta: "Book a reservation",
+    title: "Book your stay",
     intro:
-      "Tell us when suits you and we'll confirm by phone or email. Nothing is committed until we do.",
+      "Pick your dates, tell us who's coming, and choose how you'd like to settle. We confirm by phone or email.",
     back: "Back to the residence",
     name: "Your name",
     phone: "Phone",
     email: "Email",
     optional: "optional",
-    date: "Preferred day",
-    slot: "Preferred time",
-    morning: "Morning",
-    afternoon: "Afternoon",
+    arrival: "Arrival",
+    departure: "Departure",
+    /* The hall seats a meeting; everywhere else sleeps people. Same field,
+       and the form picks the word from the listing. */
+    guests: "Guests",
+    attendees: "Attendees",
+    upTo: (max: number) => `up to ${max}`,
     note: "Anything we should know?",
-    submit: "Request viewing",
+
+    /* The running total, which moves as the dates do. */
+    summary: "Your stay",
+    pickDates: "Choose your dates and the total appears here.",
+    nights: (count: number) => `${count} night${count === 1 ? "" : "s"}`,
+    days: (count: number) => `${count} day${count === 1 ? "" : "s"}`,
+    total: "Total",
+    dueNow: "To pay now",
+    balance: "Balance on arrival",
+
+    payment: "How you'd like to pay",
+    deposit: (percent: number) => `Deposit ${percent}%`,
+    full: "Pay in full",
+    /* Said plainly rather than buried: the booking is real, the card isn't
+       taken yet. Remove this line the day the payment step goes in. */
+    paymentSoon:
+      "Paying here on the site is coming shortly. For now we confirm your dates first and arrange the payment with you directly — nothing is taken today.",
+
+    submit: "Confirm reservation",
     sending: "Sending…",
-    sentTitle: "Request received.",
+    sentTitle: "Reservation received.",
     sentBody:
-      "We'll be in touch shortly to confirm the day and time. Nothing is booked until we do.",
+      "We'll confirm your dates by phone or email shortly and arrange the payment with you then. Nothing has been taken from you today.",
     failed:
-      "Something went wrong on our side and the request wasn't sent. Please try again, or call us.",
+      "Something went wrong on our side and the reservation wasn't sent. Please try again, or call us.",
     throttled:
       "That's several requests in a row. Please wait a few minutes, or call us and we'll sort it out straight away.",
     errors: {
@@ -126,7 +151,11 @@ const en = {
       badDate: "That date doesn't look right.",
       pastDate: "Pick a day from today onwards.",
       tooFar: "That's too far ahead — within six months, please.",
-      badSlot: "Pick a time of day.",
+      badRange: "Departure has to come after arrival.",
+      tooLongStay: "That's a long stay — three months at most, please.",
+      badGuests: "That number doesn't look right.",
+      tooManyGuests: "That's more than this residence takes.",
+      badPayment: "Pick how you'd like to pay.",
       unknownListing: "We can't find that residence.",
     },
   },
@@ -333,33 +362,50 @@ const fr: Dict = {
     area: "Surface",
     money: (amount: number) => `${group(amount, " ")} XAF`,
     perDay: (amount: number) => `${group(amount, " ")} XAF / jour`,
+    perNight: (amount: number) => `${group(amount, " ")} XAF / nuit`,
     interiorAlt: (name: string) => `Intérieur de ${name}`,
     roomCount: (count: number) => `${count} pièce${count === 1 ? "" : "s"}`,
     seats: (count: number) => `${count} places`,
   },
 
   reserve: {
-    cta: "Réserver une visite",
-    title: "Réserver une visite",
+    cta: "Réserver",
+    title: "Réservez votre séjour",
     intro:
-      "Dites-nous quand cela vous arrange, nous confirmons par téléphone ou par email. Rien n'est engagé avant.",
+      "Choisissez vos dates, dites-nous qui vient, et comment vous souhaitez régler. Nous confirmons par téléphone ou par email.",
     back: "Retour à la résidence",
     name: "Votre nom",
     phone: "Téléphone",
     email: "Email",
     optional: "facultatif",
-    date: "Jour souhaité",
-    slot: "Créneau souhaité",
-    morning: "Matin",
-    afternoon: "Après-midi",
+    arrival: "Arrivée",
+    departure: "Départ",
+    guests: "Personnes",
+    attendees: "Participants",
+    upTo: (max: number) => `${max} maximum`,
     note: "Quelque chose à nous signaler ?",
-    submit: "Demander la visite",
+
+    summary: "Votre séjour",
+    pickDates: "Choisissez vos dates : le total s'affiche ici.",
+    nights: (count: number) => `${count} nuit${count === 1 ? "" : "s"}`,
+    days: (count: number) => `${count} jour${count === 1 ? "" : "s"}`,
+    total: "Total",
+    dueNow: "À régler",
+    balance: "Solde à l'arrivée",
+
+    payment: "Comment souhaitez-vous régler ?",
+    deposit: (percent: number) => `Acompte ${percent} %`,
+    full: "Paiement intégral",
+    paymentSoon:
+      "Le paiement en ligne arrive très bientôt. Pour l'instant nous confirmons d'abord vos dates puis organisons le règlement avec vous — rien n'est prélevé aujourd'hui.",
+
+    submit: "Confirmer la réservation",
     sending: "Envoi…",
-    sentTitle: "Demande bien reçue.",
+    sentTitle: "Réservation bien reçue.",
     sentBody:
-      "Nous revenons vers vous très vite pour confirmer le jour et l'heure. Rien n'est réservé avant.",
+      "Nous confirmons vos dates par téléphone ou par email très vite, et nous organisons le règlement à ce moment-là. Rien ne vous a été prélevé aujourd'hui.",
     failed:
-      "Un problème de notre côté : la demande n'est pas partie. Réessayez, ou appelez-nous.",
+      "Un problème de notre côté : la réservation n'est pas partie. Réessayez, ou appelez-nous.",
     throttled:
       "Cela fait plusieurs demandes d'affilée. Patientez quelques minutes, ou appelez-nous et nous réglons cela tout de suite.",
     errors: {
@@ -371,7 +417,11 @@ const fr: Dict = {
       badDate: "Cette date semble incorrecte.",
       pastDate: "Choisissez un jour à partir d'aujourd'hui.",
       tooFar: "C'est trop loin — dans les six mois, s'il vous plaît.",
-      badSlot: "Choisissez un créneau.",
+      badRange: "Le départ doit venir après l'arrivée.",
+      tooLongStay: "C'est un long séjour — trois mois au maximum.",
+      badGuests: "Ce nombre semble incorrect.",
+      tooManyGuests: "C'est plus que ce que cette résidence accueille.",
+      badPayment: "Choisissez votre mode de règlement.",
       unknownListing: "Nous ne trouvons pas cette résidence.",
     },
   },

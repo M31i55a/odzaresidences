@@ -1,22 +1,28 @@
-import { APARTMENTS } from "./apartments-data";
+import { APARTMENTS, type Apartment } from "./apartments-data";
 
 /* Shared by the form and the Server Action on purpose. The browser checks so
    the visitor gets a fast, friendly answer; the server checks because the
    browser's check is a courtesy and not a guarantee — a Server Action is a
    POST endpoint that anyone can hit directly. One module means the two rules
-   can't drift apart. */
+   can't drift apart, and — now that there is money on the screen — that the
+   figure the visitor agreed to is the figure the agency is quoted. */
 
-/** The two windows the agency shows properties in. */
-export const SLOTS = ["morning", "afternoon"] as const;
-export type Slot = (typeof SLOTS)[number];
+/** How the visitor chooses to settle: a deposit now, or the whole stay. */
+export const PAYMENTS = ["deposit", "full"] as const;
+export type Payment = (typeof PAYMENTS)[number];
+
+/** The share of the total that holds a reservation. */
+export const DEPOSIT_RATE = 0.3;
 
 export type ReservationField =
   | "slug"
   | "name"
   | "phone"
   | "email"
-  | "date"
-  | "slot"
+  | "arrival"
+  | "departure"
+  | "guests"
+  | "payment"
   | "note";
 
 /* Codes rather than sentences: the server has no idea which language the
@@ -30,7 +36,11 @@ export type ErrorCode =
   | "badDate"
   | "pastDate"
   | "tooFar"
-  | "badSlot"
+  | "badRange"
+  | "tooLongStay"
+  | "badGuests"
+  | "tooManyGuests"
+  | "badPayment"
   | "unknownListing";
 
 export type FieldErrors = Partial<Record<ReservationField, ErrorCode>>;
@@ -39,6 +49,10 @@ export type FieldErrors = Partial<Record<ReservationField, ErrorCode>>;
  * What the form gets back from the Server Action. Deliberately narrow — an
  * action's return value is serialised to the browser, so nothing goes in here
  * that the UI won't render, and the submission is never echoed back.
+ *
+ * `sent` carries the money because the confirmation screen replaces the form:
+ * by then the inputs the visitor typed are gone, and the amount they owe has
+ * to be the server's arithmetic rather than the browser's anyway.
  *
  * This lives here rather than beside the action because a `"use server"` file
  * may only export async functions. `INITIAL_STATE` is a plain object, so
@@ -50,7 +64,7 @@ export type ReservationState =
   | { status: "invalid"; errors: FieldErrors }
   | { status: "throttled" }
   | { status: "failed" }
-  | { status: "sent" };
+  | { status: "sent"; total: number; due: number; balance: number };
 
 export const INITIAL_STATE: ReservationState = { status: "idle" };
 
@@ -59,8 +73,10 @@ export const LIMITS = {
   phone: 30,
   email: 120,
   note: 600,
-  /** How far ahead a viewing can be booked. */
+  /** How far ahead the first night of a stay can be booked. */
   aheadDays: 180,
+  /** And how long that stay may run once it starts. */
+  stayNights: 90,
 };
 
 export type ReservationInput = Record<ReservationField, string>;
@@ -81,6 +97,74 @@ export function shiftIsoDate(iso: string, days: number) {
   return isoDate(date);
 }
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Nights between two `YYYY-MM-DD` dates — days, for a listing let by the day.
+ * 0 when either date is unusable or the second doesn't come after the first,
+ * which is the same "there is no stay here yet" every caller wants.
+ *
+ * Rounded rather than floored: both ends are local midnight, so a daylight
+ * saving boundary between them makes the span 23 or 25 hours and a floor
+ * would quietly lose a night. Cameroon doesn't observe it, but the visitor's
+ * browser is wherever the visitor is.
+ */
+export function nightsBetween(arrival: string, departure: string) {
+  if (!ISO_DATE.test(arrival) || !ISO_DATE.test(departure)) return 0;
+
+  const local = (iso: string) => {
+    const [year, month, day] = iso.split("-").map(Number);
+    return new Date(year, month - 1, day).getTime();
+  };
+
+  const span = Math.round((local(departure) - local(arrival)) / 86_400_000);
+  return span > 0 ? span : 0;
+}
+
+/** Beds, or seats when the listing is the hall. */
+export function maxGuests(flat: Apartment) {
+  return flat.seats ? flat.rooms : Math.max(2, flat.rooms * 2);
+}
+
+export type Quote = {
+  /** Nights for a residence, days for the hall. */
+  units: number;
+  rate: number;
+  total: number;
+  /** What is taken now — the whole total when they chose to pay it. */
+  due: number;
+  /** And what is left to settle with the agency. */
+  balance: number;
+};
+
+/**
+ * The price of a stay. `null` when the dates don't yet describe one, so the
+ * form can simply not render a total rather than render a zero.
+ *
+ * The listed price is the nightly rate; the hall's is its day rate. Same
+ * arithmetic either way — only the word for it changes.
+ */
+export function quote(
+  flat: Apartment,
+  arrival: string,
+  departure: string,
+  payment: Payment
+): Quote | null {
+  const units = nightsBetween(arrival, departure);
+  if (units < 1) return null;
+
+  const total = flat.price * units;
+  // Whole XAF: the currency has no subunit anyone actually hands over.
+  const due = payment === "full" ? total : Math.round(total * DEPOSIT_RATE);
+
+  return { units, rate: flat.price, total, due, balance: total - due };
+}
+
+function guestCount(value: string) {
+  // Not `Number()` alone, which reads "3.5", " 3 " and even "" as numbers.
+  return /^\d{1,4}$/.test(value) ? Number(value) : null;
+}
+
 /**
  * Everything wrong with a submission, keyed by field. An empty object means
  * it's good to send.
@@ -94,11 +178,11 @@ export function validateReservation(
 ): FieldErrors {
   const errors: FieldErrors = {};
 
-  // The slug picks which listing the email names, so it has to be one of ours
-  // rather than whatever arrived in the request body.
-  if (!APARTMENTS.some((flat) => flat.slug === input.slug)) {
-    errors.slug = "unknownListing";
-  }
+  /* The slug picks which listing the email names and whose rate the total is
+     built from, so it has to be one of ours rather than whatever arrived in
+     the request body. */
+  const listing = APARTMENTS.find((flat) => flat.slug === input.slug);
+  if (!listing) errors.slug = "unknownListing";
 
   const name = input.name.trim();
   if (!name) errors.name = "required";
@@ -127,16 +211,36 @@ export function validateReservation(
     }
   }
 
-  if (!input.date) errors.date = "required";
-  else if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) errors.date = "badDate";
+  if (!input.arrival) errors.arrival = "required";
+  else if (!ISO_DATE.test(input.arrival)) errors.arrival = "badDate";
   // Zero-padded ISO dates sort correctly as plain strings, so no Date needed.
-  else if (input.date < today) errors.date = "pastDate";
-  else if (input.date > shiftIsoDate(today, LIMITS.aheadDays)) {
-    errors.date = "tooFar";
+  else if (input.arrival < today) errors.arrival = "pastDate";
+  else if (input.arrival > shiftIsoDate(today, LIMITS.aheadDays)) {
+    errors.arrival = "tooFar";
   }
 
-  if (!input.slot) errors.slot = "required";
-  else if (!SLOTS.includes(input.slot as Slot)) errors.slot = "badSlot";
+  if (!input.departure) errors.departure = "required";
+  else if (!ISO_DATE.test(input.departure)) errors.departure = "badDate";
+  /* Only worth comparing against an arrival that parsed. A malformed arrival
+     already carries its own error, and marking the departure wrong as well
+     would be blaming the field the visitor got right. */
+  else if (!errors.arrival) {
+    const nights = nightsBetween(input.arrival, input.departure);
+    if (nights < 1) errors.departure = "badRange";
+    else if (nights > LIMITS.stayNights) errors.departure = "tooLongStay";
+  }
+
+  const guests = guestCount(input.guests);
+  if (!input.guests) errors.guests = "required";
+  else if (guests === null || guests < 1) errors.guests = "badGuests";
+  else if (listing && guests > maxGuests(listing)) {
+    errors.guests = "tooManyGuests";
+  }
+
+  if (!input.payment) errors.payment = "required";
+  else if (!PAYMENTS.includes(input.payment as Payment)) {
+    errors.payment = "badPayment";
+  }
 
   if (input.note.length > LIMITS.note) errors.note = "tooLong";
 

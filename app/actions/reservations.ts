@@ -4,22 +4,32 @@ import { headers } from "next/headers";
 import { APARTMENTS, describe } from "@/components/apartments-data";
 import { DICTIONARIES } from "@/components/i18n/dictionary";
 import {
+  DEPOSIT_RATE,
   isoDate,
+  quote,
   validateReservation,
+  type Payment,
   type ReservationField,
   type ReservationInput,
   type ReservationState,
 } from "@/components/reservation";
 
-/* A viewing request. No database: the agency works out of an inbox, so the
-   whole feature is "validate it, then email it". Swapping the send for a
+/* A reservation. No database: the agency works out of an inbox, so the whole
+   feature is "validate it, price it, then email it". Swapping the send for a
    database insert later means changing `deliver` and nothing else.
 
-   `requestViewing` is the ONLY export here, and that is a hard rule rather
-   than a preference: a `"use server"` file may only export async functions.
-   The state type and its initial value live in components/reservation.ts —
-   exporting the plain object from here fails at runtime with "A 'use server'
-   file can only export async functions, found object". */
+   Nothing is charged here yet. The visitor picks how they want to settle and
+   the amount is quoted and mailed, but no card is taken — the payment step
+   goes in between the quote and the send, once a provider is wired up. Until
+   then the mail says so in as many words, so nobody in the office reads a
+   reservation as money already in the account.
+
+   `requestReservation` is the ONLY export here, and that is a hard rule
+   rather than a preference: a `"use server"` file may only export async
+   functions. The state type and its initial value live in
+   components/reservation.ts — exporting the plain object from here fails at
+   runtime with "A 'use server' file can only export async functions, found
+   object". */
 
 /* ---------------- rate limiting ----------------
    A fixed window held in memory. Being in memory means it is per-instance and
@@ -141,8 +151,10 @@ const FIELDS: ReservationField[] = [
   "name",
   "phone",
   "email",
-  "date",
-  "slot",
+  "arrival",
+  "departure",
+  "guests",
+  "payment",
   "note",
 ];
 
@@ -157,16 +169,19 @@ function read(form: FormData): ReservationInput {
   return input;
 }
 
-export async function requestViewing(
+export async function requestReservation(
   _previous: ReservationState,
   form: FormData
 ): Promise<ReservationState> {
   /* The honeypot. `company` is off-screen and out of the tab order, so a
      person never fills it in and a bot that fills every field does. Answering
      "sent" rather than an error is the point: a bot that's told it failed
-     tries again with a different shape. */
+     tries again with a different shape. The figures are zeroed because there
+     is no booking behind them. */
   const trap = form.get("company");
-  if (typeof trap === "string" && trap.trim()) return { status: "sent" };
+  if (typeof trap === "string" && trap.trim()) {
+    return { status: "sent", total: 0, due: 0, balance: 0 };
+  }
 
   const input = read(form);
 
@@ -181,26 +196,56 @@ export async function requestViewing(
      agency reads its mail in French; the visitor's own language is recorded
      separately below so they get replied to in it. */
   const listing = APARTMENTS.find((flat) => flat.slug === input.slug)!;
-  const info = describe(listing, DICTIONARIES.fr);
+  const fr = DICTIONARIES.fr;
+  const info = describe(listing, fr);
   const locale = form.get("locale") === "en" ? "en" : "fr";
+
+  /* Priced here, from our own rate and the dates validation just approved —
+     never from a total the browser posted. The form works the same figure out
+     for the visitor to look at; this is the one that counts. Validation
+     proved the range is a real stay, so this can't be null either. */
+  const payment = input.payment as Payment;
+  const money = quote(listing, input.arrival, input.departure, payment)!;
+
+  // The hall is booked by the day and seats its guests; the rest are let by
+  // the night and sleep them.
+  const unit = listing.seats
+    ? `${money.units} jour${money.units > 1 ? "s" : ""}`
+    : `${money.units} nuit${money.units > 1 ? "s" : ""}`;
+  const people = listing.seats ? "Participants" : "Personnes";
 
   const lines: [string, string][] = [
     ["Résidence", `${info.name} — ${info.kind}`],
-    ["Prix affiché", info.price],
+    ["Tarif", `${info.price}`],
     ["Surface", info.area],
     ["", ""],
     ["Nom", input.name],
     ["Téléphone", input.phone],
     ["Email", input.email || "—"],
-    ["Jour souhaité", input.date],
-    ["Créneau", input.slot === "morning" ? "Matin" : "Après-midi"],
     ["Langue du visiteur", locale === "fr" ? "Français" : "English"],
+    ["", ""],
+    ["Arrivée", input.arrival],
+    ["Départ", input.departure],
+    ["Durée", unit],
+    [people, input.guests],
+    ["", ""],
+    ["Total du séjour", fr.apartments.money(money.total)],
+    [
+      "Règlement choisi",
+      payment === "full"
+        ? "Paiement intégral"
+        : `Acompte ${Math.round(DEPOSIT_RATE * 100)} %`,
+    ],
+    ["À régler", fr.apartments.money(money.due)],
+    ["Solde à l'arrivée", fr.apartments.money(money.balance)],
+    /* Loud on purpose. Until the payment step exists, a reservation mail is a
+       request for money, not a receipt for it. */
+    ["Paiement", "NON ENCAISSÉ — paiement en ligne à venir"],
+    ["", ""],
     ["Message", input.note || "—"],
   ];
 
-  const subject = `Visite — ${info.name} — ${input.date} (${
-    input.slot === "morning" ? "matin" : "après-midi"
-  })`;
+  const subject = `Réservation — ${info.name} — ${input.arrival} → ${input.departure} (${unit})`;
 
   const text = lines
     .map(([label, value]) => (label ? `${label}: ${value}` : ""))
@@ -231,5 +276,12 @@ export async function requestViewing(
     replyTo: input.email || undefined,
   });
 
-  return ok ? { status: "sent" } : { status: "failed" };
+  return ok
+    ? {
+        status: "sent",
+        total: money.total,
+        due: money.due,
+        balance: money.balance,
+      }
+    : { status: "failed" };
 }
