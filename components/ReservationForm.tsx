@@ -78,36 +78,61 @@ export default function ReservationForm({
   const percent = Math.round(DEPOSIT_RATE * 100);
 
   if (state.status === "sent") {
+    /* The honeypot answers "sent" with nothing behind it, so there is no bill
+       to show a bot and no button to offer it. */
+    const owed = state.due > 0;
+
     return (
       <div className={styles.page}>
         <div className={styles.inner}>
           <p className={styles.eyebrow}>{info.name}</p>
           <h2 className={styles.title}>{t.reserve.sentTitle}</h2>
-          <p className={styles.sentBody}>{t.reserve.sentBody}</p>
+          <p className={styles.sentBody}>
+            {owed && state.payUrl ? t.reserve.sentBodyPay : t.reserve.sentBody}
+          </p>
 
           {/* The figures come back from the action rather than from the state
               above: the server priced the stay, and by now the inputs that
               would have priced it here are gone. */}
-          <dl className={`${styles.lines} ${styles.sentLines}`}>
-            <div className={styles.line}>
-              <dt>{t.reserve.total}</dt>
-              <dd>{money(state.total)}</dd>
-            </div>
-            <div className={`${styles.line} ${styles.lineDue}`}>
-              <dt>{t.reserve.dueNow}</dt>
-              <dd>{money(state.due)}</dd>
-            </div>
-            {state.balance > 0 && (
+          {owed && (
+            <dl className={`${styles.lines} ${styles.sentLines}`}>
               <div className={styles.line}>
-                <dt>{t.reserve.balance}</dt>
-                <dd>{money(state.balance)}</dd>
+                <dt>{t.reserve.total}</dt>
+                <dd>{money(state.total)}</dd>
               </div>
-            )}
-          </dl>
+              <div className={`${styles.line} ${styles.lineDue}`}>
+                <dt>{t.reserve.dueNow}</dt>
+                <dd>{money(state.due)}</dd>
+              </div>
+              {state.balance > 0 && (
+                <div className={styles.line}>
+                  <dt>{t.reserve.balance}</dt>
+                  <dd>{money(state.balance)}</dd>
+                </div>
+              )}
+            </dl>
+          )}
 
-          <button type="button" className={styles.back} onClick={onBack}>
-            {t.reserve.back}
-          </button>
+          <div className={styles.actions}>
+            {/* An anchor once there's a provider to navigate to, and the same
+                button switched off until there is. Not an enabled button that
+                does nothing — the amount is right there on it, and a button
+                offering to take that much had better take it. */}
+            {owed &&
+              (state.payUrl ? (
+                <a className={styles.pay} href={state.payUrl}>
+                  {t.reserve.pay(money(state.due))}
+                </a>
+              ) : (
+                <button type="button" className={styles.pay} disabled>
+                  {t.reserve.pay(money(state.due))}
+                </button>
+              ))}
+
+            <button type="button" className={styles.back} onClick={onBack}>
+              {t.reserve.back}
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -352,7 +377,9 @@ export default function ReservationForm({
 
           {/* Until the payment step exists, saying so here is the honest
               version of a "pay now" button that doesn't take anything. */}
-          <p className={styles.notice}>{t.reserve.paymentSoon}</p>
+          <p className={`${styles.notice} ${styles.noticeTight}`}>
+            {t.reserve.paymentSoon}
+          </p>
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor={id("note")}>

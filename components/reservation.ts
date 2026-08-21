@@ -64,7 +64,16 @@ export type ReservationState =
   | { status: "invalid"; errors: FieldErrors }
   | { status: "throttled" }
   | { status: "failed" }
-  | { status: "sent"; total: number; due: number; balance: number };
+  | {
+      status: "sent";
+      total: number;
+      due: number;
+      balance: number;
+      /** Where to send them to pay, when there's somewhere to send them.
+          Absent until a provider is configured — the button says so rather
+          than pretending. */
+      payUrl?: string;
+    };
 
 export const INITIAL_STATE: ReservationState = { status: "idle" };
 

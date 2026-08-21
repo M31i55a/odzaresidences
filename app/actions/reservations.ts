@@ -164,6 +164,39 @@ async function deliver({ subject, text, html, replyTo }: Delivery) {
   return true;
 }
 
+/* ---------------- payment ----------------
+   The seam a provider drops into. Today it hands back whatever PAYMENT_URL
+   points at — a placeholder page is enough to see the button work — and
+   nothing at all when that isn't set, which leaves the button visible but
+   plainly switched off.
+
+   A real integration replaces the body of this function with a call that
+   opens a checkout session for THIS reservation and returns the URL it gives
+   back, something like:
+
+     const session = await fetch("https://api.provider.com/v1/checkout", {
+       method: "POST",
+       headers: { Authorization: `Bearer ${process.env.PAYMENT_API_KEY}` },
+       body: JSON.stringify({ amount: due, currency: "XAF", reference }),
+     });
+     return (await session.json()).url;
+
+   That version needs the amount and a reference; this one takes neither,
+   because a fixed link has nothing to do with them. There is no reference to
+   pass yet either: no database means no booking to point at, which is fine
+   while payment is arranged by phone and the first thing to fix when it
+   isn't — without one, a payment that lands can't be matched to the
+   reservation that owed it. */
+function paymentLink() {
+  const url = process.env.PAYMENT_URL?.trim();
+  if (!url) return undefined;
+
+  /* Only ever somewhere to navigate to. `javascript:` and `data:` URLs in an
+     href run in the page, and this value comes from the environment rather
+     than from code. */
+  return /^https?:\/\//i.test(url) ? url : undefined;
+}
+
 /* ---------------- the action ---------------- */
 
 const FIELDS: ReservationField[] = [
@@ -302,6 +335,7 @@ export async function requestReservation(
         total: money.total,
         due: money.due,
         balance: money.balance,
+        payUrl: paymentLink(),
       }
     : { status: "failed" };
 }

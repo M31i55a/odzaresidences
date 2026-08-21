@@ -138,6 +138,11 @@ const en = {
     sentTitle: "Reservation received.",
     sentBody:
       "We'll confirm your dates by phone or email shortly and arrange the payment with you then. Nothing has been taken from you today.",
+    /* The same screen once there's somewhere to pay — the call still happens,
+       but they no longer have to wait for it to settle up. */
+    sentBodyPay:
+      "We'll confirm your dates by phone or email shortly. You can settle the amount below now, or with us when we call.",
+    pay: (amount: string) => `Pay ${amount}`,
     failed:
       "Something went wrong on our side and the reservation wasn't sent. Please try again, or call us.",
     throttled:
@@ -404,6 +409,9 @@ const fr: Dict = {
     sentTitle: "Réservation bien reçue.",
     sentBody:
       "Nous confirmons vos dates par téléphone ou par email très vite, et nous organisons le règlement à ce moment-là. Rien ne vous a été prélevé aujourd'hui.",
+    sentBodyPay:
+      "Nous confirmons vos dates par téléphone ou par email très vite. Vous pouvez régler le montant ci-dessous dès maintenant, ou avec nous lors de notre appel.",
+    pay: (amount: string) => `Régler ${amount}`,
     failed:
       "Un problème de notre côté : la réservation n'est pas partie. Réessayez, ou appelez-nous.",
     throttled:

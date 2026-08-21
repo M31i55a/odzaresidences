@@ -254,11 +254,18 @@
 
 /* Information, not an error — quieter than .status and always present. */
 .notice {
-  margin: -0.4rem 0 0;
+  margin: 1rem 0 0;
   font-family: var(--font-mono);
   font-size: 11px;
   line-height: 1.6;
+  max-width: 46ch;
   color: rgba(237, 230, 218, 0.45);
+}
+
+/* Inside the form the grid's own gap already separates it, so it pulls back
+   up to sit against the choice it's talking about. */
+.noticeTight {
+  margin-top: -0.4rem;
 }
 
 /* ---------------- feedback ---------------- */
@@ -316,6 +323,37 @@
 .submit:disabled {
   cursor: progress;
   opacity: 0.6;
+}
+
+/* The same shape as .submit, because it is the same weight of decision — but
+   it has to hold its own as an <a> once there's a provider to link to, and as
+   a switched-off <button> until then. Hence the resets an anchor needs. */
+.pay {
+  display: inline-block;
+  cursor: pointer;
+  border: 0;
+  padding: 15px 30px;
+  border-radius: 999px;
+  background: var(--color-brass);
+  color: var(--color-walnut);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-decoration: none;
+  transition: transform 0.26s ease, background 0.26s ease, opacity 0.26s ease;
+}
+
+.pay:hover:not(:disabled) {
+  background: var(--color-cream);
+  transform: translateY(-2px);
+}
+
+/* Read as unavailable rather than as failed: it's the right button, it just
+   isn't wired to anything yet. */
+.pay:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .back {
