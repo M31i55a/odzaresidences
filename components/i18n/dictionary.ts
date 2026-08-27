@@ -142,6 +142,19 @@ const en = {
     sentBodyPay:
       "We'll confirm your dates by phone or email shortly. You can settle the amount below now, or with us when we call.",
     pay: (amount: string) => `Pay ${amount}`,
+    reference: "Reference",
+
+    /* Where Paymooney sends the customer back to. Neither page is proof of
+       anything on its own — the callback is what settles a booking — so the
+       wording says what we know rather than what we hope. */
+    paidTitle: "Payment received.",
+    paidBody:
+      "Thank you. We're confirming it now and will be in touch by phone or email shortly with your dates. Keep your reference for any questions.",
+    cancelledTitle: "Payment cancelled.",
+    cancelledBody:
+      "Nothing has been taken. Your reservation request is still with us — we'll call to arrange another way to settle it.",
+    backHome: "Back to Odza",
+
     failed:
       "Something went wrong on our side and the reservation wasn't sent. Please try again, or call us.",
     throttled:
@@ -410,6 +423,16 @@ const fr: Dict = {
     sentBodyPay:
       "Nous confirmons vos dates par téléphone ou par email très vite. Vous pouvez régler le montant ci-dessous dès maintenant, ou avec nous lors de notre appel.",
     pay: (amount: string) => `Régler ${amount}`,
+    reference: "Référence",
+
+    paidTitle: "Paiement reçu.",
+    paidBody:
+      "Merci. Nous le confirmons et revenons vers vous très vite par téléphone ou par email avec vos dates. Conservez votre référence pour toute question.",
+    cancelledTitle: "Paiement annulé.",
+    cancelledBody:
+      "Rien n'a été prélevé. Votre demande de réservation nous est bien parvenue — nous vous appelons pour convenir d'un autre moyen de règlement.",
+    backHome: "Retour à Odza",
+
     failed:
       "Un problème de notre côté : la réservation n'est pas partie. Réessayez, ou appelez-nous.",
     throttled:

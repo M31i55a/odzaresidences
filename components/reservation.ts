@@ -66,12 +66,15 @@ export type ReservationState =
   | { status: "failed" }
   | {
       status: "sent";
+      /** Quoted to the customer and carried on the payment, so a settled
+          booking can be matched back to the email the agency was sent. */
+      reference: string;
       total: number;
       due: number;
       balance: number;
-      /** Where to send them to pay, when there's somewhere to send them.
-          Absent until a provider is configured — the button says so rather
-          than pretending. */
+      /** Paymooney's hosted checkout for this booking. Absent when no payment
+          link could be opened, and then the button says so rather than
+          pretending — the reservation itself still stands. */
       payUrl?: string;
     };
 

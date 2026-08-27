@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { headers } from "next/headers";
 import { APARTMENTS, describe } from "@/components/apartments-data";
 import { DICTIONARIES } from "@/components/i18n/dictionary";
@@ -68,6 +69,17 @@ async function callerKey() {
   const list = await headers();
   const forwarded = list.get("x-forwarded-for");
   return forwarded?.split(",")[0]?.trim() || list.get("x-real-ip") || "unknown";
+}
+
+/** Where this site is answering from, so Paymooney can fetch our logo. Read
+    from the request rather than configured, so it is right in development,
+    on a preview deploy and in production without three different values. */
+async function origin() {
+  const list = await headers();
+  const host = list.get("x-forwarded-host") ?? list.get("host") ?? "";
+  const proto =
+    list.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+  return host ? `${proto}://${host}` : "";
 }
 
 /* ---------------- delivery ---------------- */
@@ -165,36 +177,128 @@ async function deliver({ subject, text, html, replyTo }: Delivery) {
 }
 
 /* ---------------- payment ----------------
-   The seam a provider drops into. Today it hands back whatever PAYMENT_URL
-   points at — a placeholder page is enough to see the button work — and
-   nothing at all when that isn't set, which leaves the button visible but
-   plainly switched off.
+   Paymooney hosts the checkout: we ask for a payment URL, send the customer
+   to it, and they enter their Orange Money number or card details on
+   Paymooney's side. Nothing sensitive ever reaches this server, which is the
+   reason to do it this way round.
 
-   A real integration replaces the body of this function with a call that
-   opens a checkout session for THIS reservation and returns the URL it gives
-   back, something like:
+   Two things in their documentation are wrong, and both were checked against
+   their own WooCommerce plugin, which is the only public code known to work:
 
-     const session = await fetch("https://api.provider.com/v1/checkout", {
-       method: "POST",
-       headers: { Authorization: `Bearer ${process.env.PAYMENT_API_KEY}` },
-       body: JSON.stringify({ amount: due, currency: "XAF", reference }),
-     });
-     return (await session.json()).url;
+   1. The docs require `Authorization: Bearer base64(email:secret_key)`. The
+      plugin builds that header and then never passes it to the request — the
+      call authenticates on `public_key` in the body alone. The curl example
+      in the same docs also sends no header. So none is sent here.
+   2. The docs say the parameters are JSON. Every working sample — curl
+      `--form`, PHP, Python, the plugin — sends a form body, so that is what
+      this sends.
 
-   That version needs the amount and a reference; this one takes neither,
-   because a fixed link has nothing to do with them. There is no reference to
-   pass yet either: no database means no booking to point at, which is fine
-   while payment is arranged by phone and the first thing to fix when it
-   isn't — without one, a payment that lands can't be matched to the
-   reservation that owed it. */
-function paymentLink() {
-  const url = process.env.PAYMENT_URL?.trim();
-  if (!url) return undefined;
+   If Paymooney ever answers 84 ("No project found for this credentials"),
+   the header is the first thing to try adding back. */
+const PAYMOONEY_ENDPOINT = "https://paymooney.com/api/v1.0/payment_url";
 
-  /* Only ever somewhere to navigate to. `javascript:` and `data:` URLs in an
-     href run in the page, and this value comes from the environment rather
-     than from code. */
-  return /^https?:\/\//i.test(url) ? url : undefined;
+/** Their documented failures, so the log says what went wrong rather than 96. */
+const PAYMOONEY_ERRORS: Record<string, string> = {
+  "90": "some required fields are not specified",
+  "91": "amount is not a numeric value",
+  "92": "currency code incorrect",
+  "93": "amount outside the range allowed for that currency",
+  "94": "email invalid",
+  "95": "public_key not found",
+  "96": "something wrong — contact Paymooney",
+  "97": "item_ref already used",
+  "84": "no project found for these credentials",
+};
+
+type Checkout = {
+  reference: string;
+  /** Whole XAF. Paymooney is told the amount actually being collected now. */
+  amount: number;
+  itemName: string;
+  /** Echoed back verbatim on the callback, so the stay travels with the money. */
+  description: string;
+  input: ReservationInput;
+  locale: "fr" | "en";
+  origin: string;
+};
+
+async function paymentLink(checkout: Checkout) {
+  const publicKey = process.env.PAYMOONEY_PUBLIC_KEY?.trim();
+  if (!publicKey) {
+    // Same reasoning as `deliver`: silent in development, loud in production.
+    if (process.env.NODE_ENV === "production") {
+      console.error(
+        "[paymooney] PAYMOONEY_PUBLIC_KEY is not set — no payment link was " +
+          "created, so the customer has nothing to pay against."
+      );
+    }
+    return undefined;
+  }
+
+  // Their `first_name` / `last_name` are both optional and only decorate the
+  // receipt, so a single-word name simply leaves the surname empty.
+  const [first, ...rest] = checkout.input.name.split(/\s+/);
+
+  const body = new URLSearchParams({
+    amount: String(checkout.amount),
+    // Orange Money Cameroon is the XAF method; card and PayPal are USD/CAD/EUR
+    // only, so a XAF-priced stay reaches Orange Money and nothing else.
+    currency_code: "XAF",
+    ccode: "CM",
+    lang: checkout.locale,
+    item_ref: checkout.reference,
+    item_name: checkout.itemName,
+    description: checkout.description,
+    phone: checkout.input.phone,
+    first_name: first ?? "",
+    last_name: rest.join(" "),
+    public_key: publicKey,
+    logo: `${checkout.origin}/odza-logo.png`,
+  });
+
+  // Optional for them, but it is how the customer gets their receipt.
+  if (checkout.input.email) body.set("email", checkout.input.email);
+
+  /* Present ONLY in test mode. Their docs are explicit that sending this
+     parameter at all puts the payment in test mode, so it must be absent in
+     production rather than set to "live". */
+  if (process.env.PAYMOONEY_MODE?.trim() === "test") {
+    body.set("environement", "test");
+  }
+
+  let payload: { response?: string; payment_url?: string; error_code?: number | string; message?: string };
+
+  try {
+    const response = await fetch(PAYMOONEY_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+    });
+    payload = await response.json();
+  } catch (error) {
+    // A reservation that can't be paid for online is still a reservation —
+    // the agency already has the email, so this must not throw the request away.
+    console.error("[paymooney] could not reach the payment API:", error);
+    return undefined;
+  }
+
+  if (payload?.response !== "success" || !payload.payment_url) {
+    const code = String(payload?.error_code ?? "");
+    console.error(
+      `[paymooney] no payment link for ${checkout.reference}: ` +
+        `${code || "?"} ${PAYMOONEY_ERRORS[code] ?? payload?.message ?? "unknown error"}`
+    );
+    return undefined;
+  }
+
+  return payload.payment_url;
+}
+
+/** Unique per attempt — Paymooney rejects a repeated `item_ref` with code 97. */
+function reference() {
+  return `ODZA-${Date.now().toString(36).toUpperCase()}-${randomUUID()
+    .slice(0, 6)
+    .toUpperCase()}`;
 }
 
 /* ---------------- the action ---------------- */
@@ -233,7 +337,7 @@ export async function requestReservation(
      is no booking behind them. */
   const trap = form.get("company");
   if (typeof trap === "string" && trap.trim()) {
-    return { status: "sent", total: 0, due: 0, balance: 0 };
+    return { status: "sent", reference: "", total: 0, due: 0, balance: 0 };
   }
 
   const input = read(form);
@@ -267,7 +371,16 @@ export async function requestReservation(
     : `${money.units} nuit${money.units > 1 ? "s" : ""}`;
   const people = listing.seats ? "Participants" : "Personnes";
 
+  /* One reference ties the three things together: this email, the payment the
+     customer is about to make, and the callback Paymooney sends afterwards.
+     There is no database, so it travels with the money instead — Paymooney
+     echoes `item_ref` and `description` back on the callback, which is enough
+     to rebuild the booking without storing it. */
+  const ref = reference();
+  const stay = `${info.name} · ${input.arrival} → ${input.departure} · ${unit} · ${input.guests} ${people.toLowerCase()}`;
+
   const lines: [string, string][] = [
+    ["Référence", ref],
     ["Résidence", `${info.name} — ${info.kind}`],
     ["Tarif", `${info.price}`],
     ["Surface", info.area],
@@ -320,22 +433,41 @@ export async function requestReservation(
     )
     .join("")}</table>`;
 
-  const ok = await deliver({
-    subject,
-    text,
-    html,
-    // Validation forbids whitespace in the address, so this can't smuggle a
-    // second header in through a newline.
-    replyTo: input.email || undefined,
-  });
+  /* The email and the payment link are independent of each other, and both
+     take a round trip to somebody else's server — so they go together rather
+     than one after the other. */
+  const [ok, payUrl] = await Promise.all([
+    deliver({
+      subject,
+      text,
+      html,
+      // Validation forbids whitespace in the address, so this can't smuggle a
+      // second header in through a newline.
+      replyTo: input.email || undefined,
+    }),
+    paymentLink({
+      reference: ref,
+      // What is being collected now — the deposit, or the whole stay.
+      amount: money.due,
+      itemName: `${info.name} — ${info.kind}`,
+      description: stay,
+      input,
+      locale,
+      origin: await origin(),
+    }),
+  ]);
 
+  /* A missing payment link is not a failed reservation. The agency has the
+     request either way, and the confirmation screen falls back to settling by
+     phone — which is exactly what it did before any of this existed. */
   return ok
     ? {
         status: "sent",
+        reference: ref,
         total: money.total,
         due: money.due,
         balance: money.balance,
-        payUrl: paymentLink(),
+        payUrl,
       }
     : { status: "failed" };
 }

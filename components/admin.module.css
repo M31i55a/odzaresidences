@@ -1,0 +1,353 @@
+/* The admin borrows the site's palette but none of its theatre — no scroll
+   animation, no overlays. It is a tool, and it should feel like one. */
+
+.shell {
+  min-height: 100vh;
+  padding: clamp(24px, 5vh, 48px) clamp(18px, 4vw, 56px);
+  background: var(--color-walnut);
+  color: var(--color-cream);
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 18px;
+  margin-bottom: clamp(24px, 4vh, 40px);
+  border-bottom: 1px solid rgba(237, 230, 218, 0.14);
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+.barLinks {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.barLinks a,
+.barLinks button {
+  color: var(--color-cream-soft);
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.barLinks a:hover,
+.barLinks button:hover {
+  color: var(--color-brass);
+}
+
+.h2 {
+  margin: 0 0 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-brass);
+}
+
+.section {
+  margin-bottom: clamp(32px, 6vh, 56px);
+}
+
+/* ---------------- tables ---------------- */
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid rgba(237, 230, 218, 0.14);
+  border-radius: 6px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.table th {
+  text-align: left;
+  padding: 12px 14px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(237, 230, 218, 0.45);
+  background: var(--color-walnut-soft);
+  font-weight: 500;
+}
+
+.table td {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(237, 230, 218, 0.1);
+  color: var(--color-cream-soft);
+}
+
+.table tr:hover td {
+  background: rgba(237, 230, 218, 0.03);
+}
+
+.table a {
+  color: var(--color-cream);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.thumb {
+  width: 58px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 3px;
+  display: block;
+  background: var(--color-walnut-soft);
+}
+
+.pill {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+}
+
+.pillOk {
+  color: #8fbf8f;
+}
+.pillWait {
+  color: var(--color-brass);
+}
+.pillBad {
+  color: #e0a091;
+}
+.pillOff {
+  color: rgba(237, 230, 218, 0.35);
+}
+
+.empty {
+  padding: 28px 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(237, 230, 218, 0.4);
+}
+
+/* ---------------- forms ---------------- */
+
+.form {
+  display: grid;
+  gap: 18px;
+  max-width: 720px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+@media (max-width: 620px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-cream-soft);
+}
+
+.input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid rgba(237, 230, 218, 0.16);
+  border-radius: 4px;
+  background: var(--color-walnut-soft);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-cream);
+  color-scheme: dark;
+}
+
+.input:focus-visible {
+  outline: none;
+  border-color: var(--color-brass);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-cream-soft);
+  cursor: pointer;
+}
+
+.check input {
+  accent-color: var(--color-brass);
+  width: 15px;
+  height: 15px;
+}
+
+.button {
+  cursor: pointer;
+  border: 0;
+  padding: 12px 26px;
+  border-radius: 999px;
+  background: var(--color-brass);
+  color: var(--color-walnut);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--color-cream);
+}
+
+.button:disabled {
+  cursor: progress;
+  opacity: 0.55;
+}
+
+.ghost {
+  cursor: pointer;
+  border: 1px solid rgba(237, 230, 218, 0.22);
+  padding: 11px 20px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-cream-soft);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-decoration: none;
+  display: inline-block;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.ghost:hover {
+  border-color: var(--color-brass);
+  color: var(--color-brass);
+}
+
+.danger {
+  color: #e0a091;
+  border-color: rgba(224, 160, 145, 0.4);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.error {
+  margin: 0;
+  padding: 11px 14px;
+  border: 1px solid rgba(224, 160, 145, 0.4);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #e0a091;
+}
+
+.note {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: rgba(237, 230, 218, 0.42);
+}
+
+/* ---------------- image picker ---------------- */
+
+.picker {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(237, 230, 218, 0.14);
+  border-radius: 6px;
+  background: var(--color-walnut-soft);
+}
+
+.preview {
+  width: 100%;
+  max-width: 260px;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 4px;
+  background: rgba(237, 230, 218, 0.05);
+}
+
+.file {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-cream-soft);
+}
+
+.file::file-selector-button {
+  margin-right: 12px;
+  padding: 8px 15px;
+  border: 1px solid rgba(237, 230, 218, 0.22);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-cream);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.rooms {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+}
+
+/* ---------------- login ---------------- */
+
+.login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--color-walnut);
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 360px;
+  display: grid;
+  gap: 16px;
+}
+
+.loginTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  color: var(--color-cream);
+}

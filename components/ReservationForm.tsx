@@ -96,6 +96,12 @@ export default function ReservationForm({
               would have priced it here are gone. */}
           {owed && (
             <dl className={`${styles.lines} ${styles.sentLines}`}>
+              {/* Quote this and the agency can find the booking, whether the
+                  customer pays now or rings up about it next week. */}
+              <div className={styles.line}>
+                <dt>{t.reserve.reference}</dt>
+                <dd>{state.reference}</dd>
+              </div>
               <div className={styles.line}>
                 <dt>{t.reserve.total}</dt>
                 <dd>{money(state.total)}</dd>
