@@ -9,7 +9,37 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import dns from "node:dns";
 import { neon } from "@neondatabase/serverless";
+
+/* Some networks answer Neon's hostname with an IPv6 address they then can't
+   route to, and `fetch` gives up with a bare "TypeError: fetch failed".
+   dns.lookup asks the operating system, which on such a machine returns the
+   AAAA record only; dns.resolve4 asks the DNS servers directly and does come
+   back with A records.
+
+   So: try IPv4 through the OS first, fall back to resolving it ourselves, and
+   only then let the original behaviour stand. On a normal connection the
+   first attempt succeeds and none of this is reached. */
+const osLookup = dns.lookup;
+dns.lookup = (hostname, options, callback) => {
+  if (typeof options === "function") {
+    callback = options;
+    options = {};
+  }
+
+  osLookup(hostname, { ...options, family: 4 }, (error, address, family) => {
+    if (!error && address) return callback(null, address, family);
+
+    dns.resolve4(hostname, (failed, addresses) => {
+      if (failed || !addresses?.length) return osLookup(hostname, options, callback);
+      if (options?.all) {
+        return callback(null, addresses.map((a) => ({ address: a, family: 4 })));
+      }
+      callback(null, addresses[0], 4);
+    });
+  });
+};
 
 const root = process.cwd();
 
@@ -36,8 +66,11 @@ const found =
 if (!found) {
   console.error(
     "DATABASE_URL is not set.\n\n" +
-      "  Connect Neon in the Vercel dashboard (Storage -> Marketplace), then:\n" +
-      "    vercel env pull .env.local\n"
+      "  In the Vercel dashboard: Storage -> your Neon store -> the .env.local\n" +
+      "  tab. Copy the DATABASE_URL line and put it, on its own, in a file\n" +
+      "  called .env.production.local here. Then run this again.\n\n" +
+      "  (`vercel env pull .env.production.local --environment production`\n" +
+      "   does the same thing, but the CLI is not required.)\n"
   );
   process.exit(1);
 }
