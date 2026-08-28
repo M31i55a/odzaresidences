@@ -1,4 +1,4 @@
-import { APARTMENTS, type Apartment } from "./apartments-data";
+import type { Listing } from "./listing";
 
 /* Shared by the form and the Server Action on purpose. The browser checks so
    the visitor gets a fast, friendly answer; the server checks because the
@@ -134,7 +134,7 @@ export function nightsBetween(arrival: string, departure: string) {
 }
 
 /** Beds, or seats when the listing is the hall. */
-export function maxGuests(flat: Apartment) {
+export function maxGuests(flat: Listing) {
   return flat.seats ? flat.rooms : Math.max(2, flat.rooms * 2);
 }
 
@@ -157,7 +157,7 @@ export type Quote = {
  * arithmetic either way — only the word for it changes.
  */
 export function quote(
-  flat: Apartment,
+  flat: Listing,
   arrival: string,
   departure: string,
   payment: Payment
@@ -186,15 +186,16 @@ function guestCount(value: string) {
  */
 export function validateReservation(
   input: ReservationInput,
-  today: string
+  today: string,
+  listing: Listing | null
 ): FieldErrors {
   const errors: FieldErrors = {};
 
-  /* The slug picks which listing the email names and whose rate the total is
-     built from, so it has to be one of ours rather than whatever arrived in
-     the request body. */
-  const listing = APARTMENTS.find((flat) => flat.slug === input.slug);
-  if (!listing) errors.slug = "unknownListing";
+  /* The listing is looked up by the caller and passed in — from the database
+     on the server, from what the page was rendered with in the browser. It
+     picks which residence the email names and whose rate the total is built
+     from, so a slug with nothing behind it is rejected rather than trusted. */
+  if (!listing || listing.slug !== input.slug) errors.slug = "unknownListing";
 
   const name = input.name.trim();
   if (!name) errors.name = "required";
@@ -245,7 +246,7 @@ export function validateReservation(
   const guests = guestCount(input.guests);
   if (!input.guests) errors.guests = "required";
   else if (guests === null || guests < 1) errors.guests = "badGuests";
-  else if (listing && guests > maxGuests(listing)) {
+  else if (listing && !errors.slug && guests > maxGuests(listing)) {
     errors.guests = "tooManyGuests";
   }
 

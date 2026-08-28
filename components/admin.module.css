@@ -321,11 +321,6 @@
   cursor: pointer;
 }
 
-.rooms {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 14px;
-}
 
 /* ---------------- login ---------------- */
 
@@ -350,4 +345,132 @@
   font-size: 30px;
   letter-spacing: -0.02em;
   color: var(--color-cream);
+}
+
+/* ---------------- rooms ---------------- */
+
+.roomCard {
+  padding: clamp(16px, 3vw, 24px);
+  margin-bottom: 18px;
+  border: 1px solid rgba(237, 230, 218, 0.14);
+  border-radius: 6px;
+  background: var(--color-walnut-soft);
+}
+
+/* Label and value side by side, stacking on a narrow screen. */
+.specRow {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 8px;
+}
+
+@media (max-width: 620px) {
+  .specRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tiny {
+  justify-self: start;
+  cursor: pointer;
+  border: 0;
+  padding: 4px 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-brass);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.gallery {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(237, 230, 218, 0.12);
+}
+
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.galleryItem {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.galleryImg {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 4px;
+  background: rgba(237, 230, 218, 0.05);
+}
+
+.remove {
+  cursor: pointer;
+  border: 1px solid rgba(224, 160, 145, 0.35);
+  border-radius: 999px;
+  padding: 5px 12px;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e0a091;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.remove:hover {
+  border-color: #e0a091;
+  color: var(--color-cream);
+}
+
+/* The per-row action in the listings table. Reads as a button without the
+   weight of one, since every row carries it. */
+.rowAction {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid rgba(237, 230, 218, 0.22);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--color-cream-soft);
+  text-decoration: none;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.rowAction:hover {
+  border-color: var(--color-brass);
+  color: var(--color-brass);
+}
+
+/* ---------------- form grouping ----------------
+   <fieldset> carries a border and padding in every browser; these are reset
+   and rebuilt so a group reads as one card rather than a boxed legend. */
+.group {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: clamp(14px, 2.5vw, 20px);
+  border: 1px solid rgba(237, 230, 218, 0.14);
+  border-radius: 6px;
+}
+
+.groupTitle {
+  padding: 0 6px;
+  margin-left: -6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-brass);
+}
+
+/* A note that is telling you something you probably didn't intend. */
+.warn {
+  color: #e0a091;
 }

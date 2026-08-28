@@ -1,4 +1,5 @@
-import type { Dict } from "./i18n/dictionary";
+import type { Dict, Locale } from "./i18n/dictionary";
+import type { Room } from "./listing";
 
 export type RoomSpec = { label: string; value: string };
 
@@ -10,31 +11,45 @@ export type RoomPart = {
   specs: RoomSpec[];
 };
 
-/** The part shown first when the gallery opens. */
-export const DEFAULT_PART_ID = "bedroom";
-
-/** Walkthrough order; the bedroom is what opens. */
-const PART_IDS = ["parlour", "kitchen", "bedroom", "toilet"] as const;
-
-/** There are five photo sets for ten listings, so the sets repeat. */
-const PHOTO_SETS = 5;
-
-export function roomsFor(
-  index: number,
-  apartmentName: string,
+/**
+ * Turn the rooms the admin manages into what the gallery renders.
+ *
+ * Rooms used to be four fixed parts with their copy in the dictionary. They
+ * are rows now, in whatever order and number the admin arranged, so the
+ * gallery is handed whatever exists rather than a known set.
+ *
+ * A room with no photograph is dropped: the gallery's whole job is showing
+ * one, and an empty frame reads as a broken page rather than an empty room.
+ */
+export function partsFrom(
+  rooms: Room[],
+  listingName: string,
   t: Dict
 ): RoomPart[] {
-  const set = (index % PHOTO_SETS) + 1;
+  const locale = t.code as Locale;
 
-  return PART_IDS.map((id) => {
-    const part = t.rooms[id];
+  return rooms
+    .filter((room) => room.images.length > 0)
+    .map((room) => {
+      const name = room.name[locale];
+      const specs = [...room.specs[locale]];
 
-    return {
-      id,
-      name: part.name,
-      image: `/${id}${set}.jpg`,
-      alt: `${part.name} — ${apartmentName}`,
-      specs: part.specs,
-    };
-  });
+      /* The room's own price, when it quotes one, reads as one more detail.
+         It is never what a stay is billed at — see quote(). */
+      if (room.price !== null) {
+        specs.push({
+          label: t.apartments.price,
+          value: t.apartments.money(room.price),
+        });
+      }
+
+      return {
+        id: String(room.id),
+        name,
+        // Only the first for now; the rest of the gallery isn't shown here yet.
+        image: room.images[0].url,
+        alt: `${name} — ${listingName}`,
+        specs,
+      };
+    });
 }

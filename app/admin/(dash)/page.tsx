@@ -27,6 +27,7 @@ export default async function AdminHome() {
                 <th>Rooms</th>
                 <th>Area</th>
                 <th>Status</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -62,6 +63,16 @@ export default async function AdminHome() {
                     >
                       {listing.published ? "live" : "hidden"}
                     </span>
+                  </td>
+                  {/* The name is a link too, but a named action is easier to
+                      find than a link that looks like a heading. */}
+                  <td>
+                    <Link
+                      className={styles.rowAction}
+                      href={`/admin/listings/${listing.slug}`}
+                    >
+                      Edit
+                    </Link>
                   </td>
                 </tr>
               ))}

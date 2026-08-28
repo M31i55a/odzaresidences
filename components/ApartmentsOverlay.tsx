@@ -7,6 +7,7 @@ import ApartmentsList from "./ApartmentsList";
 import ReservationForm from "./ReservationForm";
 import CloseButton from "./CloseButton";
 import { getLenis } from "./lenis-instance";
+import type { Listing, Room } from "./listing";
 import styles from "./apartments-overlay.module.css";
 
 export type OverlayView =
@@ -16,6 +17,8 @@ export type OverlayView =
   | null;
 
 type ApartmentsOverlayProps = {
+  listings: Listing[];
+  rooms: Record<string, Room[]>;
   view: OverlayView;
   onClose: () => void;
   onSelect: (slug: string) => void;
@@ -29,6 +32,8 @@ const LABELS = {
 };
 
 export default function ApartmentsOverlay({
+  listings,
+  rooms,
   view,
   onClose,
   onSelect,
@@ -75,14 +80,21 @@ export default function ApartmentsOverlay({
 
       <div className={styles.body}>
         {view.type === "list" ? (
-          <ApartmentsList onSelect={onSelect} />
+          <ApartmentsList listings={listings} onSelect={onSelect} />
         ) : view.type === "detail" ? (
-          <ApartmentDetail slug={view.slug} onReserve={onReserve} />
+          <ApartmentDetail
+            listing={listings.find((l) => l.slug === view.slug) ?? null}
+            rooms={rooms[view.slug] ?? []}
+            onReserve={onReserve}
+          />
         ) : (
           /* Back goes to the residence it was opened from rather than closing
              the overlay outright — someone who changes their mind about the
              dates is still interested in the flat. */
-          <ReservationForm slug={view.slug} onBack={() => onSelect(view.slug)} />
+          <ReservationForm
+            listing={listings.find((l) => l.slug === view.slug) ?? null}
+            onBack={() => onSelect(view.slug)}
+          />
         )}
       </div>
     </div>,

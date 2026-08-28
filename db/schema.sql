@@ -42,14 +42,55 @@ create table if not exists listings (
 create index if not exists listings_order
   on listings (published, position, slug);
 
--- Room photographs, one per part per listing. The parts themselves and their
--- specs stay in the dictionary — only the pictures are editable.
-create table if not exists listing_rooms (
+-- ------------------------------------------------------------------- rooms
+
+/* Rooms belong to a listing and are entirely the admin's: any number of them,
+   named and described per language. They used to be four fixed parts pinned
+   by a check constraint, with the names and specs living in the dictionary —
+   which stopped being possible the moment the admin could add a residence the
+   code has never heard of.
+
+   An identity key rather than (slug, name): two rooms in one villa may
+   legitimately both be called "Bedroom", and a room keeps its photographs
+   when it is renamed. */
+create table if not exists rooms (
+  id          bigint generated always as identity primary key,
   slug        text not null references listings (slug) on delete cascade,
-  part        text not null check (part in ('parlour', 'kitchen', 'bedroom', 'toilet')),
-  image_url   text not null,
-  primary key (slug, part)
+
+  -- Walkthrough order within the listing.
+  position    integer not null default 0,
+
+  name_en     text not null,
+  name_fr     text not null,
+
+  /* Descriptive ONLY — shown as a detail on the room, never used to price a
+     booking. A stay is priced from listings.price; see quote() in
+     components/reservation.ts, which never reads this. */
+  price       integer check (price is null or price > 0),
+
+  /* Free-form detail rows, per language: [{"label": "…", "value": "…"}, …].
+     jsonb rather than another table because they are only ever read and
+     written as a whole list, never queried across. */
+  specs_en    jsonb not null default '[]'::jsonb,
+  specs_fr    jsonb not null default '[]'::jsonb,
+
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
 );
+
+create index if not exists rooms_by_listing
+  on rooms (slug, position, id);
+
+-- A room's gallery, in the order the admin arranged.
+create table if not exists room_images (
+  id        bigint generated always as identity primary key,
+  room_id   bigint not null references rooms (id) on delete cascade,
+  url       text not null,
+  position  integer not null default 0
+);
+
+create index if not exists room_images_by_room
+  on room_images (room_id, position, id);
 
 -- ------------------------------------------------------------ reservations
 

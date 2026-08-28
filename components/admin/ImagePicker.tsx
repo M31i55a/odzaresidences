@@ -5,11 +5,17 @@ import { useRef, useState } from "react";
 import styles from "../admin.module.css";
 
 /**
- * Pick a photograph and put it in Blob storage, straight from the browser.
+ * Pick a photograph and get back a URL for it.
  *
- * The file never passes through our server — Vercel functions reject bodies
- * over 4.5 MB and phone photographs are routinely bigger. /api/admin/upload
- * only signs a token after checking the admin session.
+ * Two routes to storage, decided on the server and passed down as `local`:
+ *
+ * - Vercel Blob, the real one. The file goes straight from the browser to the
+ *   store, because Vercel caps a function's request body at 4.5 MB and a
+ *   phone photograph is routinely larger. /api/admin/upload signs the token
+ *   after checking the session.
+ * - Local disk, when there is no BLOB_READ_WRITE_TOKEN in development. The
+ *   file is posted to the server and written under public/uploads/, so the
+ *   admin works without a cloud store to test against.
  *
  * The resulting URL is kept in a hidden input, so the surrounding form
  * submits it like any other field and an upload with no save changes nothing.
@@ -18,11 +24,14 @@ export default function ImagePicker({
   name,
   label,
   value,
+  local = false,
   onUploaded,
 }: {
   name: string;
   label: string;
   value?: string;
+  /** Write to public/uploads/ instead of Vercel Blob. Development only. */
+  local?: boolean;
   /** Set when the URL should be saved on its own rather than with a form. */
   onUploaded?: (url: string) => void;
 }) {
@@ -36,14 +45,29 @@ export default function ImagePicker({
     setError("");
 
     try {
-      const blob = await upload(file.name, file, {
-        access: "public",
-        handleUploadUrl: "/api/admin/upload",
-      });
-      setUrl(blob.url);
-      onUploaded?.(blob.url);
+      let uploaded: string;
+
+      if (local) {
+        const body = new FormData();
+        body.set("file", file);
+        const response = await fetch("/api/admin/upload/local", {
+          method: "POST",
+          body,
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result?.error ?? "The upload failed.");
+        uploaded = result.url;
+      } else {
+        const blob = await upload(file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/admin/upload",
+        });
+        uploaded = blob.url;
+      }
+
+      setUrl(uploaded);
+      onUploaded?.(uploaded);
     } catch (cause) {
-      // Nearly always a signed-out session or a rejected file type.
       setError(cause instanceof Error ? cause.message : "The upload failed.");
     } finally {
       setBusy(false);

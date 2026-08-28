@@ -1,14 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { APARTMENTS, describe } from "./apartments-data";
+import { describe, type Listing } from "./listing";
 import { useT } from "./i18n/locale";
 import styles from "./apartments-list.module.css";
 
 /** Every listing. Picking one swaps the overlay over to that apartment. */
 export default function ApartmentsList({
+  listings,
   onSelect,
 }: {
+  listings: Listing[];
   onSelect: (slug: string) => void;
 }) {
   const t = useT();
@@ -20,7 +22,7 @@ export default function ApartmentsList({
         <h2 className={styles.title}>{t.apartments.listTitle}</h2>
 
         <div className={styles.grid}>
-          {APARTMENTS.map((flat) => {
+          {listings.map((flat) => {
             const info = describe(flat, t);
             return (
             <article className={styles.card} key={flat.slug}>

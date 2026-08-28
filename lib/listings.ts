@@ -1,34 +1,13 @@
 import { sql } from "./db";
-import type { Locale } from "@/components/i18n/dictionary";
+import type { Listing } from "@/components/listing";
+
+export type { Listing };
 
 /* Reads and writes for the listings the admin manages. Server only — it
    touches the database, so nothing here may be imported by a Client
    Component. The shape it returns is what the site renders; see
    components/listing.ts for the type and the language-aware formatting,
    which both sides share. */
-
-export const ROOM_PARTS = ["parlour", "kitchen", "bedroom", "toilet"] as const;
-export type RoomPartId = (typeof ROOM_PARTS)[number];
-
-export type Listing = {
-  slug: string;
-  /** One unit of a stay — a night, or a day when `perDay`. */
-  price: number;
-  perDay: boolean;
-  rooms: number;
-  seats: boolean;
-  area: string;
-  /** Hero photograph. A Blob URL once uploaded, or a `/public` path. */
-  src: string;
-  /* Copy per language. On the row rather than in the dictionary because the
-     admin can create a listing the code has never heard of. */
-  name: Record<Locale, string>;
-  kind: Record<Locale, string>;
-  position: number;
-  published: boolean;
-  /** Only the parts the admin has given a picture to. */
-  roomImages: Partial<Record<RoomPartId, string>>;
-};
 
 type Row = {
   slug: string;
@@ -44,18 +23,9 @@ type Row = {
   kind_fr: string;
   position: number;
   published: boolean;
-  room_parts: string[] | null;
-  room_urls: string[] | null;
 };
 
 function toListing(row: Row): Listing {
-  const roomImages: Partial<Record<RoomPartId, string>> = {};
-  // Postgres gives the joined rooms back as two parallel arrays.
-  (row.room_parts ?? []).forEach((part, i) => {
-    const url = row.room_urls?.[i];
-    if (part && url) roomImages[part as RoomPartId] = url;
-  });
-
   return {
     slug: row.slug,
     price: Number(row.price),
@@ -68,25 +38,22 @@ function toListing(row: Row): Listing {
     kind: { en: row.kind_en, fr: row.kind_fr },
     position: Number(row.position),
     published: row.published,
-    roomImages,
   };
 }
 
-/* One query rather than a query per listing for its rooms — ten listings
-   would otherwise be eleven round trips, and each one crosses the network. */
+/* Rooms live in their own table now and are read separately — see
+   lib/rooms.ts, whose getRoomsBySlug fetches them for many listings at once
+   rather than one query per listing. */
 const SELECT = `
   select l.slug, l.price, l.per_day, l.rooms, l.seats, l.area, l.image_url,
-         l.name_en, l.name_fr, l.kind_en, l.kind_fr, l.position, l.published,
-         array_remove(array_agg(r.part order by r.part), null) as room_parts,
-         array_remove(array_agg(r.image_url order by r.part), null) as room_urls
+         l.name_en, l.name_fr, l.kind_en, l.kind_fr, l.position, l.published
     from listings l
-    left join listing_rooms r on r.slug = l.slug
 `;
 
 /** What the public site shows, in the order the admin arranged. */
 export async function getPublishedListings(): Promise<Listing[]> {
   const rows = (await sql.query(
-    `${SELECT} where l.published group by l.slug order by l.position, l.slug`
+    `${SELECT} where l.published order by l.position, l.slug`
   )) as Row[];
   return rows.map(toListing);
 }
@@ -94,19 +61,17 @@ export async function getPublishedListings(): Promise<Listing[]> {
 /** Everything, published or not — the admin's own list. */
 export async function getAllListings(): Promise<Listing[]> {
   const rows = (await sql.query(
-    `${SELECT} group by l.slug order by l.position, l.slug`
+    `${SELECT} order by l.position, l.slug`
   )) as Row[];
   return rows.map(toListing);
 }
 
 export async function getListing(slug: string): Promise<Listing | null> {
-  const rows = (await sql.query(`${SELECT} where l.slug = $1 group by l.slug`, [
-    slug,
-  ])) as Row[];
+  const rows = (await sql.query(`${SELECT} where l.slug = $1`, [slug])) as Row[];
   return rows[0] ? toListing(rows[0]) : null;
 }
 
-export type ListingInput = Omit<Listing, "roomImages">;
+export type ListingInput = Listing;
 
 /** Create or replace a listing. The slug is the identity, so renaming one
     means creating a new listing rather than editing this one. */
@@ -142,19 +107,7 @@ export async function saveListing(listing: ListingInput) {
   );
 }
 
-export async function saveRoomImage(
-  slug: string,
-  part: RoomPartId,
-  imageUrl: string
-) {
-  await sql.query(
-    `insert into listing_rooms (slug, part, image_url) values ($1, $2, $3)
-     on conflict (slug, part) do update set image_url = excluded.image_url`,
-    [slug, part, imageUrl]
-  );
-}
-
-/** Rooms go with it — the foreign key cascades. */
+/** Its rooms and their photographs go with it — the foreign keys cascade. */
 export async function deleteListing(slug: string) {
   await sql.query(`delete from listings where slug = $1`, [slug]);
 }
@@ -169,4 +122,14 @@ export async function reorderListings(slugs: string[]) {
       where listings.slug = data.slug`,
     [slugs]
   );
+}
+
+/** Where a brand new listing goes: after everything that already exists.
+    Used instead of a fixed number so a new residence never lands in the
+    middle of the running order, or miles past the end of it. */
+export async function nextPosition(): Promise<number> {
+  const rows = (await sql.query(
+    `select coalesce(max(position) + 1, 0) as next from listings`
+  )) as { next: number | string }[];
+  return Number(rows[0]?.next ?? 0);
 }

@@ -43,3 +43,9 @@ yarn-error.log*
 next-env.d.ts
 
 .env*
+
+# Local development database (PGlite). Throwaway, never committed.
+.pglite/
+
+# Photographs uploaded in local development. Not committed.
+public/uploads/

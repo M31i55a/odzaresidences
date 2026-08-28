@@ -2,7 +2,8 @@
 
 import { randomUUID } from "crypto";
 import { headers } from "next/headers";
-import { APARTMENTS, describe } from "@/components/apartments-data";
+import { describe } from "@/components/listing";
+import { getListing } from "@/lib/listings";
 import { DICTIONARIES } from "@/components/i18n/dictionary";
 import {
   DEPOSIT_RATE,
@@ -342,17 +343,23 @@ export async function requestReservation(
 
   const input = read(form);
 
+  /* Read from the database rather than trusted from the form, and read
+     before validation because validation needs it: the rate a stay is priced
+     at comes from this row, not from anything the browser sent. */
+  const listing = await getListing(input.slug);
+
   // The server's own clock — the client's is whatever the visitor set it to.
-  const errors = validateReservation(input, isoDate(new Date()));
+  const errors = validateReservation(input, isoDate(new Date()), listing);
   if (Object.keys(errors).length > 0) return { status: "invalid", errors };
+
+  /* Unreachable — validation rejects a slug with no listing behind it. Said
+     out loud anyway so everything below has a listing rather than a maybe. */
+  if (!listing) return { status: "invalid", errors: { slug: "unknownListing" } };
 
   if (!withinRate(await callerKey())) return { status: "throttled" };
 
-  /* Resolve the listing from our own data rather than trusting anything in
-     the request. Validation proved the slug exists, so this can't miss. The
-     agency reads its mail in French; the visitor's own language is recorded
-     separately below so they get replied to in it. */
-  const listing = APARTMENTS.find((flat) => flat.slug === input.slug)!;
+  /* The agency reads its mail in French; the visitor's own language is
+     recorded separately below so they get replied to in it. */
   const fr = DICTIONARIES.fr;
   const info = describe(listing, fr);
   const locale = form.get("locale") === "en" ? "en" : "fr";

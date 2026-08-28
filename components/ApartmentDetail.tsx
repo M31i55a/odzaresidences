@@ -1,7 +1,7 @@
 "use client";
 
-import { APARTMENTS, describe } from "./apartments-data";
-import { DEFAULT_PART_ID, roomsFor } from "./apartment-rooms";
+import { describe, type Listing, type Room } from "./listing";
+import { partsFrom } from "./apartment-rooms";
 import RoomGallery from "./RoomGallery";
 import TextDrop from "./TextDrop";
 import { useT } from "./i18n/locale";
@@ -9,19 +9,20 @@ import styles from "./apartment-detail.module.css";
 
 /** One listing, room by room. */
 export default function ApartmentDetail({
-  slug,
+  listing,
+  rooms,
   onReserve,
 }: {
-  slug: string;
+  listing: Listing | null;
+  rooms: Room[];
   onReserve: (slug: string) => void;
 }) {
   const t = useT();
 
-  const index = APARTMENTS.findIndex((item) => item.slug === slug);
-  if (index === -1) return null;
+  if (!listing) return null;
 
-  const info = describe(APARTMENTS[index], t);
-  const parts = roomsFor(index, info.name, t);
+  const info = describe(listing, t);
+  const parts = partsFrom(rooms, info.name, t);
 
   return (
     <div className={styles.page}>
@@ -58,7 +59,7 @@ export default function ApartmentDetail({
           <button
             type="button"
             className={styles.reserve}
-            onClick={() => onReserve(slug)}
+            onClick={() => onReserve(listing.slug)}
           >
             {t.reserve.cta}
             <svg className={styles.reserveArrow} viewBox="0 0 16 10" aria-hidden="true">
@@ -67,7 +68,14 @@ export default function ApartmentDetail({
           </button>
         </header>
 
-        <RoomGallery key={slug} parts={parts} initialId={DEFAULT_PART_ID} />
+        {/* Nothing to show until the admin has given a room a photograph. */}
+        {parts.length > 0 && (
+          <RoomGallery
+            key={listing.slug}
+            parts={parts}
+            initialId={parts[0].id}
+          />
+        )}
 
         {/* Both lines render and the stylesheet picks one. Which is right
             depends on the input device, which the server can't know — reading

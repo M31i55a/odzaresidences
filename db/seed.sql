@@ -49,18 +49,365 @@ on conflict (slug) do update set
   position = excluded.position, published = excluded.published,
   updated_at = now();
 
-/* Room photographs. There were only five sets for ten listings, so they
-   cycled — set number was (index % 5) + 1. That repetition is preserved here
-   so nothing changes on the day of the switch; the admin can replace any of
-   them one at a time afterwards. */
-insert into listing_rooms (slug, part, image_url)
-select l.slug, p.part, '/' || p.part || s.n || '.jpg'
-  from (values
-          ('the-penthouse', 0), ('garden-villa', 1), ('skyline-apartment', 2),
-          ('the-assembly', 3),  ('studio-one', 4),   ('terrace-suite', 5),
-          ('loft-duplex', 6),   ('poolside-villa', 7),
-          ('corner-residence', 8), ('north-atelier', 9)
-       ) as l(slug, idx)
-  cross join (values ('parlour'), ('kitchen'), ('bedroom'), ('toilet')) as p(part)
-  cross join lateral (select (l.idx % 5) + 1 as n) as s
-on conflict (slug, part) do update set image_url = excluded.image_url;
+-- ------------------------------------------------------------------- rooms
+--
+-- The four parts every listing showed before rooms became editable, with the
+-- copy lifted out of components/i18n/dictionary.ts and the photograph each
+-- listing was already using. Seeding this reproduces the site exactly.
+--
+-- Re-runnable, but destructive to these ten: the delete below clears their
+-- rooms first (galleries cascade with them) so a second run cannot end up
+-- with four parlours. Rooms the admin has ADDED to these ten listings are
+-- cleared too, so run this once at setup and not again.
+delete from rooms where slug in (
+  'the-penthouse',
+  'garden-villa',
+  'skyline-apartment',
+  'the-assembly',
+  'studio-one',
+  'terrace-suite',
+  'loft-duplex',
+  'poolside-villa',
+  'corner-residence',
+  'north-atelier'
+);
+
+-- the-penthouse
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('the-penthouse', 0, 'Parlour', 'Salon',
+          '[{"label":"Dimensions","value":"6.2 × 4.8 m"},{"label":"Wall sockets","value":"8"},{"label":"Windows","value":"3 — south facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"6,2 × 4,8 m"},{"label":"Prises murales","value":"8"},{"label":"Fenêtres","value":"3 — plein sud"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/parlour1.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('the-penthouse', 1, 'Kitchen', 'Cuisine',
+          '[{"label":"Dimensions","value":"4.1 × 3.4 m"},{"label":"Wall sockets","value":"12"},{"label":"Windows","value":"1 — east facing"},{"label":"Worktop","value":"Honed granite"}]'::jsonb, '[{"label":"Dimensions","value":"4,1 × 3,4 m"},{"label":"Prises murales","value":"12"},{"label":"Fenêtres","value":"1 — plein est"},{"label":"Plan de travail","value":"Granit adouci"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/kitchen1.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('the-penthouse', 2, 'Bedroom', 'Chambre',
+          '[{"label":"Dimensions","value":"4.6 × 3.9 m"},{"label":"Wall sockets","value":"6"},{"label":"Windows","value":"2 — north facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"4,6 × 3,9 m"},{"label":"Prises murales","value":"6"},{"label":"Fenêtres","value":"2 — plein nord"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/bedroom1.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('the-penthouse', 3, 'Toilet', 'Salle d''eau',
+          '[{"label":"Dimensions","value":"2.4 × 1.8 m"},{"label":"Wall sockets","value":"2"},{"label":"Ventilation","value":"Mechanical extract"},{"label":"Flooring","value":"Porcelain tile"}]'::jsonb, '[{"label":"Dimensions","value":"2,4 × 1,8 m"},{"label":"Prises murales","value":"2"},{"label":"Ventilation","value":"Extraction mécanique"},{"label":"Sol","value":"Grès cérame"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/toilet1.jpg', 0 from room;
+
+-- garden-villa
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('garden-villa', 0, 'Parlour', 'Salon',
+          '[{"label":"Dimensions","value":"6.2 × 4.8 m"},{"label":"Wall sockets","value":"8"},{"label":"Windows","value":"3 — south facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"6,2 × 4,8 m"},{"label":"Prises murales","value":"8"},{"label":"Fenêtres","value":"3 — plein sud"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/parlour2.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('garden-villa', 1, 'Kitchen', 'Cuisine',
+          '[{"label":"Dimensions","value":"4.1 × 3.4 m"},{"label":"Wall sockets","value":"12"},{"label":"Windows","value":"1 — east facing"},{"label":"Worktop","value":"Honed granite"}]'::jsonb, '[{"label":"Dimensions","value":"4,1 × 3,4 m"},{"label":"Prises murales","value":"12"},{"label":"Fenêtres","value":"1 — plein est"},{"label":"Plan de travail","value":"Granit adouci"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/kitchen2.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('garden-villa', 2, 'Bedroom', 'Chambre',
+          '[{"label":"Dimensions","value":"4.6 × 3.9 m"},{"label":"Wall sockets","value":"6"},{"label":"Windows","value":"2 — north facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"4,6 × 3,9 m"},{"label":"Prises murales","value":"6"},{"label":"Fenêtres","value":"2 — plein nord"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/bedroom2.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('garden-villa', 3, 'Toilet', 'Salle d''eau',
+          '[{"label":"Dimensions","value":"2.4 × 1.8 m"},{"label":"Wall sockets","value":"2"},{"label":"Ventilation","value":"Mechanical extract"},{"label":"Flooring","value":"Porcelain tile"}]'::jsonb, '[{"label":"Dimensions","value":"2,4 × 1,8 m"},{"label":"Prises murales","value":"2"},{"label":"Ventilation","value":"Extraction mécanique"},{"label":"Sol","value":"Grès cérame"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/toilet2.jpg', 0 from room;
+
+-- skyline-apartment
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('skyline-apartment', 0, 'Parlour', 'Salon',
+          '[{"label":"Dimensions","value":"6.2 × 4.8 m"},{"label":"Wall sockets","value":"8"},{"label":"Windows","value":"3 — south facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"6,2 × 4,8 m"},{"label":"Prises murales","value":"8"},{"label":"Fenêtres","value":"3 — plein sud"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/parlour3.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('skyline-apartment', 1, 'Kitchen', 'Cuisine',
+          '[{"label":"Dimensions","value":"4.1 × 3.4 m"},{"label":"Wall sockets","value":"12"},{"label":"Windows","value":"1 — east facing"},{"label":"Worktop","value":"Honed granite"}]'::jsonb, '[{"label":"Dimensions","value":"4,1 × 3,4 m"},{"label":"Prises murales","value":"12"},{"label":"Fenêtres","value":"1 — plein est"},{"label":"Plan de travail","value":"Granit adouci"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/kitchen3.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('skyline-apartment', 2, 'Bedroom', 'Chambre',
+          '[{"label":"Dimensions","value":"4.6 × 3.9 m"},{"label":"Wall sockets","value":"6"},{"label":"Windows","value":"2 — north facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"4,6 × 3,9 m"},{"label":"Prises murales","value":"6"},{"label":"Fenêtres","value":"2 — plein nord"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/bedroom3.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('skyline-apartment', 3, 'Toilet', 'Salle d''eau',
+          '[{"label":"Dimensions","value":"2.4 × 1.8 m"},{"label":"Wall sockets","value":"2"},{"label":"Ventilation","value":"Mechanical extract"},{"label":"Flooring","value":"Porcelain tile"}]'::jsonb, '[{"label":"Dimensions","value":"2,4 × 1,8 m"},{"label":"Prises murales","value":"2"},{"label":"Ventilation","value":"Extraction mécanique"},{"label":"Sol","value":"Grès cérame"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/toilet3.jpg', 0 from room;
+
+-- the-assembly
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('the-assembly', 0, 'Parlour', 'Salon',
+          '[{"label":"Dimensions","value":"6.2 × 4.8 m"},{"label":"Wall sockets","value":"8"},{"label":"Windows","value":"3 — south facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"6,2 × 4,8 m"},{"label":"Prises murales","value":"8"},{"label":"Fenêtres","value":"3 — plein sud"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/parlour4.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('the-assembly', 1, 'Kitchen', 'Cuisine',
+          '[{"label":"Dimensions","value":"4.1 × 3.4 m"},{"label":"Wall sockets","value":"12"},{"label":"Windows","value":"1 — east facing"},{"label":"Worktop","value":"Honed granite"}]'::jsonb, '[{"label":"Dimensions","value":"4,1 × 3,4 m"},{"label":"Prises murales","value":"12"},{"label":"Fenêtres","value":"1 — plein est"},{"label":"Plan de travail","value":"Granit adouci"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/kitchen4.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('the-assembly', 2, 'Bedroom', 'Chambre',
+          '[{"label":"Dimensions","value":"4.6 × 3.9 m"},{"label":"Wall sockets","value":"6"},{"label":"Windows","value":"2 — north facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"4,6 × 3,9 m"},{"label":"Prises murales","value":"6"},{"label":"Fenêtres","value":"2 — plein nord"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/bedroom4.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('the-assembly', 3, 'Toilet', 'Salle d''eau',
+          '[{"label":"Dimensions","value":"2.4 × 1.8 m"},{"label":"Wall sockets","value":"2"},{"label":"Ventilation","value":"Mechanical extract"},{"label":"Flooring","value":"Porcelain tile"}]'::jsonb, '[{"label":"Dimensions","value":"2,4 × 1,8 m"},{"label":"Prises murales","value":"2"},{"label":"Ventilation","value":"Extraction mécanique"},{"label":"Sol","value":"Grès cérame"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/toilet4.jpg', 0 from room;
+
+-- studio-one
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('studio-one', 0, 'Parlour', 'Salon',
+          '[{"label":"Dimensions","value":"6.2 × 4.8 m"},{"label":"Wall sockets","value":"8"},{"label":"Windows","value":"3 — south facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"6,2 × 4,8 m"},{"label":"Prises murales","value":"8"},{"label":"Fenêtres","value":"3 — plein sud"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/parlour5.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('studio-one', 1, 'Kitchen', 'Cuisine',
+          '[{"label":"Dimensions","value":"4.1 × 3.4 m"},{"label":"Wall sockets","value":"12"},{"label":"Windows","value":"1 — east facing"},{"label":"Worktop","value":"Honed granite"}]'::jsonb, '[{"label":"Dimensions","value":"4,1 × 3,4 m"},{"label":"Prises murales","value":"12"},{"label":"Fenêtres","value":"1 — plein est"},{"label":"Plan de travail","value":"Granit adouci"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/kitchen5.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('studio-one', 2, 'Bedroom', 'Chambre',
+          '[{"label":"Dimensions","value":"4.6 × 3.9 m"},{"label":"Wall sockets","value":"6"},{"label":"Windows","value":"2 — north facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"4,6 × 3,9 m"},{"label":"Prises murales","value":"6"},{"label":"Fenêtres","value":"2 — plein nord"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/bedroom5.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('studio-one', 3, 'Toilet', 'Salle d''eau',
+          '[{"label":"Dimensions","value":"2.4 × 1.8 m"},{"label":"Wall sockets","value":"2"},{"label":"Ventilation","value":"Mechanical extract"},{"label":"Flooring","value":"Porcelain tile"}]'::jsonb, '[{"label":"Dimensions","value":"2,4 × 1,8 m"},{"label":"Prises murales","value":"2"},{"label":"Ventilation","value":"Extraction mécanique"},{"label":"Sol","value":"Grès cérame"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/toilet5.jpg', 0 from room;
+
+-- terrace-suite
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('terrace-suite', 0, 'Parlour', 'Salon',
+          '[{"label":"Dimensions","value":"6.2 × 4.8 m"},{"label":"Wall sockets","value":"8"},{"label":"Windows","value":"3 — south facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"6,2 × 4,8 m"},{"label":"Prises murales","value":"8"},{"label":"Fenêtres","value":"3 — plein sud"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/parlour1.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('terrace-suite', 1, 'Kitchen', 'Cuisine',
+          '[{"label":"Dimensions","value":"4.1 × 3.4 m"},{"label":"Wall sockets","value":"12"},{"label":"Windows","value":"1 — east facing"},{"label":"Worktop","value":"Honed granite"}]'::jsonb, '[{"label":"Dimensions","value":"4,1 × 3,4 m"},{"label":"Prises murales","value":"12"},{"label":"Fenêtres","value":"1 — plein est"},{"label":"Plan de travail","value":"Granit adouci"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/kitchen1.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('terrace-suite', 2, 'Bedroom', 'Chambre',
+          '[{"label":"Dimensions","value":"4.6 × 3.9 m"},{"label":"Wall sockets","value":"6"},{"label":"Windows","value":"2 — north facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"4,6 × 3,9 m"},{"label":"Prises murales","value":"6"},{"label":"Fenêtres","value":"2 — plein nord"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/bedroom1.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('terrace-suite', 3, 'Toilet', 'Salle d''eau',
+          '[{"label":"Dimensions","value":"2.4 × 1.8 m"},{"label":"Wall sockets","value":"2"},{"label":"Ventilation","value":"Mechanical extract"},{"label":"Flooring","value":"Porcelain tile"}]'::jsonb, '[{"label":"Dimensions","value":"2,4 × 1,8 m"},{"label":"Prises murales","value":"2"},{"label":"Ventilation","value":"Extraction mécanique"},{"label":"Sol","value":"Grès cérame"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/toilet1.jpg', 0 from room;
+
+-- loft-duplex
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('loft-duplex', 0, 'Parlour', 'Salon',
+          '[{"label":"Dimensions","value":"6.2 × 4.8 m"},{"label":"Wall sockets","value":"8"},{"label":"Windows","value":"3 — south facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"6,2 × 4,8 m"},{"label":"Prises murales","value":"8"},{"label":"Fenêtres","value":"3 — plein sud"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/parlour2.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('loft-duplex', 1, 'Kitchen', 'Cuisine',
+          '[{"label":"Dimensions","value":"4.1 × 3.4 m"},{"label":"Wall sockets","value":"12"},{"label":"Windows","value":"1 — east facing"},{"label":"Worktop","value":"Honed granite"}]'::jsonb, '[{"label":"Dimensions","value":"4,1 × 3,4 m"},{"label":"Prises murales","value":"12"},{"label":"Fenêtres","value":"1 — plein est"},{"label":"Plan de travail","value":"Granit adouci"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/kitchen2.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('loft-duplex', 2, 'Bedroom', 'Chambre',
+          '[{"label":"Dimensions","value":"4.6 × 3.9 m"},{"label":"Wall sockets","value":"6"},{"label":"Windows","value":"2 — north facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"4,6 × 3,9 m"},{"label":"Prises murales","value":"6"},{"label":"Fenêtres","value":"2 — plein nord"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/bedroom2.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('loft-duplex', 3, 'Toilet', 'Salle d''eau',
+          '[{"label":"Dimensions","value":"2.4 × 1.8 m"},{"label":"Wall sockets","value":"2"},{"label":"Ventilation","value":"Mechanical extract"},{"label":"Flooring","value":"Porcelain tile"}]'::jsonb, '[{"label":"Dimensions","value":"2,4 × 1,8 m"},{"label":"Prises murales","value":"2"},{"label":"Ventilation","value":"Extraction mécanique"},{"label":"Sol","value":"Grès cérame"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/toilet2.jpg', 0 from room;
+
+-- poolside-villa
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('poolside-villa', 0, 'Parlour', 'Salon',
+          '[{"label":"Dimensions","value":"6.2 × 4.8 m"},{"label":"Wall sockets","value":"8"},{"label":"Windows","value":"3 — south facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"6,2 × 4,8 m"},{"label":"Prises murales","value":"8"},{"label":"Fenêtres","value":"3 — plein sud"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/parlour3.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('poolside-villa', 1, 'Kitchen', 'Cuisine',
+          '[{"label":"Dimensions","value":"4.1 × 3.4 m"},{"label":"Wall sockets","value":"12"},{"label":"Windows","value":"1 — east facing"},{"label":"Worktop","value":"Honed granite"}]'::jsonb, '[{"label":"Dimensions","value":"4,1 × 3,4 m"},{"label":"Prises murales","value":"12"},{"label":"Fenêtres","value":"1 — plein est"},{"label":"Plan de travail","value":"Granit adouci"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/kitchen3.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('poolside-villa', 2, 'Bedroom', 'Chambre',
+          '[{"label":"Dimensions","value":"4.6 × 3.9 m"},{"label":"Wall sockets","value":"6"},{"label":"Windows","value":"2 — north facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"4,6 × 3,9 m"},{"label":"Prises murales","value":"6"},{"label":"Fenêtres","value":"2 — plein nord"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/bedroom3.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('poolside-villa', 3, 'Toilet', 'Salle d''eau',
+          '[{"label":"Dimensions","value":"2.4 × 1.8 m"},{"label":"Wall sockets","value":"2"},{"label":"Ventilation","value":"Mechanical extract"},{"label":"Flooring","value":"Porcelain tile"}]'::jsonb, '[{"label":"Dimensions","value":"2,4 × 1,8 m"},{"label":"Prises murales","value":"2"},{"label":"Ventilation","value":"Extraction mécanique"},{"label":"Sol","value":"Grès cérame"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/toilet3.jpg', 0 from room;
+
+-- corner-residence
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('corner-residence', 0, 'Parlour', 'Salon',
+          '[{"label":"Dimensions","value":"6.2 × 4.8 m"},{"label":"Wall sockets","value":"8"},{"label":"Windows","value":"3 — south facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"6,2 × 4,8 m"},{"label":"Prises murales","value":"8"},{"label":"Fenêtres","value":"3 — plein sud"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/parlour4.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('corner-residence', 1, 'Kitchen', 'Cuisine',
+          '[{"label":"Dimensions","value":"4.1 × 3.4 m"},{"label":"Wall sockets","value":"12"},{"label":"Windows","value":"1 — east facing"},{"label":"Worktop","value":"Honed granite"}]'::jsonb, '[{"label":"Dimensions","value":"4,1 × 3,4 m"},{"label":"Prises murales","value":"12"},{"label":"Fenêtres","value":"1 — plein est"},{"label":"Plan de travail","value":"Granit adouci"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/kitchen4.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('corner-residence', 2, 'Bedroom', 'Chambre',
+          '[{"label":"Dimensions","value":"4.6 × 3.9 m"},{"label":"Wall sockets","value":"6"},{"label":"Windows","value":"2 — north facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"4,6 × 3,9 m"},{"label":"Prises murales","value":"6"},{"label":"Fenêtres","value":"2 — plein nord"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/bedroom4.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('corner-residence', 3, 'Toilet', 'Salle d''eau',
+          '[{"label":"Dimensions","value":"2.4 × 1.8 m"},{"label":"Wall sockets","value":"2"},{"label":"Ventilation","value":"Mechanical extract"},{"label":"Flooring","value":"Porcelain tile"}]'::jsonb, '[{"label":"Dimensions","value":"2,4 × 1,8 m"},{"label":"Prises murales","value":"2"},{"label":"Ventilation","value":"Extraction mécanique"},{"label":"Sol","value":"Grès cérame"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/toilet4.jpg', 0 from room;
+
+-- north-atelier
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('north-atelier', 0, 'Parlour', 'Salon',
+          '[{"label":"Dimensions","value":"6.2 × 4.8 m"},{"label":"Wall sockets","value":"8"},{"label":"Windows","value":"3 — south facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"6,2 × 4,8 m"},{"label":"Prises murales","value":"8"},{"label":"Fenêtres","value":"3 — plein sud"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/parlour5.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('north-atelier', 1, 'Kitchen', 'Cuisine',
+          '[{"label":"Dimensions","value":"4.1 × 3.4 m"},{"label":"Wall sockets","value":"12"},{"label":"Windows","value":"1 — east facing"},{"label":"Worktop","value":"Honed granite"}]'::jsonb, '[{"label":"Dimensions","value":"4,1 × 3,4 m"},{"label":"Prises murales","value":"12"},{"label":"Fenêtres","value":"1 — plein est"},{"label":"Plan de travail","value":"Granit adouci"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/kitchen5.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('north-atelier', 2, 'Bedroom', 'Chambre',
+          '[{"label":"Dimensions","value":"4.6 × 3.9 m"},{"label":"Wall sockets","value":"6"},{"label":"Windows","value":"2 — north facing"},{"label":"Flooring","value":"Oak parquet"}]'::jsonb, '[{"label":"Dimensions","value":"4,6 × 3,9 m"},{"label":"Prises murales","value":"6"},{"label":"Fenêtres","value":"2 — plein nord"},{"label":"Sol","value":"Parquet en chêne"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/bedroom5.jpg', 0 from room;
+with room as (
+  insert into rooms (slug, position, name_en, name_fr, specs_en, specs_fr)
+  values ('north-atelier', 3, 'Toilet', 'Salle d''eau',
+          '[{"label":"Dimensions","value":"2.4 × 1.8 m"},{"label":"Wall sockets","value":"2"},{"label":"Ventilation","value":"Mechanical extract"},{"label":"Flooring","value":"Porcelain tile"}]'::jsonb, '[{"label":"Dimensions","value":"2,4 × 1,8 m"},{"label":"Prises murales","value":"2"},{"label":"Ventilation","value":"Extraction mécanique"},{"label":"Sol","value":"Grès cérame"}]'::jsonb)
+  returning id
+)
+insert into room_images (room_id, url, position)
+select id, '/toilet5.jpg', 0 from room;

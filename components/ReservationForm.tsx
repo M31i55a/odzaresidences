@@ -2,7 +2,7 @@
 
 import { useActionState, useId, useState } from "react";
 import { requestReservation } from "@/app/actions/reservations";
-import { APARTMENTS, describe } from "./apartments-data";
+import { describe, type Listing } from "./listing";
 import {
   DEPOSIT_RATE,
   INITIAL_STATE,
@@ -20,10 +20,10 @@ import styles from "./reservation-form.module.css";
 
 /** Reserve one listing for a set of dates. Opened from the detail view. */
 export default function ReservationForm({
-  slug,
+  listing,
   onBack,
 }: {
-  slug: string;
+  listing: Listing | null;
   onBack: () => void;
 }) {
   const t = useT();
@@ -51,7 +51,6 @@ export default function ReservationForm({
   const [payment, setPayment] = useState<Payment>("deposit");
   const [note, setNote] = useState("");
 
-  const listing = APARTMENTS.find((flat) => flat.slug === slug);
   if (!listing) return null;
 
   const info = describe(listing, t);
@@ -184,7 +183,7 @@ export default function ReservationForm({
           {/* Which listing, and which language to reply in. Both are checked
               again on the server — a hidden input is only a suggestion, and
               the slug decides whose rate the total is built from. */}
-          <input type="hidden" name="slug" value={slug} />
+          <input type="hidden" name="slug" value={listing.slug} />
           <input type="hidden" name="locale" value={locale} />
 
           {/* The honeypot. Off-screen, out of the tab order and hidden from

@@ -4,19 +4,26 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { APARTMENTS, FEATURED_COUNT, describe } from "./apartments-data";
+import { FEATURED_COUNT, describe, type Listing, type Room } from "./listing";
 import { useT } from "./i18n/locale";
 import ApartmentsOverlay, { type OverlayView } from "./ApartmentsOverlay";
 import styles from "./apartments-section.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const FEATURED = APARTMENTS.slice(0, FEATURED_COUNT);
-
 /** Anchor the nav links scroll to. */
 export const SECTION_ID = "apartments";
 
-export default function ApartmentsSection() {
+export default function ApartmentsSection({
+  listings,
+  rooms,
+}: {
+  /** Loaded on the server; the admin owns this data now. */
+  listings: Listing[];
+  rooms: Record<string, Room[]>;
+}) {
+  const featured = listings.slice(0, FEATURED_COUNT);
+
   const sectionRef = useRef<HTMLElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<HTMLElement>(null);
@@ -185,7 +192,7 @@ export default function ApartmentsSection() {
         <div className={styles.strip}>
           <div className={styles.viewport} ref={viewportRef}>
             <div className={styles.track} ref={trackRef}>
-              {FEATURED.map((flat) => {
+              {featured.map((flat) => {
                 const info = describe(flat, t);
                 return (
                 <article className={`${styles.card} ${styles.panel}`} key={flat.slug}>
@@ -235,7 +242,7 @@ export default function ApartmentsSection() {
 
               <div className={`${styles.more} ${styles.panel}`}>
                 <p className={styles.moreText}>
-                  {t.apartments.moreWaiting(APARTMENTS.length - FEATURED_COUNT)}
+                  {t.apartments.moreWaiting(Math.max(listings.length - FEATURED_COUNT, 0))}
                 </p>
                 <button
                   type="button"
@@ -260,6 +267,8 @@ export default function ApartmentsSection() {
       </div>
 
       <ApartmentsOverlay
+        listings={listings}
+        rooms={rooms}
         view={view}
         onClose={() => setView(null)}
         onSelect={(slug) => setView({ type: "detail", slug })}
