@@ -275,6 +275,9 @@ const en = {
     tagline: "Residences built around the way a day actually moves.",
     rights: "All rights reserved.",
     legal: ["Privacy", "Terms", "Cookies"],
+    /* The way in for whoever manages the residences. Quiet on purpose — the
+       password is what protects it, not the obscurity of the address. */
+    admin: "Manage",
   },
 
   common: {
@@ -553,6 +556,7 @@ const fr: Dict = {
     tagline: "Des résidences pensées autour du rythme réel d'une journée.",
     rights: "Tous droits réservés.",
     legal: ["Confidentialité", "Conditions", "Cookies"],
+    admin: "Gérer",
   },
 
   common: {

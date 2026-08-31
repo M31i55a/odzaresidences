@@ -118,3 +118,20 @@
 .legalLink:hover {
   color: var(--color-brass);
 }
+
+/* The way into the admin. Sits with the legal links and reads as one of them
+   until you hover — findable by whoever is looking for it, unremarkable to
+   everyone else. The password is what protects the admin; this is only about
+   not putting a "Sign in" button on a page for customers. */
+.adminLink {
+  color: inherit;
+  opacity: 0.4;
+  text-decoration: none;
+  transition: opacity 0.22s ease, color 0.22s ease;
+}
+
+.adminLink:hover,
+.adminLink:focus-visible {
+  opacity: 1;
+  color: var(--color-brass);
+}
