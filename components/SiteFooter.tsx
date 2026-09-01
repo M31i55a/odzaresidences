@@ -71,14 +71,6 @@ export default function SiteFooter() {
                 {item}
               </a>
             ))}
-
-            {/* A plain anchor, not next/link: Link prefetches, and every
-                visitor quietly fetching an admin route only to be bounced to
-                the login is waste. This is a full navigation out of the
-                marketing page. */}
-            <a className={styles.adminLink} href="/admin">
-              {t.footer.admin}
-            </a>
           </div>
         </div>
       </div>

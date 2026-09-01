@@ -15,6 +15,9 @@ const en = {
     primary: "Primary",
     footer: "Footer",
     language: "Language",
+    /* The way in for whoever manages the residences. The password is what
+       protects the admin, not the obscurity of the link. */
+    logIn: "Log in",
     openMenu: "Open menu",
     closeMenu: "Close menu",
     welcome: "Welcome",
@@ -275,9 +278,6 @@ const en = {
     tagline: "Residences built around the way a day actually moves.",
     rights: "All rights reserved.",
     legal: ["Privacy", "Terms", "Cookies"],
-    /* The way in for whoever manages the residences. Quiet on purpose — the
-       password is what protects it, not the obscurity of the address. */
-    admin: "Manage",
   },
 
   common: {
@@ -311,6 +311,7 @@ const fr: Dict = {
     primary: "Principale",
     footer: "Pied de page",
     language: "Langue",
+    logIn: "Connexion",
     openMenu: "Ouvrir le menu",
     closeMenu: "Fermer le menu",
     welcome: "Accueil",
@@ -556,7 +557,6 @@ const fr: Dict = {
     tagline: "Des résidences pensées autour du rythme réel d'une journée.",
     rights: "Tous droits réservés.",
     legal: ["Confidentialité", "Conditions", "Cookies"],
-    admin: "Gérer",
   },
 
   common: {

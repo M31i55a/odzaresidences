@@ -78,6 +78,13 @@ export default function SiteNav() {
 
         <div className={styles.right}>
           <LanguageSwitcher />
+
+          {/* A plain anchor, not next/link: Link prefetches, and every visitor
+              quietly fetching an admin route only to be bounced to the login
+              is waste. This is a full navigation off the marketing page. */}
+          <a className={styles.logIn} href="/admin">
+            {t.nav.logIn}
+          </a>
         </div>
       </div>
 
