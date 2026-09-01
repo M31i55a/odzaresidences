@@ -22,6 +22,9 @@ export type Listing = {
      admin can add a residence the code has never heard of. */
   name: Record<Locale, string>;
   kind: Record<Locale, string>;
+  /** Free prose shown on the residence. Empty on the ten seeded listings,
+      which fall back to the old price / rooms / area facts. */
+  description: Record<Locale, string>;
   position: number;
   published: boolean;
 };
@@ -53,6 +56,7 @@ export function describe(flat: Listing, t: Dict) {
   return {
     name,
     kind: flat.kind[locale],
+    description: flat.description[locale],
     price: flat.perDay
       ? t.apartments.perDay(flat.price)
       : t.apartments.perNight(flat.price),

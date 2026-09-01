@@ -21,6 +21,8 @@ type Row = {
   name_fr: string;
   kind_en: string;
   kind_fr: string;
+  description_en: string;
+  description_fr: string;
   position: number;
   published: boolean;
 };
@@ -36,6 +38,7 @@ function toListing(row: Row): Listing {
     src: row.image_url,
     name: { en: row.name_en, fr: row.name_fr },
     kind: { en: row.kind_en, fr: row.kind_fr },
+    description: { en: row.description_en ?? "", fr: row.description_fr ?? "" },
     position: Number(row.position),
     published: row.published,
   };
@@ -46,7 +49,8 @@ function toListing(row: Row): Listing {
    rather than one query per listing. */
 const SELECT = `
   select l.slug, l.price, l.per_day, l.rooms, l.seats, l.area, l.image_url,
-         l.name_en, l.name_fr, l.kind_en, l.kind_fr, l.position, l.published
+         l.name_en, l.name_fr, l.kind_en, l.kind_fr,
+         l.description_en, l.description_fr, l.position, l.published
     from listings l
 `;
 
@@ -79,14 +83,17 @@ export async function saveListing(listing: ListingInput) {
   await sql.query(
     `insert into listings
        (slug, price, per_day, rooms, seats, area, image_url,
-        name_en, name_fr, kind_en, kind_fr, position, published, updated_at)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13, now())
+        name_en, name_fr, kind_en, kind_fr,
+        description_en, description_fr, position, published, updated_at)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15, now())
      on conflict (slug) do update set
        price = excluded.price, per_day = excluded.per_day,
        rooms = excluded.rooms, seats = excluded.seats,
        area = excluded.area, image_url = excluded.image_url,
        name_en = excluded.name_en, name_fr = excluded.name_fr,
        kind_en = excluded.kind_en, kind_fr = excluded.kind_fr,
+       description_en = excluded.description_en,
+       description_fr = excluded.description_fr,
        position = excluded.position, published = excluded.published,
        updated_at = now()`,
     [
@@ -101,6 +108,8 @@ export async function saveListing(listing: ListingInput) {
       listing.name.fr,
       listing.kind.en,
       listing.kind.fr,
+      listing.description.en,
+      listing.description.fr,
       listing.position,
       listing.published,
     ]

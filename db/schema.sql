@@ -42,6 +42,14 @@ create table if not exists listings (
 create index if not exists listings_order
   on listings (published, position, slug);
 
+/* Free prose about the residence, in place of a row of structured facts —
+   easier to write and it says more. Added as ALTERs rather than columns on
+   the table above so that re-running this file migrates a database that has
+   already been created, which is the whole point of everything here being
+   `if not exists`. */
+alter table listings add column if not exists description_en text not null default '';
+alter table listings add column if not exists description_fr text not null default '';
+
 -- ------------------------------------------------------------------- rooms
 
 /* Rooms belong to a listing and are entirely the admin's: any number of them,

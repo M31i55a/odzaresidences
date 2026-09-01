@@ -58,12 +58,18 @@ async function openLocal(): Promise<Db> {
     )
   ).rows;
 
+  /* The schema runs every time, not only on a fresh database. Every statement
+     in it is `create ... if not exists` or `add column if not exists`, so it
+     is a no-op once applied — and it means a column added to schema.sql
+     reaches this database on the next reload rather than requiring the folder
+     to be deleted. The seed only runs when there was nothing here, because it
+     replaces the ten listings and would undo local edits. */
+  const schema = join(root, "db", "schema.sql");
+  if (existsSync(schema)) await pg.exec(readFileSync(schema, "utf8"));
+
   if (!ready) {
-    for (const file of ["schema.sql", "seed.sql"]) {
-      const path = join(root, "db", file);
-      if (!existsSync(path)) continue;
-      await pg.exec(readFileSync(path, "utf8"));
-    }
+    const seed = join(root, "db", "seed.sql");
+    if (existsSync(seed)) await pg.exec(readFileSync(seed, "utf8"));
     console.info(
       "[db] local PGlite database created in .pglite/ and seeded from db/. " +
         "Set DATABASE_URL to use Neon instead."

@@ -474,3 +474,29 @@
 .warn {
   color: #e0a091;
 }
+
+/* Room to write in. Vertical only — a horizontal drag would break the grid. */
+.textarea {
+  min-height: 8.5rem;
+  line-height: 1.6;
+  resize: vertical;
+  font-family: var(--font-mono);
+}
+
+/* Stands in for the picture that isn't there yet. A line of text rather than
+   an empty box, which was mostly height. */
+.emptyPreview {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(237, 230, 218, 0.3);
+}
+
+/* Marks a field you can leave alone, beside its label. */
+.optional {
+  margin-left: 6px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+  color: rgba(237, 230, 218, 0.32);
+}

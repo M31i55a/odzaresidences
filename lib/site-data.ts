@@ -48,6 +48,7 @@ function fallback(): { listings: Listing[]; rooms: Record<string, Room[]> } {
       src: flat.src,
       name: { en: en.listings[flat.slug].name, fr: fr.listings[flat.slug].name },
       kind: { en: en.listings[flat.slug].kind, fr: fr.listings[flat.slug].kind },
+      description: { en: "", fr: "" },
       position: index,
       published: true,
     } satisfies Listing;

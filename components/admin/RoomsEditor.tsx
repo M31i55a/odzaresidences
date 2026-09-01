@@ -271,6 +271,7 @@ function Gallery({
         <ImagePicker
           name="url"
           label="Add a photograph"
+          compact
           local={local}
           onUploaded={(url) => {
             const data = new FormData();

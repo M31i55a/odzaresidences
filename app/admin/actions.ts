@@ -115,7 +115,6 @@ export async function saveListingAction(
   if (!Number.isFinite(rooms) || rooms <= 0) {
     return { error: "Rooms has to be a whole number above zero." };
   }
-  if (!area) return { error: "Area is needed — for example 120 m²." };
   if (!src) return { error: "A main photograph is needed." };
 
   /* Checked before the upsert, because after it the row exists either way
@@ -142,6 +141,10 @@ export async function saveListingAction(
     src,
     name: { en: nameEn, fr: nameFr },
     kind: { en: text(form, "kind_en"), fr: text(form, "kind_fr") },
+    description: {
+      en: text(form, "description_en"),
+      fr: text(form, "description_fr"),
+    },
     position,
     published: form.get("published") === "on",
   });

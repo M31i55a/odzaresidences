@@ -24,12 +24,16 @@ export default function ImagePicker({
   name,
   label,
   value,
+  compact = false,
   local = false,
   onUploaded,
 }: {
   name: string;
   label: string;
   value?: string;
+  /** Drop the empty frame — for adding to a gallery that already shows its
+      pictures. The chosen file still previews once it uploads. */
+  compact?: boolean;
   /** Write to public/uploads/ instead of Vercel Blob. Development only. */
   local?: boolean;
   /** Set when the URL should be saved on its own rather than with a form. */
@@ -86,7 +90,11 @@ export default function ImagePicker({
         // eslint-disable-next-line @next/next/no-img-element
         <img className={styles.preview} src={url} alt="" />
       ) : (
-        <div className={styles.preview} />
+        /* An empty frame only where one is useful — on a listing's main
+           photograph, where it shows there isn't one yet. In a gallery the
+           pictures are already on screen above, so a second empty box is
+           just height. */
+        !compact && <p className={styles.emptyPreview}>No photograph yet</p>
       )}
 
       <input
@@ -109,7 +117,8 @@ export default function ImagePicker({
           {error}
         </p>
       )}
-      {url && !busy && <p className={styles.note}>{url}</p>}
+      {/* The address is only worth showing where there is room for it. */}
+      {url && !busy && !compact && <p className={styles.note}>{url}</p>}
     </div>
   );
 }

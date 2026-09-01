@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import {
   saveListingAction,
@@ -28,6 +28,9 @@ export default function ListingForm({
   );
 
   const existing = listing !== null;
+  /* Drives the label beside the number, so it reads "Seats" the moment
+     the box is ticked rather than after a save. */
+  const [seats, setSeats] = useState(listing?.seats ?? false);
   const position = listing?.position ?? nextPosition ?? 0;
   // The home page strip is the first few; the rest wait behind "Visit more".
   const onHomePage = position < FEATURED_COUNT;
@@ -107,9 +110,49 @@ export default function ListingForm({
           )}
         </fieldset>
 
+        {/* ---------------- what it is like ---------------- */}
+        <fieldset className={styles.group}>
+          <legend className={styles.groupTitle}>Description</legend>
+
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="description_en">
+                English
+              </label>
+              <textarea
+                id="description_en"
+                className={`${styles.input} ${styles.textarea}`}
+                name="description_en"
+                rows={6}
+                defaultValue={listing?.description.en ?? ""}
+                placeholder="Six rooms over 340 m², opening onto a walled garden. Oak floors throughout, and shade on the terrace by mid-afternoon."
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="description_fr">
+                French
+              </label>
+              <textarea
+                id="description_fr"
+                className={`${styles.input} ${styles.textarea}`}
+                name="description_fr"
+                rows={6}
+                defaultValue={listing?.description.fr ?? ""}
+                placeholder="Six pièces sur 340 m², ouvertes sur un jardin clos…"
+              />
+            </div>
+          </div>
+
+          <p className={styles.note}>
+            Whatever describes it — size, rooms, what the light does. This
+            replaces the old row of separate facts and appears on the
+            residence page. Line breaks are kept.
+          </p>
+        </fieldset>
+
         {/* ---------------- what it costs ---------------- */}
         <fieldset className={styles.group}>
-          <legend className={styles.groupTitle}>Price and size</legend>
+          <legend className={styles.groupTitle}>Price and capacity</legend>
 
           <div className={styles.row}>
             <div className={styles.field}>
@@ -136,20 +179,8 @@ export default function ListingForm({
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="area">
-                Area
-              </label>
-              <input
-                id="area"
-                className={styles.input}
-                name="area"
-                placeholder="340 m²"
-                defaultValue={listing?.area ?? ""}
-                required
-              />
-
               <label className={styles.label} htmlFor="rooms">
-                Rooms
+                {seats ? "Seats" : "Rooms"}
               </label>
               <input
                 id="rooms"
@@ -162,9 +193,26 @@ export default function ListingForm({
                 placeholder="6"
                 required
               />
+              {/* Not decoration: this caps a booking, which is why it stays a
+                  number rather than moving into the prose above. */}
               <p className={styles.note}>
-                The figure shown on the card. It also sets how many guests may
-                book — twice the rooms, or exactly this many for a hall.
+                <strong>This limits bookings.</strong> A guest can book up to{" "}
+                {seats ? "this many people" : "twice this number of people"}.
+              </p>
+
+              <label className={styles.label} htmlFor="area">
+                Area <span className={styles.optional}>optional</span>
+              </label>
+              <input
+                id="area"
+                className={styles.input}
+                name="area"
+                placeholder="340 m²"
+                defaultValue={listing?.area ?? ""}
+              />
+              <p className={styles.note}>
+                Shown on the card. Leave it empty and put the size in the
+                description instead.
               </p>
             </div>
           </div>
@@ -184,6 +232,7 @@ export default function ListingForm({
                 type="checkbox"
                 name="seats"
                 defaultChecked={listing?.seats ?? false}
+                onChange={(event) => setSeats(event.target.checked)}
               />
               Counts seats rather than rooms — a hall, not a home
             </label>

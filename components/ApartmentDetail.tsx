@@ -41,20 +41,33 @@ export default function ApartmentDetail({
             />
           </div>
 
+          {/* Price always; the rest only when there is no description to say
+              it better. The seeded ten have no prose yet, so they keep the
+              row of facts they have always shown. */}
           <dl className={styles.facts}>
             <div className={styles.fact}>
               <dt>{t.apartments.price}</dt>
               <dd className={styles.price}>{info.price}</dd>
             </div>
-            <div className={styles.fact}>
-              <dt>{t.apartments.rooms}</dt>
-              <dd>{info.rooms}</dd>
-            </div>
-            <div className={styles.fact}>
-              <dt>{t.apartments.area}</dt>
-              <dd>{info.area}</dd>
-            </div>
+            {!info.description && (
+              <>
+                <div className={styles.fact}>
+                  <dt>{t.apartments.rooms}</dt>
+                  <dd>{info.rooms}</dd>
+                </div>
+                <div className={styles.fact}>
+                  <dt>{t.apartments.area}</dt>
+                  <dd>{info.area}</dd>
+                </div>
+              </>
+            )}
           </dl>
+
+          {/* Written by the admin, so it is rendered as text — never as
+              markup. `white-space: pre-line` keeps the line breaks. */}
+          {info.description && (
+            <p className={styles.description}>{info.description}</p>
+          )}
 
           <button
             type="button"
