@@ -119,20 +119,16 @@ export default function ReservationForm({
           )}
 
           <div className={styles.actions}>
-            {/* An anchor once there's a provider to navigate to, and the same
-                button switched off until there is. Not an enabled button that
-                does nothing — the amount is right there on it, and a button
-                offering to take that much had better take it. */}
-            {owed &&
-              (state.payUrl ? (
-                <a className={styles.pay} href={state.payUrl}>
-                  {t.reserve.pay(money(state.due))}
-                </a>
-              ) : (
-                <button type="button" className={styles.pay} disabled>
-                  {t.reserve.pay(money(state.due))}
-                </button>
-              ))}
+            {/* Shown only when there is somewhere to pay. A dead button
+                carrying the amount reads as a broken site, and it contradicts
+                the paragraph above, which already says the agency will
+                arrange payment when no link could be opened. The reservation
+                stands either way — it is in the agency's inbox. */}
+            {owed && state.payUrl && (
+              <a className={styles.pay} href={state.payUrl}>
+                {t.reserve.pay(money(state.due))}
+              </a>
+            )}
 
             <button type="button" className={styles.back} onClick={onBack}>
               {t.reserve.back}

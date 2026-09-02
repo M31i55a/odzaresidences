@@ -307,6 +307,16 @@ async function paymentLink(checkout: Checkout) {
         "Content-Type": "application/x-www-form-urlencoded",
         // Ask for JSON explicitly, in case the endpoint content-negotiates.
         accept: "application/json",
+        /* Paymooney sit behind Cloudflare, which challenges requests from
+           datacentre addresses — which is every request from a serverless
+           host. Node's default undici user agent is a common trigger, so a
+           real one is sent instead. This clears only the mildest rules; if
+           the challenge persists, Paymooney have to allow this caller
+           through at their end and no header will do it. */
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+          "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
       },
       body,
     });
@@ -325,10 +335,22 @@ async function paymentLink(checkout: Checkout) {
   try {
     payload = JSON.parse(raw);
   } catch {
+    /* A Cloudflare challenge is worth naming outright, because the fix is not
+       in this code: their firewall has to let this caller through. The ray id
+       is what their support needs to find the block in their own logs. */
+    const ray = response.headers.get("cf-ray");
+    const challenged =
+      raw.includes("Just a moment") || raw.includes("cf-browser-verification");
+
     console.error(
       `[paymooney] expected JSON for ${checkout.reference} but got ` +
-        `${response.status} ${response.headers.get("content-type") ?? "?"} — ` +
-        `first 400 characters follow:\n${raw.slice(0, 400)}`
+        `${response.status} ${response.headers.get("content-type") ?? "?"}` +
+        (ray ? ` (Cloudflare ray ${ray})` : "") +
+        (challenged
+          ? " — this is a Cloudflare bot challenge, NOT a Paymooney error. " +
+            "Ask Paymooney to allow requests from this server; quote the ray id."
+          : "") +
+        `\nfirst 400 characters follow:\n${raw.slice(0, 400)}`
     );
     return undefined;
   }
