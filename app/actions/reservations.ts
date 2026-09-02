@@ -240,11 +240,39 @@ async function paymentLink(checkout: Checkout) {
   // receipt, so a single-word name simply leaves the surname empty.
   const [first, ...rest] = checkout.input.name.split(/\s+/);
 
+  const testing = process.env.PAYMOONEY_MODE?.trim() === "test";
+
+  /* Live, a stay is billed in XAF, which reaches Orange Money and nothing
+     else — their table gives card and PayPal USD, CAD and EUR only.
+
+     That makes test mode a dead end left alone: Orange Money is the one
+     method XAF can reach, and Paymooney publish no test data for it ("il
+     n'existe pas de données de test pour orange"). So in test mode the
+     currency and amount are swapped for ones a test CARD can pay, which is
+     what makes the whole path — payment page, callback, signature, email —
+     exercisable without moving real money.
+
+     Both are ignored unless PAYMOONEY_MODE is exactly "test", so production
+     always bills the real amount in XAF. */
+  const currency = testing
+    ? process.env.PAYMOONEY_TEST_CURRENCY?.trim() || "EUR"
+    : "XAF";
+
+  const amount = testing
+    ? process.env.PAYMOONEY_TEST_AMOUNT?.trim() || "1"
+    : String(checkout.amount);
+
+  if (testing) {
+    console.info(
+      `[paymooney] TEST MODE — billing ${amount} ${currency} instead of ` +
+        `${checkout.amount} XAF for ${checkout.reference}. Pay with a test ` +
+        `card (4242 4242 4242 4242). No money moves.`
+    );
+  }
+
   const body = new URLSearchParams({
-    amount: String(checkout.amount),
-    // Orange Money Cameroon is the XAF method; card and PayPal are USD/CAD/EUR
-    // only, so a XAF-priced stay reaches Orange Money and nothing else.
-    currency_code: "XAF",
+    amount,
+    currency_code: currency,
     ccode: "CM",
     lang: checkout.locale,
     item_ref: checkout.reference,
@@ -260,12 +288,10 @@ async function paymentLink(checkout: Checkout) {
   // Optional for them, but it is how the customer gets their receipt.
   if (checkout.input.email) body.set("email", checkout.input.email);
 
-  /* Present ONLY in test mode. Their docs are explicit that sending this
-     parameter at all puts the payment in test mode, so it must be absent in
-     production rather than set to "live". */
-  if (process.env.PAYMOONEY_MODE?.trim() === "test") {
-    body.set("environement", "test");
-  }
+  /* Their docs are explicit that sending this parameter at all puts the
+     payment in test mode, so it must be absent in production rather than set
+     to "live". */
+  if (testing) body.set("environement", "test");
 
   let payload: { response?: string; payment_url?: string; error_code?: number | string; message?: string };
 
