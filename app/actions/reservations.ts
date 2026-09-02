@@ -226,13 +226,15 @@ type Checkout = {
 async function paymentLink(checkout: Checkout) {
   const publicKey = process.env.PAYMOONEY_PUBLIC_KEY?.trim();
   if (!publicKey) {
-    // Same reasoning as `deliver`: silent in development, loud in production.
-    if (process.env.NODE_ENV === "production") {
-      console.error(
-        "[paymooney] PAYMOONEY_PUBLIC_KEY is not set — no payment link was " +
-          "created, so the customer has nothing to pay against."
-      );
-    }
+    /* Said out loud in development too, unlike `deliver`. A missing mail key
+       there is harmless — the message goes to the terminal and the form still
+       behaves. A missing payment key leaves a disabled button and no
+       explanation anywhere, which is a much worse thing to debug in silence. */
+    console.error(
+      "[paymooney] PAYMOONEY_PUBLIC_KEY is not set — no payment link was " +
+        "created, so the Pay button stays disabled. Set it in .env.local for " +
+        "local testing, or in the Vercel dashboard for the deployed site."
+    );
     return undefined;
   }
 
@@ -295,17 +297,39 @@ async function paymentLink(checkout: Checkout) {
 
   let payload: { response?: string; payment_url?: string; error_code?: number | string; message?: string };
 
+  let response: Response;
+  let raw: string;
+
   try {
-    const response = await fetch(PAYMOONEY_ENDPOINT, {
+    response = await fetch(PAYMOONEY_ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        // Ask for JSON explicitly, in case the endpoint content-negotiates.
+        accept: "application/json",
+      },
       body,
     });
-    payload = await response.json();
+    /* Read as text, not `.json()`. Their API sometimes answers with an HTML
+       page — an error page, or a firewall challenge — and `.json()` throws a
+       parse error that says nothing about what actually came back. The body
+       is the only evidence of what went wrong, so it must survive. */
+    raw = await response.text();
   } catch (error) {
     // A reservation that can't be paid for online is still a reservation —
     // the agency already has the email, so this must not throw the request away.
     console.error("[paymooney] could not reach the payment API:", error);
+    return undefined;
+  }
+
+  try {
+    payload = JSON.parse(raw);
+  } catch {
+    console.error(
+      `[paymooney] expected JSON for ${checkout.reference} but got ` +
+        `${response.status} ${response.headers.get("content-type") ?? "?"} — ` +
+        `first 400 characters follow:\n${raw.slice(0, 400)}`
+    );
     return undefined;
   }
 
